@@ -1,0 +1,86 @@
+# hcb-ir-editor · 资源映射表（示例）
+#
+# 用途：DSL 里的角色、立绘、背景、CG、BGM、音效编号由 hcb 定义，
+# 这份表让你手工把它们接到扫描到的资源条目上，不再依赖 hcb 或文件名推断。
+#
+# 导入：资源工作区 → 映射表 → 导入 TOML…
+# 只写需要修正的条目；没写的仍然走扫描 / bgload 声明 / 默认约定。
+#
+# 字段约定：
+#   character.no       DSL 里的角色编号（cha_list 的顺序，按你项目里的表来）
+#   character.name     规范名；cha 块和立绘选择器显示这个名字
+#   character.aliases  可选，别名数组
+#   sprite.cha/pose/cloth   DSL 里 [bs,cha,pose,cloth,face,…] 的前三个数字
+#                           注意 cloth 从 0 开始：0 = 制服，1 = 私服
+#   sprite.body        身体图条目名（graph_bs.bin）
+#   sprite.sheet       表情表条目名（可选；没有就只显示身体）
+#   sprite.faces       表情格数；face 1..N 对格子 0..N-1。写数组时取长度
+#   sprite.pose_name / cloth_name  选择器里的显示名（可选）
+#   bg.no / name / file          背景编号、显示名、graph_bg.bin 条目名
+#   bg.variant.diff / file       可选，[bg,67,2] 的差分参数 → 具体条目（hcb 的 a7；diff=1 是底图）
+#   cg.name / label / file       DSL 里的 CG 名、显示名、实际条目名
+#   bgm.no / name / file         曲目编号、显示名、bgm.bin 条目名（三位补零）
+#   se.no / name / file          音效编号、显示名、se.bin 条目名
+#
+# 注意：建议 pose / cloth 从 1 开始连续写；选择器按这些数字存回 [bs,…]。
+
+# —— 角色 ——
+
+[[character]]
+no = 3
+name = "千和"
+aliases = ["千和", "ちわ"]
+
+[[character]]
+no = 14
+name = "大雅"
+aliases = ["大雅"]
+
+# —— 立绘 ——
+# cha=3 的第一套：基 / 制服（cloth=0），48 格表情表
+[[sprite]]
+cha = 3
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_千和_基_制服"
+sheet = "CHR_千和_基_制服_表情"
+faces = 48
+
+# —— 背景 ——
+
+[[bg]]
+no = 67
+name = "参禅町·展望広場"
+file = "BG067_000"
+
+# [bg,67,2] → 这个差分
+[[bg.variant]]
+diff = 2
+file = "BG067_010"
+
+# 自定义背景：DSL 里用 bgload 或直接写 [bg,500]
+[[bg]]
+no = 500
+name = "校门"
+file = "BG500"
+
+# —— CG ——
+
+[[cg]]
+name = "KURO_e011a1"
+label = "千和 微笑"
+file = "KURO_e011a1"
+
+# —— 声音 ——
+
+[[bgm]]
+no = 44
+name = "蝉时雨"
+file = "044"
+
+[[se]]
+no = 209
+name = "钟声"
+file = "209"

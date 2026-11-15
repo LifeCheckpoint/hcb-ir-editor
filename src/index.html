@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:; media-src 'self' blob:; script-src 'self'; font-src 'self'"
+    />
+    <title>hcb-ir-editor</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/write.css" />
+    <link rel="stylesheet" href="styles/inspector.css" />
+    <link rel="stylesheet" href="styles/overlays.css" />
+    <link rel="stylesheet" href="styles/resource.css" />
+    <link rel="stylesheet" href="styles/dialogs.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="titlebar">
+        <div class="titlebar__lead">
+          <span class="wordmark" aria-hidden="true">
+            <span class="wordmark__dot"></span>hcb-ir-editor
+          </span>
+          <span class="titlebar__divider" aria-hidden="true"></span>
+          <span class="titlebar__project">未命名项目</span>
+          <span class="titlebar__divider" aria-hidden="true"></span>
+          <div class="workspace-switch" role="tablist" aria-label="工作区">
+            <button class="workspace-switch__btn is-on" type="button" role="tab" data-workspace="write">写作</button>
+            <button class="workspace-switch__btn" type="button" role="tab" data-workspace="resource">资源</button>
+          </div>
+          <nav class="menubar" id="menubar" role="menubar" aria-label="主菜单"></nav>
+        </div>
+        <div class="titlebar__trail">
+          <span class="save-state" id="save-state">
+            <span class="save-state__dot" aria-hidden="true"></span>
+            <span class="save-state__text">未保存</span>
+          </span>
+          <button class="btn-ghost" type="button" id="export-dsl" title="导出为 Simple .hcb Editor 的 DSL 脚本">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7m0 0 2.6-2.6M8 9.5 5.4 6.9M3 11.5v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1" /></svg>
+            导出
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace" id="workspace-write">
+        <aside class="rail rail--left" id="chapter-rail" aria-label="章节选择"></aside>
+        <main class="col-main" id="main" tabindex="-1" aria-label="剧情功能块栈"></main>
+        <aside class="rail rail--right" id="inspector" aria-label="功能块参数设置"></aside>
+      </div>
+
+      <div class="workspace" id="workspace-resource" hidden>
+        <aside class="rail rail--left res-nav" id="res-nav" aria-label="资源导航"></aside>
+        <main class="res-main" id="res-main" aria-label="资源列表"></main>
+        <aside class="rail rail--right res-detail" id="res-detail" aria-label="资源详情"></aside>
+      </div>
+    </div>
+
+    <script src="icons.js"></script>
+    <script src="dsl.js"></script>
+    <script src="mapping.js"></script>
+    <script src="resource-store.js"></script>
+    <script src="wiring.js"></script>
+    <!-- 无打包器：按依赖顺序同步加载，app/*.js 共享全局词法作用域；顺序不要随意改。 -->
+    <script src="app/core.js"></script>
+    <script src="app/types.js"></script>
+    <script src="app/model.js"></script>
+    <script src="app/project.js"></script>
+    <script src="app/import-export.js"></script>
+    <script src="app/state.js"></script>
+    <script src="app/chapters.js"></script>
+    <script src="app/stack.js"></script>
+    <script src="app/palette.js"></script>
+    <script src="app/inspector.js"></script>
+    <script src="app/menubar.js"></script>
+    <script src="app/boot.js"></script>
+    <script src="resource.js"></script>
+  </body>
+</html>

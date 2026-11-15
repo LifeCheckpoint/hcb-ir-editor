@@ -1,0 +1,26 @@
+{
+  "name": "hcb-ir-editor",
+  "productName": "hcb-ir-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "hcb-ir-editor：Galgame 剧情编辑器雏形，Notion 风格三栏布局（章节 / 功能块栈 / 参数面板）",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "icons": "node tools/build-icons.mjs",
+    "shot": "electron tools/capture.cjs shots/shot.png default",
+    "shot:select": "electron tools/capture.cjs shots/select.png select",
+    "shot:dsl": "electron tools/capture.cjs shots/dsl.png dsl",
+    "test:dsl": "node tools/test-dsl.cjs",
+    "smoke": "electron tools/capture.cjs shots/shot.png smoke",
+    "test:mapping": "node tools/test-mapping.cjs"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "lucide-static": "^1.73.0"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5"
+  }
+}

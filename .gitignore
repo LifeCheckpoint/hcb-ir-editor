@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+shots/
+.ref/
+*.log
+.DS_Store
+__pycache__/
+*.pyc

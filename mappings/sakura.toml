@@ -1,0 +1,3854 @@
+# Sakura.hcb 资源映射表（自动生成）
+#
+# 来源：Sakura.hcb → fvpanalysis hcb_to_ir.py 的 Lua IR；立绘条目/表情格数来自 graph_bs.bin。
+# 角色编号 = f_00058B8C 的 a1；pose = a2；cloth = a3（0 合法）。
+# 立绘只收录 hcb 实际引用、且 graph_bs.bin 里存在的组合。
+# 背景默认 _000；没有 _000 的取第一个变体；a7 差分已还原到 [[bg.variant]]。
+# 差分分支里 a9/a10=100 的时段/天气版本没有并入：那需要额外参数，DSL 的 diff 只选默认分支。
+# CG 来自 cg_loaded.txt；BGM / 音效按归档条目全量列出；voice 段留给人工/agent 补。
+#
+# 统计：角色 24，立绘 99，背景 62，CG 238，BGM 70，音效 304
+
+# —— 角色 ——
+
+[[character]]
+no = 0
+name = "大雅"
+
+[[character]]
+no = 1
+name = "小黑"
+aliases = ["クロ"]
+
+[[character]]
+no = 2
+name = "春"
+aliases = ["ハル"]
+
+[[character]]
+no = 3
+name = "千和"
+
+[[character]]
+no = 4
+name = "姫织"
+aliases = ["姫織"]
+
+[[character]]
+no = 5
+name = "真白"
+aliases = ["ましろ"]
+
+[[character]]
+no = 6
+name = "十夜"
+
+[[character]]
+no = 7
+name = "朝日"
+aliases = ["あさひ"]
+
+[[character]]
+no = 8
+name = "梓咲"
+aliases = ["あず咲"]
+
+[[character]]
+no = 9
+name = "七七"
+aliases = ["ナナ"]
+
+[[character]]
+no = 10
+name = "智仁"
+
+[[character]]
+no = 11
+name = "索尔"
+aliases = ["ソル"]
+
+[[character]]
+no = 12
+name = "纳哈特"
+aliases = ["ナハト"]
+
+[[character]]
+no = 13
+name = "女孩子"
+aliases = ["少女"]
+
+[[character]]
+no = 14
+name = "春２"
+aliases = ["ハル２"]
+
+[[character]]
+no = 15
+name = "サブ１"
+
+[[character]]
+no = 16
+name = "サブ２"
+
+[[character]]
+no = 17
+name = "サブ３"
+
+[[character]]
+no = 18
+name = "サブ４"
+
+[[character]]
+no = 19
+name = "サブ５"
+aliases = ["黒うさうさ"]
+
+[[character]]
+no = 21
+name = "サブ６"
+
+[[character]]
+no = 22
+name = "サブ７"
+
+[[character]]
+no = 23
+name = "サブ８"
+
+[[character]]
+no = 24
+name = "千和（24）"
+
+# —— 立绘 ——
+
+[[sprite]]
+cha = 0
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_大雅_幼少基_私服"
+sheet = "CHR_大雅_幼少基_私服_表情"
+faces = 2
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_クロ_基_制服"
+sheet = "CHR_クロ_基_制服_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_クロ_基_私服"
+sheet = "CHR_クロ_基_私服_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "制服ネコ"
+body = "CHR_クロ_基_制服ネコ"
+sheet = "CHR_クロ_基_制服ネコ_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "魔法少女"
+body = "CHR_クロ_基_魔法少女"
+sheet = "CHR_クロ_基_魔法少女_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 4
+pose_name = "基"
+cloth_name = "フード"
+body = "CHR_クロ_基_フード"
+sheet = "CHR_クロ_基_フード_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 5
+pose_name = "基"
+cloth_name = "パジャマ"
+body = "CHR_クロ_基_パジャマ"
+sheet = "CHR_クロ_基_パジャマ_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 1
+cloth = 6
+pose_name = "基"
+cloth_name = "私服ネコ"
+body = "CHR_クロ_基_私服ネコ"
+sheet = "CHR_クロ_基_私服ネコ_表情"
+faces = 46
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 0
+pose_name = "喜"
+cloth_name = "制服"
+body = "CHR_クロ_喜_制服"
+sheet = "CHR_クロ_喜_制服_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 1
+pose_name = "喜"
+cloth_name = "私服"
+body = "CHR_クロ_喜_私服"
+sheet = "CHR_クロ_喜_私服_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 2
+pose_name = "喜"
+cloth_name = "制服ネコ"
+body = "CHR_クロ_喜_制服ネコ"
+sheet = "CHR_クロ_喜_制服ネコ_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 3
+pose_name = "喜"
+cloth_name = "魔法少女"
+body = "CHR_クロ_喜_魔法少女"
+sheet = "CHR_クロ_喜_魔法少女_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 4
+pose_name = "喜"
+cloth_name = "フード"
+body = "CHR_クロ_喜_フード"
+sheet = "CHR_クロ_喜_フード_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 2
+cloth = 6
+pose_name = "喜"
+cloth_name = "私服ネコ"
+body = "CHR_クロ_喜_私服ネコ"
+sheet = "CHR_クロ_喜_私服ネコ_表情"
+faces = 42
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 0
+pose_name = "悲"
+cloth_name = "制服"
+body = "CHR_クロ_悲_制服"
+sheet = "CHR_クロ_悲_制服_表情"
+faces = 26
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_クロ_悲_私服"
+sheet = "CHR_クロ_悲_私服_表情"
+faces = 26
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 2
+pose_name = "悲"
+cloth_name = "制服ネコ"
+body = "CHR_クロ_悲_制服ネコ"
+sheet = "CHR_クロ_悲_制服ネコ_表情"
+faces = 26
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 3
+pose_name = "悲"
+cloth_name = "魔法少女"
+body = "CHR_クロ_悲_魔法少女"
+sheet = "CHR_クロ_悲_魔法少女_表情"
+faces = 26
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 4
+pose_name = "悲"
+cloth_name = "フード"
+body = "CHR_クロ_悲_フード"
+sheet = "CHR_クロ_悲_フード_表情"
+faces = 26
+
+[[sprite]]
+cha = 1
+pose = 3
+cloth = 6
+pose_name = "悲"
+cloth_name = "私服ネコ"
+body = "CHR_クロ_悲_私服ネコ"
+sheet = "CHR_クロ_悲_私服ネコ_表情"
+faces = 26
+
+[[sprite]]
+cha = 2
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_ハル_基_制服"
+sheet = "CHR_ハル_基_制服_表情"
+faces = 42
+
+[[sprite]]
+cha = 2
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_ハル_基_私服"
+sheet = "CHR_ハル_基_私服_表情"
+faces = 42
+
+[[sprite]]
+cha = 2
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "メイド服"
+body = "CHR_ハル_基_メイド服"
+sheet = "CHR_ハル_基_メイド服_表情"
+faces = 42
+
+[[sprite]]
+cha = 2
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "魔法少女"
+body = "CHR_ハル_基_魔法少女"
+sheet = "CHR_ハル_基_魔法少女_表情"
+faces = 42
+
+[[sprite]]
+cha = 2
+pose = 2
+cloth = 0
+pose_name = "喜"
+cloth_name = "制服"
+body = "CHR_ハル_喜_制服"
+sheet = "CHR_ハル_喜_制服_表情"
+faces = 44
+
+[[sprite]]
+cha = 2
+pose = 2
+cloth = 1
+pose_name = "喜"
+cloth_name = "私服"
+body = "CHR_ハル_喜_私服"
+sheet = "CHR_ハル_喜_私服_表情"
+faces = 44
+
+[[sprite]]
+cha = 2
+pose = 2
+cloth = 3
+pose_name = "喜"
+cloth_name = "魔法少女"
+body = "CHR_ハル_喜_魔法少女"
+sheet = "CHR_ハル_喜_魔法少女_表情"
+faces = 44
+
+[[sprite]]
+cha = 2
+pose = 3
+cloth = 0
+pose_name = "悲"
+cloth_name = "制服"
+body = "CHR_ハル_悲_制服"
+sheet = "CHR_ハル_悲_制服_表情"
+faces = 24
+
+[[sprite]]
+cha = 2
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_ハル_悲_私服"
+sheet = "CHR_ハル_悲_私服_表情"
+faces = 24
+
+[[sprite]]
+cha = 2
+pose = 3
+cloth = 2
+pose_name = "悲"
+cloth_name = "メイド服"
+body = "CHR_ハル_悲_メイド服"
+sheet = "CHR_ハル_悲_メイド服_表情"
+faces = 24
+
+[[sprite]]
+cha = 2
+pose = 3
+cloth = 3
+pose_name = "悲"
+cloth_name = "魔法少女"
+body = "CHR_ハル_悲_魔法少女"
+sheet = "CHR_ハル_悲_魔法少女_表情"
+faces = 24
+
+[[sprite]]
+cha = 2
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_ハル_幼少基_私服"
+sheet = "CHR_ハル_幼少基_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 2
+pose = 11
+cloth = 3
+pose_name = "幼少基"
+cloth_name = "魔法少女"
+body = "CHR_ハル_幼少基_魔法少女"
+sheet = "CHR_ハル_幼少基_魔法少女_表情"
+faces = 36
+
+[[sprite]]
+cha = 3
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_千和_基_制服"
+sheet = "CHR_千和_基_制服_表情"
+faces = 48
+
+[[sprite]]
+cha = 3
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_千和_基_私服"
+sheet = "CHR_千和_基_私服_表情"
+faces = 48
+
+[[sprite]]
+cha = 3
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "メイド服"
+body = "CHR_千和_基_メイド服"
+sheet = "CHR_千和_基_メイド服_表情"
+faces = 48
+
+[[sprite]]
+cha = 3
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "魔法少女"
+body = "CHR_千和_基_魔法少女"
+sheet = "CHR_千和_基_魔法少女_表情"
+faces = 48
+
+[[sprite]]
+cha = 3
+pose = 2
+cloth = 0
+pose_name = "喜"
+cloth_name = "制服"
+body = "CHR_千和_喜_制服"
+sheet = "CHR_千和_喜_制服_表情"
+faces = 50
+
+[[sprite]]
+cha = 3
+pose = 2
+cloth = 1
+pose_name = "喜"
+cloth_name = "私服"
+body = "CHR_千和_喜_私服"
+sheet = "CHR_千和_喜_私服_表情"
+faces = 50
+
+[[sprite]]
+cha = 3
+pose = 2
+cloth = 2
+pose_name = "喜"
+cloth_name = "メイド服"
+body = "CHR_千和_喜_メイド服"
+sheet = "CHR_千和_喜_メイド服_表情"
+faces = 50
+
+[[sprite]]
+cha = 3
+pose = 2
+cloth = 3
+pose_name = "喜"
+cloth_name = "魔法少女"
+body = "CHR_千和_喜_魔法少女"
+sheet = "CHR_千和_喜_魔法少女_表情"
+faces = 50
+
+[[sprite]]
+cha = 3
+pose = 3
+cloth = 0
+pose_name = "悲"
+cloth_name = "制服"
+body = "CHR_千和_悲_制服"
+sheet = "CHR_千和_悲_制服_表情"
+faces = 26
+
+[[sprite]]
+cha = 3
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_千和_悲_私服"
+sheet = "CHR_千和_悲_私服_表情"
+faces = 26
+
+[[sprite]]
+cha = 3
+pose = 3
+cloth = 2
+pose_name = "悲"
+cloth_name = "メイド服"
+body = "CHR_千和_悲_メイド服"
+sheet = "CHR_千和_悲_メイド服_表情"
+faces = 26
+
+[[sprite]]
+cha = 3
+pose = 3
+cloth = 3
+pose_name = "悲"
+cloth_name = "魔法少女"
+body = "CHR_千和_悲_魔法少女"
+sheet = "CHR_千和_悲_魔法少女_表情"
+faces = 26
+
+[[sprite]]
+cha = 3
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_千和_幼少基_私服"
+sheet = "CHR_千和_幼少基_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 3
+pose = 11
+cloth = 3
+pose_name = "幼少基"
+cloth_name = "魔法少女"
+body = "CHR_千和_幼少基_魔法少女"
+sheet = "CHR_千和_幼少基_魔法少女_表情"
+faces = 36
+
+[[sprite]]
+cha = 3
+pose = 11
+cloth = 4
+pose_name = "幼少基"
+cloth_name = "私服２"
+body = "CHR_千和_幼少基_私服２"
+sheet = "CHR_千和_幼少基_私服２_表情"
+faces = 36
+
+[[sprite]]
+cha = 4
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_姫織_基_制服"
+sheet = "CHR_姫織_基_制服_表情"
+faces = 48
+
+[[sprite]]
+cha = 4
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_姫織_基_私服"
+sheet = "CHR_姫織_基_私服_表情"
+faces = 48
+
+[[sprite]]
+cha = 4
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "魔法少女"
+body = "CHR_姫織_基_魔法少女"
+sheet = "CHR_姫織_基_魔法少女_表情"
+faces = 48
+
+[[sprite]]
+cha = 4
+pose = 1
+cloth = 6
+pose_name = "基"
+cloth_name = "巫女"
+body = "CHR_姫織_基_巫女"
+sheet = "CHR_姫織_基_巫女_表情"
+faces = 48
+
+[[sprite]]
+cha = 4
+pose = 2
+cloth = 0
+pose_name = "喜"
+cloth_name = "制服"
+body = "CHR_姫織_喜_制服"
+sheet = "CHR_姫織_喜_制服_表情"
+faces = 46
+
+[[sprite]]
+cha = 4
+pose = 2
+cloth = 1
+pose_name = "喜"
+cloth_name = "私服"
+body = "CHR_姫織_喜_私服"
+sheet = "CHR_姫織_喜_私服_表情"
+faces = 46
+
+[[sprite]]
+cha = 4
+pose = 2
+cloth = 3
+pose_name = "喜"
+cloth_name = "魔法少女"
+body = "CHR_姫織_喜_魔法少女"
+sheet = "CHR_姫織_喜_魔法少女_表情"
+faces = 46
+
+[[sprite]]
+cha = 4
+pose = 2
+cloth = 6
+pose_name = "喜"
+cloth_name = "巫女"
+body = "CHR_姫織_喜_巫女"
+sheet = "CHR_姫織_喜_巫女_表情"
+faces = 46
+
+[[sprite]]
+cha = 4
+pose = 3
+cloth = 0
+pose_name = "悲"
+cloth_name = "制服"
+body = "CHR_姫織_悲_制服"
+sheet = "CHR_姫織_悲_制服_表情"
+faces = 24
+
+[[sprite]]
+cha = 4
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_姫織_悲_私服"
+sheet = "CHR_姫織_悲_私服_表情"
+faces = 24
+
+[[sprite]]
+cha = 4
+pose = 3
+cloth = 3
+pose_name = "悲"
+cloth_name = "魔法少女"
+body = "CHR_姫織_悲_魔法少女"
+sheet = "CHR_姫織_悲_魔法少女_表情"
+faces = 24
+
+[[sprite]]
+cha = 4
+pose = 3
+cloth = 6
+pose_name = "悲"
+cloth_name = "巫女"
+body = "CHR_姫織_悲_巫女"
+sheet = "CHR_姫織_悲_巫女_表情"
+faces = 24
+
+[[sprite]]
+cha = 4
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_姫織_幼少基_私服"
+sheet = "CHR_姫織_幼少基_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 4
+pose = 11
+cloth = 3
+pose_name = "幼少基"
+cloth_name = "魔法少女"
+body = "CHR_姫織_幼少基_魔法少女"
+sheet = "CHR_姫織_幼少基_魔法少女_表情"
+faces = 36
+
+[[sprite]]
+cha = 5
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_ましろ_基_私服"
+sheet = "CHR_ましろ_基_私服_表情"
+faces = 46
+
+[[sprite]]
+cha = 5
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "魔法少女"
+body = "CHR_ましろ_基_魔法少女"
+sheet = "CHR_ましろ_基_魔法少女_表情"
+faces = 46
+
+[[sprite]]
+cha = 5
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_ましろ_悲_私服"
+sheet = "CHR_ましろ_悲_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 5
+pose = 3
+cloth = 3
+pose_name = "悲"
+cloth_name = "魔法少女"
+body = "CHR_ましろ_悲_魔法少女"
+sheet = "CHR_ましろ_悲_魔法少女_表情"
+faces = 36
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_十夜_基_私服"
+sheet = "CHR_十夜_基_私服_表情"
+faces = 46
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "メイド服"
+body = "CHR_十夜_基_メイド服"
+sheet = "CHR_十夜_基_メイド服_表情"
+faces = 46
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "メイド服ネコ"
+body = "CHR_十夜_基_メイド服ネコ"
+sheet = "CHR_十夜_基_メイド服ネコ_表情"
+faces = 46
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 4
+pose_name = "基"
+cloth_name = "私服２"
+body = "CHR_十夜_基_私服２"
+sheet = "CHR_十夜_基_私服２_表情"
+faces = 2
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 5
+pose_name = "基"
+cloth_name = "私服２ネコ"
+body = "CHR_十夜_基_私服２ネコ"
+sheet = "CHR_十夜_基_私服２ネコ_表情"
+faces = 2
+
+[[sprite]]
+cha = 6
+pose = 1
+cloth = 6
+pose_name = "基"
+cloth_name = "私服ネコ"
+body = "CHR_十夜_基_私服ネコ"
+sheet = "CHR_十夜_基_私服ネコ_表情"
+faces = 46
+
+[[sprite]]
+cha = 6
+pose = 2
+cloth = 1
+pose_name = "喜"
+cloth_name = "私服"
+body = "CHR_十夜_喜_私服"
+sheet = "CHR_十夜_喜_私服_表情"
+faces = 38
+
+[[sprite]]
+cha = 6
+pose = 2
+cloth = 2
+pose_name = "喜"
+cloth_name = "メイド服"
+body = "CHR_十夜_喜_メイド服"
+sheet = "CHR_十夜_喜_メイド服_表情"
+faces = 38
+
+[[sprite]]
+cha = 6
+pose = 2
+cloth = 3
+pose_name = "喜"
+cloth_name = "メイド服ネコ"
+body = "CHR_十夜_喜_メイド服ネコ"
+sheet = "CHR_十夜_喜_メイド服ネコ_表情"
+faces = 38
+
+[[sprite]]
+cha = 6
+pose = 2
+cloth = 6
+pose_name = "喜"
+cloth_name = "私服ネコ"
+body = "CHR_十夜_喜_私服ネコ"
+sheet = "CHR_十夜_喜_私服ネコ_表情"
+faces = 38
+
+[[sprite]]
+cha = 7
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_あさひ_基_私服"
+sheet = "CHR_あさひ_基_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 7
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "私服めがね"
+body = "CHR_あさひ_基_私服めがね"
+sheet = "CHR_あさひ_基_私服めがね_表情"
+faces = 36
+
+[[sprite]]
+cha = 7
+pose = 3
+cloth = 1
+pose_name = "悲"
+cloth_name = "私服"
+body = "CHR_あさひ_悲_私服"
+sheet = "CHR_あさひ_悲_私服_表情"
+faces = 38
+
+[[sprite]]
+cha = 7
+pose = 3
+cloth = 2
+pose_name = "悲"
+cloth_name = "私服めがね"
+body = "CHR_あさひ_悲_私服めがね"
+sheet = "CHR_あさひ_悲_私服めがね_表情"
+faces = 38
+
+[[sprite]]
+cha = 8
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_あず咲_基_制服"
+sheet = "CHR_あず咲_基_制服_表情"
+faces = 38
+
+[[sprite]]
+cha = 8
+pose = 3
+cloth = 0
+pose_name = "悲"
+cloth_name = "制服"
+body = "CHR_あず咲_悲_制服"
+sheet = "CHR_あず咲_悲_制服_表情"
+faces = 18
+
+[[sprite]]
+cha = 8
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_あず咲_幼少基_私服"
+sheet = "CHR_あず咲_幼少基_私服_表情"
+faces = 36
+
+[[sprite]]
+cha = 9
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "車掌服"
+body = "CHR_ナナ_基_車掌服"
+sheet = "CHR_ナナ_基_車掌服_表情"
+faces = 44
+
+[[sprite]]
+cha = 9
+pose = 3
+cloth = 2
+pose_name = "悲"
+cloth_name = "車掌服"
+body = "CHR_ナナ_悲_車掌服"
+sheet = "CHR_ナナ_悲_車掌服_表情"
+faces = 40
+
+[[sprite]]
+cha = 10
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_智仁_基_制服"
+sheet = "CHR_智仁_基_制服_表情"
+faces = 16
+
+[[sprite]]
+cha = 10
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_智仁_基_私服"
+sheet = "CHR_智仁_基_私服_表情"
+faces = 16
+
+[[sprite]]
+cha = 10
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_智仁_幼少基_私服"
+sheet = "CHR_智仁_幼少基_私服_表情"
+faces = 18
+
+[[sprite]]
+cha = 11
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_ソル_基_私服"
+sheet = "CHR_ソル_基_私服_表情"
+faces = 16
+
+[[sprite]]
+cha = 11
+pose = 1
+cloth = 2
+pose_name = "基"
+cloth_name = "私服２"
+body = "CHR_ソル_基_私服２"
+sheet = "CHR_ソル_基_私服２_表情"
+faces = 16
+
+[[sprite]]
+cha = 11
+pose = 1
+cloth = 3
+pose_name = "基"
+cloth_name = "マスター服"
+body = "CHR_ソル_基_マスター服"
+sheet = "CHR_ソル_基_マスター服_表情"
+faces = 16
+
+[[sprite]]
+cha = 11
+pose = 1
+cloth = 4
+pose_name = "基"
+cloth_name = "マスター服２"
+body = "CHR_ソル_基_マスター服２"
+sheet = "CHR_ソル_基_マスター服２_表情"
+faces = 16
+
+[[sprite]]
+cha = 12
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_ナハト_基_私服"
+sheet = "CHR_ナハト_基_私服_表情"
+faces = 11
+
+[[sprite]]
+cha = 12
+pose = 1
+cloth = 7
+pose_name = "基"
+cloth_name = "私服マスク"
+body = "CHR_ナハト_基_私服マスク"
+sheet = "CHR_ナハト_基_私服マスク_表情"
+faces = 11
+
+[[sprite]]
+cha = 13
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_少女_基_私服"
+sheet = "CHR_少女_基_私服_表情"
+faces = 22
+
+[[sprite]]
+cha = 14
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_ハル２_基_制服"
+sheet = "CHR_ハル２_基_制服_表情"
+faces = 2
+
+[[sprite]]
+cha = 24
+pose = 1
+cloth = 0
+pose_name = "基"
+cloth_name = "制服"
+body = "CHR_千和_基_制服"
+sheet = "CHR_千和_基_制服_表情"
+faces = 48
+
+[[sprite]]
+cha = 24
+pose = 1
+cloth = 1
+pose_name = "基"
+cloth_name = "私服"
+body = "CHR_千和_基_私服"
+sheet = "CHR_千和_基_私服_表情"
+faces = 48
+
+[[sprite]]
+cha = 24
+pose = 11
+cloth = 1
+pose_name = "幼少基"
+cloth_name = "私服"
+body = "CHR_千和_幼少基_私服"
+sheet = "CHR_千和_幼少基_私服_表情"
+faces = 36
+
+# —— 背景 ——
+
+[[bg]]
+no = 1
+name = "ゆめのねどこ·奥座敷"
+file = "BG001_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG001_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG001_020"
+
+[[bg]]
+no = 2
+name = "ゆめのねどこ·店先"
+file = "BG002_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG002_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG002_020"
+
+[[bg]]
+no = 3
+name = "ゆめのねどこ·店内"
+file = "BG003_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG003_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG003_020"
+
+[[bg]]
+no = 4
+name = "ゆめのねどこ·大雅の部屋"
+file = "BG004_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG004_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG004_020"
+
+[[bg]]
+no = 5
+name = "ゆめのねどこ·魔法使いの工房"
+file = "BG005_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG005_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG005_020"
+
+[[bg]]
+no = 6
+name = "ゆめのねどこ·店先·夜の国"
+file = "BG006_000"
+
+[[bg]]
+no = 11
+name = "桜ヶ丘学園·校門前"
+file = "BG011_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG011_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG011_020"
+
+[[bg]]
+no = 12
+name = "桜ヶ丘学園·大雅の教室"
+file = "BG012_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG012_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG012_020"
+
+[[bg]]
+no = 13
+name = "桜ヶ丘学園·時計塔の管理室"
+file = "BG013_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG013_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG013_020"
+
+[[bg]]
+no = 14
+name = "桜ヶ丘学園·一階廊下"
+file = "BG014_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG014_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG014_020"
+
+[[bg]]
+no = 15
+name = "桜ヶ丘学園·二階廊下"
+file = "BG015_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG015_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG015_020"
+
+[[bg]]
+no = 16
+name = "桜ヶ丘学園·一階廊下·夜の国"
+file = "BG016_000"
+
+[[bg]]
+no = 17
+name = "桜ヶ丘学園·二階廊下·夜の国"
+file = "BG017_000"
+
+[[bg]]
+no = 18
+name = "桜ヶ丘学園·刻の終着駅·夜の国"
+file = "BG018_000"
+
+[[bg]]
+no = 21
+name = "夜の遊園地·夜の国"
+file = "BG021_000"
+
+[[bg]]
+no = 23
+name = "桜ヶ丘学園·校門前·夜の国"
+file = "BG023_000"
+
+[[bg]]
+no = 24
+name = "桜ヶ丘学園·大雅の教室·夜の国"
+file = "BG024_000"
+
+[[bg]]
+no = 25
+name = "桜ヶ丘学園·時計塔の管理室·夜の国"
+file = "BG025_000"
+
+[[bg]]
+no = 31
+name = "千和のお店·店先"
+file = "BG031_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG031_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG031_020"
+
+[[bg]]
+no = 32
+name = "千和のお店·店内"
+file = "BG032_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG032_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG032_020"
+
+[[bg]]
+no = 33
+name = "千和のお店·千和の部屋"
+file = "BG033_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG033_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG033_020"
+
+[[bg]]
+no = 34
+name = "千和のお店·父親の部屋"
+file = "BG034_020"
+
+[[bg]]
+no = 35
+name = "千和のお店·廊下"
+file = "BG035_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG035_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG035_020"
+
+[[bg]]
+no = 36
+name = "千和のお店·店先·夜の国"
+file = "BG036_000"
+
+[[bg]]
+no = 43
+name = "夜月神社·社務所前"
+file = "BG043_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG043_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG043_020"
+
+[[bg]]
+no = 44
+name = "夜月神社·社務所前·夜の国"
+file = "BG044_000"
+
+[[bg]]
+no = 45
+name = "夜月神社·石段"
+file = "BG045_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG045_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG045_020"
+
+[[bg]]
+no = 46
+name = "夜月神社·石段·夜の国"
+file = "BG046_000"
+
+[[bg]]
+no = 51
+name = "通学バスの中"
+file = "BG051_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG051_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG051_010"
+
+[[bg]]
+no = 61
+name = "参禅町·大通り"
+file = "BG061_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG061_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG061_020"
+
+[[bg]]
+no = 62
+name = "参禅町·大通り·夜の国"
+file = "BG062_000"
+
+[[bg]]
+no = 63
+name = "参禅町·裏路地"
+file = "BG063_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG063_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG063_020"
+
+[[bg]]
+no = 64
+name = "参禅町·裏路地·夜の国"
+file = "BG064_000"
+
+[[bg]]
+no = 65
+name = "参禅町·大通り２"
+file = "BG065_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG065_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG065_020"
+
+[[bg]]
+no = 66
+name = "参禅町·大通り２·夜の国"
+file = "BG066_000"
+
+[[bg]]
+no = 67
+name = "参禅町·展望広場"
+file = "BG067_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG067_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG067_020"
+
+[[bg]]
+no = 68
+name = "参禅町·展望広場·夜の国"
+file = "BG068_000"
+
+[[bg]]
+no = 71
+name = "参禅町·公園"
+file = "BG071_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG071_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG071_020"
+
+[[bg]]
+no = 72
+name = "参禅町·公園·夜の国"
+file = "BG072_000"
+
+[[bg]]
+no = 73
+name = "参禅町·坂の道"
+file = "BG073_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG073_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG073_020"
+
+[[bg]]
+no = 74
+name = "参禅町·坂の道·夜の国"
+file = "BG074_000"
+
+[[bg]]
+no = 75
+name = "参禅町·通学路"
+file = "BG075_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG075_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG075_020"
+
+[[bg]]
+no = 76
+name = "参禅町·通学路·夜の国"
+file = "BG076_000"
+
+[[bg]]
+no = 81
+name = "列車内"
+file = "BG081_000"
+
+[[bg]]
+no = 82
+name = "列車·客室車両"
+file = "BG082_000"
+
+[[bg]]
+no = 83
+name = "ナナちゃんの部屋"
+file = "BG083_000"
+
+[[bg]]
+no = 85
+name = "列車·屋根"
+file = "BG085_000"
+
+[[bg]]
+no = 101
+name = "空"
+file = "BG101_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG101_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG101_020"
+
+[[bg]]
+no = 102
+name = "満月"
+file = "BG102_020"
+
+[[bg]]
+no = 103
+name = "桜空"
+file = "BG103_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG103_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG103_020"
+
+[[bg]]
+no = 105
+name = "空·夜の国"
+file = "BG105_000"
+
+[[bg]]
+no = 106
+name = "満月·夜の国"
+file = "BG106_000"
+
+[[bg]]
+no = 107
+name = "桜空·夜の国"
+file = "BG107_000"
+
+[[bg]]
+no = 110
+name = "校舎見上げ"
+file = "BG110_000"
+
+[[bg.variant]]
+diff = 2
+file = "BG110_010"
+
+[[bg.variant]]
+diff = 3
+file = "BG110_020"
+
+[[bg]]
+no = 112
+name = "桜の木"
+file = "BG112_000"
+
+[[bg]]
+no = 113
+name = "桜の木·夜の国"
+file = "BG113_000"
+
+[[bg]]
+no = 200
+name = "幻想の海"
+file = "BG200_000"
+
+[[bg]]
+no = 201
+name = "海底"
+file = "BG201_000"
+
+[[bg]]
+no = 220
+name = "闇"
+file = "BG220_000"
+
+[[bg]]
+no = 230
+name = "空·きな穴"
+file = "BG230_000"
+
+[[bg]]
+no = 231
+name = "空·きな穴２"
+file = "BG231_000"
+
+[[bg]]
+no = 300
+name = "砂漠"
+file = "BG300_000"
+
+# —— CG ——
+
+[[cg]]
+name = "KURO_e011a1"
+
+[[cg]]
+name = "KURO_e011b1"
+
+[[cg]]
+name = "KURO_e011c1"
+
+[[cg]]
+name = "KURO_e011d1"
+
+[[cg]]
+name = "KURO_e011e1"
+
+[[cg]]
+name = "KURO_e011f1"
+
+[[cg]]
+name = "KURO_e011a2"
+
+[[cg]]
+name = "KURO_e011b2"
+
+[[cg]]
+name = "KURO_e011c2"
+
+[[cg]]
+name = "KURO_e011d2"
+
+[[cg]]
+name = "KURO_e011e2"
+
+[[cg]]
+name = "KURO_e011f2"
+
+[[cg]]
+name = "KURO_e012a"
+
+[[cg]]
+name = "KURO_e012b"
+
+[[cg]]
+name = "KURO_e012c"
+
+[[cg]]
+name = "KURO_e013a"
+
+[[cg]]
+name = "KURO_e013b"
+
+[[cg]]
+name = "KURO_e013c"
+
+[[cg]]
+name = "KURO_e013d"
+
+[[cg]]
+name = "KURO_e013e"
+
+[[cg]]
+name = "KURO_e013f"
+
+[[cg]]
+name = "KURO_e013g"
+
+[[cg]]
+name = "KURO_e021a"
+
+[[cg]]
+name = "KURO_e021b"
+
+[[cg]]
+name = "KURO_e021c"
+
+[[cg]]
+name = "KURO_e021d"
+
+[[cg]]
+name = "KURO_e021e"
+
+[[cg]]
+name = "KURO_e021f"
+
+[[cg]]
+name = "KURO_e023a"
+
+[[cg]]
+name = "KURO_e024a1"
+
+[[cg]]
+name = "KURO_e024b1"
+
+[[cg]]
+name = "KURO_e024c1"
+
+[[cg]]
+name = "KURO_e024d1"
+
+[[cg]]
+name = "KURO_e024e1"
+
+[[cg]]
+name = "KURO_e024f1"
+
+[[cg]]
+name = "KURO_e024g1"
+
+[[cg]]
+name = "KURO_e024a2"
+
+[[cg]]
+name = "KURO_e024b2"
+
+[[cg]]
+name = "KURO_e024c2"
+
+[[cg]]
+name = "KURO_e024d2"
+
+[[cg]]
+name = "KURO_e024e2"
+
+[[cg]]
+name = "KURO_e024f2"
+
+[[cg]]
+name = "KURO_e024g2"
+
+[[cg]]
+name = "HARU_e011a1"
+
+[[cg]]
+name = "HARU_e011a2"
+
+[[cg]]
+name = "HARU_e011b1"
+
+[[cg]]
+name = "HARU_e011b2"
+
+[[cg]]
+name = "HARU_e011c2"
+
+[[cg]]
+name = "HARU_e011d2"
+
+[[cg]]
+name = "HARU_e011e2"
+
+[[cg]]
+name = "HARU_e021a1"
+
+[[cg]]
+name = "HARU_e021b1"
+
+[[cg]]
+name = "HARU_e021c1"
+
+[[cg]]
+name = "HARU_e021d1"
+
+[[cg]]
+name = "HARU_e021a2"
+
+[[cg]]
+name = "HARU_e021b2"
+
+[[cg]]
+name = "HARU_e021c2"
+
+[[cg]]
+name = "HARU_e021d2"
+
+[[cg]]
+name = "HARU_e021a3"
+
+[[cg]]
+name = "HARU_e021b3"
+
+[[cg]]
+name = "HARU_e021c3"
+
+[[cg]]
+name = "HARU_e021d3"
+
+[[cg]]
+name = "HARU_e022a"
+
+[[cg]]
+name = "HARU_e022b"
+
+[[cg]]
+name = "HARU_e023a"
+
+[[cg]]
+name = "HARU_e023b"
+
+[[cg]]
+name = "HARU_e023c"
+
+[[cg]]
+name = "HARU_e023d"
+
+[[cg]]
+name = "HARU_e023e"
+
+[[cg]]
+name = "HARU_e031a"
+
+[[cg]]
+name = "CHIWA_e011a"
+
+[[cg]]
+name = "CHIWA_e011b"
+
+[[cg]]
+name = "CHIWA_e011c"
+
+[[cg]]
+name = "CHIWA_e011d"
+
+[[cg]]
+name = "CHIWA_e011e"
+
+[[cg]]
+name = "CHIWA_e012a"
+
+[[cg]]
+name = "CHIWA_e012b"
+
+[[cg]]
+name = "CHIWA_e012c"
+
+[[cg]]
+name = "CHIWA_e012d"
+
+[[cg]]
+name = "CHIWA_e012e"
+
+[[cg]]
+name = "CHIWA_e012f"
+
+[[cg]]
+name = "CHIWA_e012g"
+
+[[cg]]
+name = "HIORI_e011a"
+
+[[cg]]
+name = "HIORI_e011b"
+
+[[cg]]
+name = "HIORI_e011c"
+
+[[cg]]
+name = "HIORI_e011d"
+
+[[cg]]
+name = "HIORI_e011e"
+
+[[cg]]
+name = "HIORI_e011f"
+
+[[cg]]
+name = "HIORI_e011g"
+
+[[cg]]
+name = "HIORI_e011h"
+
+[[cg]]
+name = "HIORI_e011i"
+
+[[cg]]
+name = "MASHIRO_e011a"
+
+[[cg]]
+name = "TOUYA_e011a"
+
+[[cg]]
+name = "TOUYA_e011b"
+
+[[cg]]
+name = "TOUYA_e011c"
+
+[[cg]]
+name = "TOUYA_e011d"
+
+[[cg]]
+name = "ASAHI_e011a1"
+
+[[cg]]
+name = "ASAHI_e011b1"
+
+[[cg]]
+name = "ASAHI_e011c1"
+
+[[cg]]
+name = "ASAHI_e011d1"
+
+[[cg]]
+name = "ASAHI_e011a2"
+
+[[cg]]
+name = "ASAHI_e011b2"
+
+[[cg]]
+name = "ASAHI_e011c2"
+
+[[cg]]
+name = "ASAHI_e011d2"
+
+[[cg]]
+name = "NANA_e021a1"
+
+[[cg]]
+name = "NANA_e021b1"
+
+[[cg]]
+name = "NANA_e021c1"
+
+[[cg]]
+name = "NANA_e021d1"
+
+[[cg]]
+name = "NANA_e021e1"
+
+[[cg]]
+name = "NANA_e021f1"
+
+[[cg]]
+name = "NANA_e021a2"
+
+[[cg]]
+name = "NANA_e021b2"
+
+[[cg]]
+name = "NANA_e021c2"
+
+[[cg]]
+name = "NANA_e021d2"
+
+[[cg]]
+name = "NANA_e021e2"
+
+[[cg]]
+name = "NANA_e021f2"
+
+[[cg]]
+name = "ETC_e000a"
+
+[[cg]]
+name = "ETC_e000b"
+
+[[cg]]
+name = "ETC_e001a"
+
+[[cg]]
+name = "ETC_e002a"
+
+[[cg]]
+name = "ETC_e003a"
+
+[[cg]]
+name = "ETC_e004a"
+
+[[cg]]
+name = "ETC_e005a1"
+
+[[cg]]
+name = "ETC_e005a2"
+
+[[cg]]
+name = "ETC_e005b"
+
+[[cg]]
+name = "ETC_e005c"
+
+[[cg]]
+name = "ETC_e006a"
+
+[[cg]]
+name = "ETC_e006b"
+
+[[cg]]
+name = "ETC_e006c"
+
+[[cg]]
+name = "ETC_e006d1"
+
+[[cg]]
+name = "ETC_e006d2"
+
+[[cg]]
+name = "ETC_e006e1"
+
+[[cg]]
+name = "ETC_e006e2"
+
+[[cg]]
+name = "ETC_e006f1"
+
+[[cg]]
+name = "ETC_e006f2"
+
+[[cg]]
+name = "ETC_e006g1"
+
+[[cg]]
+name = "ETC_e006g2"
+
+[[cg]]
+name = "ETC_e007a"
+
+[[cg]]
+name = "ETC_e007b"
+
+[[cg]]
+name = "ETC_e008a"
+
+[[cg]]
+name = "ETC_e008b"
+
+[[cg]]
+name = "ETC_e008c"
+
+[[cg]]
+name = "ETC_e008d"
+
+[[cg]]
+name = "ETC_e008e"
+
+[[cg]]
+name = "ETC_e008f"
+
+[[cg]]
+name = "ETC_e008g"
+
+[[cg]]
+name = "ETC_e009a"
+
+[[cg]]
+name = "ETC_e010a"
+
+[[cg]]
+name = "ETC_e010b"
+
+[[cg]]
+name = "ETC_e011a"
+
+[[cg]]
+name = "ETC_e012a"
+
+[[cg]]
+name = "ETC_e012b"
+
+[[cg]]
+name = "ETC_e012c"
+
+[[cg]]
+name = "ETC_e012d"
+
+[[cg]]
+name = "ETC_e013a"
+
+[[cg]]
+name = "ETC_e014a"
+
+[[cg]]
+name = "ETC_e015a"
+
+[[cg]]
+name = "ETC_e020a"
+
+[[cg]]
+name = "ETC_e100a"
+
+[[cg]]
+name = "ETC_e101a"
+
+[[cg]]
+name = "ETC_e102a"
+
+[[cg]]
+name = "ETC_e102b"
+
+[[cg]]
+name = "ETC_e103a"
+
+[[cg]]
+name = "ETC_e104a"
+
+[[cg]]
+name = "ETC_e105a"
+
+[[cg]]
+name = "ETC_e106a"
+
+[[cg]]
+name = "ETC_e107a"
+
+[[cg]]
+name = "ETC_e107b"
+
+[[cg]]
+name = "ETC_e108a"
+
+[[cg]]
+name = "ETC_e200b"
+
+[[cg]]
+name = "ETC_e201a"
+
+[[cg]]
+name = "ETC_e202a"
+
+[[cg]]
+name = "ETC_e203a"
+
+[[cg]]
+name = "ETC_e203b"
+
+[[cg]]
+name = "ETC_e203c"
+
+[[cg]]
+name = "ETC_e204a"
+
+[[cg]]
+name = "ETC_e205a"
+
+[[cg]]
+name = "ETC_e300a"
+
+[[cg]]
+name = "ETC_e301a"
+
+[[cg]]
+name = "ETC_e302a"
+
+[[cg]]
+name = "ETC_e303a"
+
+[[cg]]
+name = "ETC_e304a"
+
+[[cg]]
+name = "ETC_e305a"
+
+[[cg]]
+name = "ETC_e306a"
+
+[[cg]]
+name = "ETC_e307a"
+
+[[cg]]
+name = "ETC_e307b"
+
+[[cg]]
+name = "ETC_e307c"
+
+[[cg]]
+name = "ETC_e308a"
+
+[[cg]]
+name = "ETC_e400a"
+
+[[cg]]
+name = "ETC_e401a"
+
+[[cg]]
+name = "ETC_e402a"
+
+[[cg]]
+name = "ETC_e403a"
+
+[[cg]]
+name = "ETC_e404a"
+
+[[cg]]
+name = "ETC_e405a"
+
+[[cg]]
+name = "ETC_e405b"
+
+[[cg]]
+name = "ETC_e406a"
+
+[[cg]]
+name = "ETC_e406b"
+
+[[cg]]
+name = "ETC_e406c"
+
+[[cg]]
+name = "ETC_e450a"
+
+[[cg]]
+name = "ETC_e451a"
+
+[[cg]]
+name = "ETC_e452a"
+
+[[cg]]
+name = "ETC_e453a"
+
+[[cg]]
+name = "ETC_e500a"
+
+[[cg]]
+name = "ETC_e500b"
+
+[[cg]]
+name = "ETC_e501a"
+
+[[cg]]
+name = "ETC_e501b"
+
+[[cg]]
+name = "ETC_e502a"
+
+[[cg]]
+name = "ETC_e502b"
+
+[[cg]]
+name = "ETC_e502c"
+
+[[cg]]
+name = "ETC_e600a"
+
+[[cg]]
+name = "ETC_e601a"
+
+[[cg]]
+name = "ETC_e700a"
+
+[[cg]]
+name = "SD_e001a"
+
+[[cg]]
+name = "SD_e001b"
+
+[[cg]]
+name = "SD_e002a"
+
+[[cg]]
+name = "SD_e002b"
+
+[[cg]]
+name = "SD_e002c"
+
+[[cg]]
+name = "SD_e002d"
+
+[[cg]]
+name = "SD_e002e"
+
+[[cg]]
+name = "SD_e003a"
+
+[[cg]]
+name = "SD_e003b"
+
+[[cg]]
+name = "SD_e003c"
+
+[[cg]]
+name = "SD_e003d"
+
+[[cg]]
+name = "SD_e003e"
+
+[[cg]]
+name = "SD_e003f"
+
+[[cg]]
+name = "SD_e003g"
+
+[[cg]]
+name = "SD_e004a"
+
+[[cg]]
+name = "SD_e004b"
+
+[[cg]]
+name = "SD_e004c"
+
+[[cg]]
+name = "SD_e004d"
+
+[[cg]]
+name = "SD_e004e"
+
+[[cg]]
+name = "SD_e005a"
+
+[[cg]]
+name = "SD_e101a"
+
+[[cg]]
+name = "SD_e201a"
+
+[[cg]]
+name = "SD_e202a"
+
+[[cg]]
+name = "SD_e301a"
+
+[[cg]]
+name = "SD_e302a"
+
+[[cg]]
+name = "SD_e401a"
+
+# —— 音频 ——
+
+[[bgm]]
+no = 1
+file = "001"
+
+[[bgm]]
+no = 2
+file = "002"
+
+[[bgm]]
+no = 3
+file = "003"
+
+[[bgm]]
+no = 4
+file = "004"
+
+[[bgm]]
+no = 5
+file = "005"
+
+[[bgm]]
+no = 6
+file = "006"
+
+[[bgm]]
+no = 7
+file = "007"
+
+[[bgm]]
+no = 8
+file = "008"
+
+[[bgm]]
+no = 9
+file = "009"
+
+[[bgm]]
+no = 10
+file = "010"
+
+[[bgm]]
+no = 11
+file = "011"
+
+[[bgm]]
+no = 12
+file = "012"
+
+[[bgm]]
+no = 13
+file = "013"
+
+[[bgm]]
+no = 14
+file = "014"
+
+[[bgm]]
+no = 15
+file = "015"
+
+[[bgm]]
+no = 16
+file = "016"
+
+[[bgm]]
+no = 17
+file = "017"
+
+[[bgm]]
+no = 18
+file = "018"
+
+[[bgm]]
+no = 19
+file = "019"
+
+[[bgm]]
+no = 20
+file = "020"
+
+[[bgm]]
+no = 21
+file = "021"
+
+[[bgm]]
+no = 22
+file = "022"
+
+[[bgm]]
+no = 23
+file = "023"
+
+[[bgm]]
+no = 24
+file = "024"
+
+[[bgm]]
+no = 25
+file = "025"
+
+[[bgm]]
+no = 26
+file = "026"
+
+[[bgm]]
+no = 27
+file = "027"
+
+[[bgm]]
+no = 28
+file = "028"
+
+[[bgm]]
+no = 29
+file = "029"
+
+[[bgm]]
+no = 30
+file = "030"
+
+[[bgm]]
+no = 31
+file = "031"
+
+[[bgm]]
+no = 32
+file = "032"
+
+[[bgm]]
+no = 33
+file = "033"
+
+[[bgm]]
+no = 34
+file = "034"
+
+[[bgm]]
+no = 35
+file = "035"
+
+[[bgm]]
+no = 36
+file = "036"
+
+[[bgm]]
+no = 37
+file = "037"
+
+[[bgm]]
+no = 38
+file = "038"
+
+[[bgm]]
+no = 39
+file = "039"
+
+[[bgm]]
+no = 40
+file = "040"
+
+[[bgm]]
+no = 41
+file = "041"
+
+[[bgm]]
+no = 42
+file = "042"
+
+[[bgm]]
+no = 43
+file = "043"
+
+[[bgm]]
+no = 44
+file = "044"
+
+[[bgm]]
+no = 45
+file = "045"
+
+[[bgm]]
+no = 46
+file = "046"
+
+[[bgm]]
+no = 47
+file = "047"
+
+[[bgm]]
+no = 48
+file = "048"
+
+[[bgm]]
+no = 49
+file = "049"
+
+[[bgm]]
+no = 50
+file = "050"
+
+[[bgm]]
+no = 51
+file = "051"
+
+[[bgm]]
+no = 52
+file = "052"
+
+[[bgm]]
+no = 53
+file = "053"
+
+[[bgm]]
+no = 54
+file = "054"
+
+[[bgm]]
+no = 55
+file = "055"
+
+[[bgm]]
+no = 60
+file = "060"
+
+[[bgm]]
+no = 61
+file = "061"
+
+[[bgm]]
+no = 62
+file = "062"
+
+[[bgm]]
+no = 63
+file = "063"
+
+[[bgm]]
+no = 64
+file = "064"
+
+[[bgm]]
+no = 65
+file = "065"
+
+[[bgm]]
+no = 66
+file = "066"
+
+[[bgm]]
+no = 67
+file = "067"
+
+[[bgm]]
+no = 70
+file = "070"
+
+[[bgm]]
+no = 71
+file = "071"
+
+[[bgm]]
+no = 72
+file = "072"
+
+[[bgm]]
+no = 73
+file = "073"
+
+[[bgm]]
+no = 74
+file = "074"
+
+[[bgm]]
+no = 80
+file = "080"
+
+[[bgm]]
+no = 81
+file = "081"
+
+[[se]]
+no = 1
+file = "001"
+
+[[se]]
+no = 2
+file = "002"
+
+[[se]]
+no = 3
+file = "003"
+
+[[se]]
+no = 4
+file = "004"
+
+[[se]]
+no = 5
+file = "005"
+
+[[se]]
+no = 6
+file = "006"
+
+[[se]]
+no = 7
+file = "007"
+
+[[se]]
+no = 8
+file = "008"
+
+[[se]]
+no = 9
+file = "009"
+
+[[se]]
+no = 10
+file = "010"
+
+[[se]]
+no = 11
+file = "011"
+
+[[se]]
+no = 12
+file = "012"
+
+[[se]]
+no = 13
+file = "013"
+
+[[se]]
+no = 14
+file = "014"
+
+[[se]]
+no = 15
+file = "015"
+
+[[se]]
+no = 16
+file = "016"
+
+[[se]]
+no = 17
+file = "017"
+
+[[se]]
+no = 18
+file = "018"
+
+[[se]]
+no = 19
+file = "019"
+
+[[se]]
+no = 20
+file = "020"
+
+[[se]]
+no = 21
+file = "021"
+
+[[se]]
+no = 22
+file = "022"
+
+[[se]]
+no = 23
+file = "023"
+
+[[se]]
+no = 24
+file = "024"
+
+[[se]]
+no = 25
+file = "025"
+
+[[se]]
+no = 26
+file = "026"
+
+[[se]]
+no = 27
+file = "027"
+
+[[se]]
+no = 28
+file = "028"
+
+[[se]]
+no = 29
+file = "029"
+
+[[se]]
+no = 30
+file = "030"
+
+[[se]]
+no = 31
+file = "031"
+
+[[se]]
+no = 32
+file = "032"
+
+[[se]]
+no = 33
+file = "033"
+
+[[se]]
+no = 34
+file = "034"
+
+[[se]]
+no = 35
+file = "035"
+
+[[se]]
+no = 36
+file = "036"
+
+[[se]]
+no = 37
+file = "037"
+
+[[se]]
+no = 38
+file = "038"
+
+[[se]]
+no = 39
+file = "039"
+
+[[se]]
+no = 40
+file = "040"
+
+[[se]]
+no = 41
+file = "041"
+
+[[se]]
+no = 42
+file = "042"
+
+[[se]]
+no = 43
+file = "043"
+
+[[se]]
+no = 44
+file = "044"
+
+[[se]]
+no = 45
+file = "045"
+
+[[se]]
+no = 46
+file = "046"
+
+[[se]]
+no = 47
+file = "047"
+
+[[se]]
+no = 48
+file = "048"
+
+[[se]]
+no = 49
+file = "049"
+
+[[se]]
+no = 50
+file = "050"
+
+[[se]]
+no = 51
+file = "051"
+
+[[se]]
+no = 52
+file = "052"
+
+[[se]]
+no = 53
+file = "053"
+
+[[se]]
+no = 54
+file = "054"
+
+[[se]]
+no = 55
+file = "055"
+
+[[se]]
+no = 56
+file = "056"
+
+[[se]]
+no = 57
+file = "057"
+
+[[se]]
+no = 58
+file = "058"
+
+[[se]]
+no = 59
+file = "059"
+
+[[se]]
+no = 60
+file = "060"
+
+[[se]]
+no = 61
+file = "061"
+
+[[se]]
+no = 62
+file = "062"
+
+[[se]]
+no = 63
+file = "063"
+
+[[se]]
+no = 64
+file = "064"
+
+[[se]]
+no = 65
+file = "065"
+
+[[se]]
+no = 66
+file = "066"
+
+[[se]]
+no = 67
+file = "067"
+
+[[se]]
+no = 68
+file = "068"
+
+[[se]]
+no = 69
+file = "069"
+
+[[se]]
+no = 70
+file = "070"
+
+[[se]]
+no = 71
+file = "071"
+
+[[se]]
+no = 72
+file = "072"
+
+[[se]]
+no = 73
+file = "073"
+
+[[se]]
+no = 74
+file = "074"
+
+[[se]]
+no = 75
+file = "075"
+
+[[se]]
+no = 76
+file = "076"
+
+[[se]]
+no = 77
+file = "077"
+
+[[se]]
+no = 78
+file = "078"
+
+[[se]]
+no = 79
+file = "079"
+
+[[se]]
+no = 80
+file = "080"
+
+[[se]]
+no = 81
+file = "081"
+
+[[se]]
+no = 82
+file = "082"
+
+[[se]]
+no = 83
+file = "083"
+
+[[se]]
+no = 84
+file = "084"
+
+[[se]]
+no = 85
+file = "085"
+
+[[se]]
+no = 86
+file = "086"
+
+[[se]]
+no = 87
+file = "087"
+
+[[se]]
+no = 88
+file = "088"
+
+[[se]]
+no = 89
+file = "089"
+
+[[se]]
+no = 90
+file = "090"
+
+[[se]]
+no = 91
+file = "091"
+
+[[se]]
+no = 92
+file = "092"
+
+[[se]]
+no = 93
+file = "093"
+
+[[se]]
+no = 94
+file = "094"
+
+[[se]]
+no = 95
+file = "095"
+
+[[se]]
+no = 96
+file = "096"
+
+[[se]]
+no = 97
+file = "097"
+
+[[se]]
+no = 98
+file = "098"
+
+[[se]]
+no = 99
+file = "099"
+
+[[se]]
+no = 100
+file = "100"
+
+[[se]]
+no = 101
+file = "101"
+
+[[se]]
+no = 102
+file = "102"
+
+[[se]]
+no = 103
+file = "103"
+
+[[se]]
+no = 104
+file = "104"
+
+[[se]]
+no = 105
+file = "105"
+
+[[se]]
+no = 106
+file = "106"
+
+[[se]]
+no = 107
+file = "107"
+
+[[se]]
+no = 108
+file = "108"
+
+[[se]]
+no = 109
+file = "109"
+
+[[se]]
+no = 110
+file = "110"
+
+[[se]]
+no = 111
+file = "111"
+
+[[se]]
+no = 112
+file = "112"
+
+[[se]]
+no = 113
+file = "113"
+
+[[se]]
+no = 114
+file = "114"
+
+[[se]]
+no = 115
+file = "115"
+
+[[se]]
+no = 116
+file = "116"
+
+[[se]]
+no = 117
+file = "117"
+
+[[se]]
+no = 118
+file = "118"
+
+[[se]]
+no = 119
+file = "119"
+
+[[se]]
+no = 120
+file = "120"
+
+[[se]]
+no = 121
+file = "121"
+
+[[se]]
+no = 122
+file = "122"
+
+[[se]]
+no = 123
+file = "123"
+
+[[se]]
+no = 124
+file = "124"
+
+[[se]]
+no = 125
+file = "125"
+
+[[se]]
+no = 126
+file = "126"
+
+[[se]]
+no = 127
+file = "127"
+
+[[se]]
+no = 128
+file = "128"
+
+[[se]]
+no = 129
+file = "129"
+
+[[se]]
+no = 130
+file = "130"
+
+[[se]]
+no = 131
+file = "131"
+
+[[se]]
+no = 132
+file = "132"
+
+[[se]]
+no = 133
+file = "133"
+
+[[se]]
+no = 134
+file = "134"
+
+[[se]]
+no = 135
+file = "135"
+
+[[se]]
+no = 136
+file = "136"
+
+[[se]]
+no = 137
+file = "137"
+
+[[se]]
+no = 138
+file = "138"
+
+[[se]]
+no = 139
+file = "139"
+
+[[se]]
+no = 140
+file = "140"
+
+[[se]]
+no = 141
+file = "141"
+
+[[se]]
+no = 142
+file = "142"
+
+[[se]]
+no = 143
+file = "143"
+
+[[se]]
+no = 144
+file = "144"
+
+[[se]]
+no = 145
+file = "145"
+
+[[se]]
+no = 146
+file = "146"
+
+[[se]]
+no = 147
+file = "147"
+
+[[se]]
+no = 148
+file = "148"
+
+[[se]]
+no = 149
+file = "149"
+
+[[se]]
+no = 150
+file = "150"
+
+[[se]]
+no = 151
+file = "151"
+
+[[se]]
+no = 152
+file = "152"
+
+[[se]]
+no = 153
+file = "153"
+
+[[se]]
+no = 154
+file = "154"
+
+[[se]]
+no = 155
+file = "155"
+
+[[se]]
+no = 156
+file = "156"
+
+[[se]]
+no = 157
+file = "157"
+
+[[se]]
+no = 158
+file = "158"
+
+[[se]]
+no = 159
+file = "159"
+
+[[se]]
+no = 160
+file = "160"
+
+[[se]]
+no = 161
+file = "161"
+
+[[se]]
+no = 162
+file = "162"
+
+[[se]]
+no = 163
+file = "163"
+
+[[se]]
+no = 164
+file = "164"
+
+[[se]]
+no = 165
+file = "165"
+
+[[se]]
+no = 166
+file = "166"
+
+[[se]]
+no = 167
+file = "167"
+
+[[se]]
+no = 168
+file = "168"
+
+[[se]]
+no = 169
+file = "169"
+
+[[se]]
+no = 170
+file = "170"
+
+[[se]]
+no = 171
+file = "171"
+
+[[se]]
+no = 172
+file = "172"
+
+[[se]]
+no = 173
+file = "173"
+
+[[se]]
+no = 174
+file = "174"
+
+[[se]]
+no = 175
+file = "175"
+
+[[se]]
+no = 176
+file = "176"
+
+[[se]]
+no = 177
+file = "177"
+
+[[se]]
+no = 178
+file = "178"
+
+[[se]]
+no = 179
+file = "179"
+
+[[se]]
+no = 180
+file = "180"
+
+[[se]]
+no = 181
+file = "181"
+
+[[se]]
+no = 182
+file = "182"
+
+[[se]]
+no = 183
+file = "183"
+
+[[se]]
+no = 184
+file = "184"
+
+[[se]]
+no = 185
+file = "185"
+
+[[se]]
+no = 186
+file = "186"
+
+[[se]]
+no = 187
+file = "187"
+
+[[se]]
+no = 188
+file = "188"
+
+[[se]]
+no = 189
+file = "189"
+
+[[se]]
+no = 190
+file = "190"
+
+[[se]]
+no = 191
+file = "191"
+
+[[se]]
+no = 192
+file = "192"
+
+[[se]]
+no = 193
+file = "193"
+
+[[se]]
+no = 194
+file = "194"
+
+[[se]]
+no = 195
+file = "195"
+
+[[se]]
+no = 196
+file = "196"
+
+[[se]]
+no = 197
+file = "197"
+
+[[se]]
+no = 198
+file = "198"
+
+[[se]]
+no = 199
+file = "199"
+
+[[se]]
+no = 200
+file = "200"
+
+[[se]]
+no = 201
+file = "201"
+
+[[se]]
+no = 202
+file = "202"
+
+[[se]]
+no = 203
+file = "203"
+
+[[se]]
+no = 204
+file = "204"
+
+[[se]]
+no = 205
+file = "205"
+
+[[se]]
+no = 206
+file = "206"
+
+[[se]]
+no = 207
+file = "207"
+
+[[se]]
+no = 208
+file = "208"
+
+[[se]]
+no = 209
+file = "209"
+
+[[se]]
+no = 210
+file = "210"
+
+[[se]]
+no = 211
+file = "211"
+
+[[se]]
+no = 212
+file = "212"
+
+[[se]]
+no = 213
+file = "213"
+
+[[se]]
+no = 214
+file = "214"
+
+[[se]]
+no = 215
+file = "215"
+
+[[se]]
+no = 216
+file = "216"
+
+[[se]]
+no = 217
+file = "217"
+
+[[se]]
+no = 218
+file = "218"
+
+[[se]]
+no = 219
+file = "219"
+
+[[se]]
+no = 220
+file = "220"
+
+[[se]]
+no = 221
+file = "221"
+
+[[se]]
+no = 222
+file = "222"
+
+[[se]]
+no = 223
+file = "223"
+
+[[se]]
+no = 224
+file = "224"
+
+[[se]]
+no = 225
+file = "225"
+
+[[se]]
+no = 226
+file = "226"
+
+[[se]]
+no = 227
+file = "227"
+
+[[se]]
+no = 228
+file = "228"
+
+[[se]]
+no = 229
+file = "229"
+
+[[se]]
+no = 230
+file = "230"
+
+[[se]]
+no = 231
+file = "231"
+
+[[se]]
+no = 232
+file = "232"
+
+[[se]]
+no = 233
+file = "233"
+
+[[se]]
+no = 234
+file = "234"
+
+[[se]]
+no = 235
+file = "235"
+
+[[se]]
+no = 236
+file = "236"
+
+[[se]]
+no = 237
+file = "237"
+
+[[se]]
+no = 238
+file = "238"
+
+[[se]]
+no = 239
+file = "239"
+
+[[se]]
+no = 240
+file = "240"
+
+[[se]]
+no = 241
+file = "241"
+
+[[se]]
+no = 242
+file = "242"
+
+[[se]]
+no = 243
+file = "243"
+
+[[se]]
+no = 244
+file = "244"
+
+[[se]]
+no = 245
+file = "245"
+
+[[se]]
+no = 246
+file = "246"
+
+[[se]]
+no = 247
+file = "247"
+
+[[se]]
+no = 249
+file = "249"
+
+[[se]]
+no = 250
+file = "250"
+
+[[se]]
+no = 251
+file = "251"
+
+[[se]]
+no = 252
+file = "252"
+
+[[se]]
+no = 253
+file = "253"
+
+[[se]]
+no = 254
+file = "254"
+
+[[se]]
+no = 255
+file = "255"
+
+[[se]]
+no = 256
+file = "256"
+
+[[se]]
+no = 257
+file = "257"
+
+[[se]]
+no = 258
+file = "258"
+
+[[se]]
+no = 259
+file = "259"
+
+[[se]]
+no = 260
+file = "260"
+
+[[se]]
+no = 261
+file = "261"
+
+[[se]]
+no = 262
+file = "262"
+
+[[se]]
+no = 263
+file = "263"
+
+[[se]]
+no = 264
+file = "264"
+
+[[se]]
+no = 265
+file = "265"
+
+[[se]]
+no = 266
+file = "266"
+
+[[se]]
+no = 267
+file = "267"
+
+[[se]]
+no = 268
+file = "268"
+
+[[se]]
+no = 269
+file = "269"
+
+[[se]]
+no = 270
+file = "270"
+
+[[se]]
+no = 271
+file = "271"
+
+[[se]]
+no = 272
+file = "272"
+
+[[se]]
+no = 273
+file = "273"
+
+[[se]]
+no = 274
+file = "274"
+
+[[se]]
+no = 275
+file = "275"
+
+[[se]]
+no = 276
+file = "276"
+
+[[se]]
+no = 277
+file = "277"
+
+[[se]]
+no = 278
+file = "278"
+
+[[se]]
+no = 279
+file = "279"
+
+[[se]]
+no = 280
+file = "280"
+
+[[se]]
+no = 500
+file = "500"
+
+[[se]]
+no = 501
+file = "501"
+
+[[se]]
+no = 502
+file = "502"
+
+[[se]]
+no = 503
+file = "503"
+
+[[se]]
+no = 504
+file = "504"
+
+[[se]]
+no = 505
+file = "505"
+
+[[se]]
+no = 506
+file = "506"
+
+[[se]]
+no = 507
+file = "507"
+
+[[se]]
+no = 508
+file = "508"
+
+[[se]]
+no = 509
+file = "509"
+
+[[se]]
+no = 510
+file = "510"
+
+[[se]]
+no = 511
+file = "511"
+
+[[se]]
+no = 512
+file = "512"
+
+[[se]]
+no = 513
+file = "513"
+
+[[se]]
+no = 514
+file = "514"
+
+[[se]]
+no = 515
+file = "515"
+
+[[se]]
+no = 516
+file = "516"
+
+[[se]]
+no = 517
+file = "517"
+
+[[se]]
+no = 9001
+file = "9001"
+
+[[se]]
+no = 9002
+file = "9002"
+
+[[se]]
+no = 9003
+file = "9003"
+
+[[se]]
+no = 9004
+file = "9004"
+
+[[se]]
+no = 9005
+file = "9005"
+
+[[se]]
+no = 9006
+file = "9006"
+
+[[se]]
+no = 9007
+file = "9007"

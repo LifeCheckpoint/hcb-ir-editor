@@ -1,0 +1,225 @@
+/* ==========================================================================
+   hcb-ir-editor · 起始页 / 导入 / 接线
+   从 app.css 拆出；加载顺序与 index.html 的 link 顺序一致。
+   ========================================================================== */
+
+/* ==========================================================================
+   起始页（还没有章节时）
+   ========================================================================== */
+
+.start {
+  max-width: calc(var(--page-max-width) + 48px);
+  margin: 0 auto;
+  padding: var(--spacing-96) var(--spacing-24) var(--spacing-48);
+}
+
+.start__title {
+  margin: 0 0 var(--spacing-8);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-ink);
+}
+
+.start__text {
+  margin: 0 0 var(--spacing-24);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink-50);
+}
+
+.start__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+/* ==========================================================================
+   导入 DSL
+   ========================================================================== */
+
+.imp {
+  width: 560px;
+  max-width: calc(100vw - 48px);
+}
+
+.imp__head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.imp__head b {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-ink);
+}
+
+.imp__head .btn-ghost {
+  margin-left: auto;
+}
+
+.imp__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  padding: var(--spacing-16);
+}
+
+.imp__file {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  padding: 10px var(--spacing-12);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-inputs);
+  background: var(--surface-paper);
+}
+
+.imp__filemeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.imp__name {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-ink);
+}
+
+.imp__size,
+.imp__encnote {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-40);
+}
+
+.imp__field {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.imp__label {
+  font-size: var(--text-label);
+  color: var(--ink-50);
+}
+
+.imp__ctl {
+  min-width: 0;
+}
+
+.imp__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--spacing-16);
+  padding: 10px var(--spacing-12);
+  border-radius: var(--radius-inputs);
+  background: var(--surface-paper);
+  font-size: var(--text-label);
+  color: var(--ink-62);
+}
+
+.imp__stats b {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-ink);
+}
+
+.imp__stats .imp__warn,
+.imp__stats .imp__warn b {
+  color: var(--bt-clay);
+}
+
+.imp__notice {
+  font-size: var(--text-label);
+  color: var(--bt-amber);
+}
+
+.imp__split-row .switch-row {
+  min-height: 22px;
+}
+
+.imp__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  padding: 12px var(--spacing-16);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.imp__err {
+  margin-right: auto;
+  font-size: var(--text-label);
+  color: var(--color-marker-red);
+}
+
+.imp__foot .btn-primary {
+  min-width: 72px;
+}
+
+
+/* 接线状态：绿点已接，土色断线 */
+.wire {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+  min-height: 18px;
+}
+
+.wire__dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--bt-sage);
+}
+
+.wire__text {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.55;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-50);
+}
+
+.wire.is-broken .wire__dot {
+  background: var(--bt-clay);
+}
+
+.wire.is-broken .wire__text {
+  color: var(--bt-clay);
+}
+
+
+/* DSL 原文与调用行：可以选中复制 */
+.block__code,
+.block__text code,
+.inspector-code {
+  user-select: text;
+  cursor: text;
+}
+
+
+/* 映射表导入错误 */
+.mapping-error {
+  padding: 8px var(--spacing-16);
+  font-size: var(--text-label);
+  color: var(--color-marker-red);
+}
+

@@ -1,0 +1,363 @@
+/* ==========================================================================
+   hcb-ir-editor · 块视图 / 舞台 / 接线
+   从 renderer.js 拆出；classic script，与同目录其它文件共享全局词法作用域。
+   ========================================================================== */
+
+'use strict';
+
+  /* ------------------------------------------------------------------ *
+   * 工具
+   * ------------------------------------------------------------------ */
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  /* 块在界面上的读法：一句话 + DSL 原文 */
+  function blockCode(block) {
+    const def = TYPES[block.type];
+    if (!def || !def.code) return null;
+    const lines = def.code(block.data || {}, block);
+    if (!lines) return null;
+    if (!block.extra || !block.extra.length) return lines;
+    // 导入时认不出的尾部参数，原样留在行尾
+    const out = lines.slice();
+    out[0] = out[0].replace(/\]\s*$/, ',' + block.extra.join(',') + ']');
+    return out;
+  }
+
+  function viewOf(block) {
+    const def = TYPES[block.type] || { label: block.type, group: 'flow', icon: 'sticky-note', text: () => '', fields: [] };
+    const d = block.data || {};
+    return {
+      def,
+      text: def.text ? def.text(d, block) : '',
+      meta: def.meta ? def.meta(d, block) : '',
+      speaker: def.speaker ? def.speaker(d, block) : '',
+      empty: def.empty ? def.empty(d, block) : false,
+      warn: def.warn ? def.warn(d, block) : false,
+      mono: !!def.mono,
+      code: blockCode(block),
+    };
+  }
+
+  /* 最近的 cha 决定这一句是谁说的 */
+  function speakerBefore(block) {
+    const hit = listOfBlock(block.id);
+    if (!hit) return '';
+    for (let i = hit.list.indexOf(block) - 1; i >= 0; i--) {
+      if (hit.list[i].type === 'cha') return hit.list[i].data.show || hit.list[i].data.name || '';
+      if (hit.list[i].type === 'start') break;
+    }
+    return '';
+  }
+
+  /* 全文里的标签，给跳转的下拉提示用 */
+  function allLabels() {
+    const out = [];
+    CHAPTERS.forEach((ch) =>
+      ch.scenes.forEach((sc) =>
+        flatten(sc.blocks).forEach((b) => {
+          if (b.type === 'label' && b.data && b.data.name) out.push(bareName(b.data.name));
+        })
+      )
+    );
+    return out;
+  }
+
+  /* 立绘编号对应 cha_list 里的第几个角色（按表序推断，未验证） */
+  const spriteCha = (id) => {
+    if (!hasMapping()) return null;
+    const n = Number(id);
+    const mapped = window.MAPPING.character(n);
+    return mapped ? { name: mapped.name } : null;
+  };
+
+  /* 立绘表由资源库统一构建，选择器直接用 */
+  const spriteSource = () => (window.RES ? window.RES.spriteChars() : []);
+
+  const spriteCharByCha = (cha) => (hasMapping() ? spriteSource().find((c) => Number(c.cha) === Number(cha)) : null);
+  const mapCg = (name) => (window.MAPPING ? window.MAPPING.cg(name) : null);
+  const mapAudio = (kind, no) => (window.MAPPING ? window.MAPPING.audio(kind, no) : null);
+  const mapVoice = (no) => (window.MAPPING ? window.MAPPING.voice(no) : null);
+
+  function spritePick(block) {
+    if (!hasMapping()) return null;
+    const d = block.data || {};
+    const ch = spriteCharByCha(d.cha);
+    if (!ch) return null;
+    // 映射表里的 pose / cloth 数字可能不是数组下标，按编号找
+    let pi = ch.poseNos.indexOf(Number(d.pose));
+    if (pi < 0) pi = 0;
+    let ci = ch.clothNos.indexOf(Number(d.cloth));
+    if (ci < 0) ci = 0;
+    const poseNo = ch.poseNos[pi] == null ? 1 : ch.poseNos[pi];
+    const clothNo = ch.clothNos[ci] == null ? 0 : ch.clothNos[ci];
+    const pose = ch.poses[pi];
+    const cloth = ch.cloths[ci];
+    const key = poseNo + '|' + clothNo;
+    return { ch, pose, cloth, poseNo, clothNo, key, body: ch.bodies[key] || null, sheet: ch.sheets[key] || null, pi, ci };
+  }
+
+  /* 站在这一块时，画面里有什么：从本章开头按顺序把原语跑一遍
+     背景、立绘、BGM 都跨场景留着，和脚本里一样 */
+  function stageState(scene, block) {
+    const st = { bg: null, cg: null, msg: 'normal', sprites: {}, bgm: null, se: null, text: '', speaker: '', screen: null };
+    const run = (b) => {
+      const d = b.data || {};
+      if (b.type === 'bg') {
+        st.bg = d.id;
+        st.bgDiff = d.diff;
+        st.screen = null;
+      } else if (b.type === 'cg') {
+        st.cg = d.name;
+        st.screen = null;
+      } else if (b.type === 'bs') {
+        if (d.l === '-10') return;
+        const pick = spritePick(b);
+        st.sprites[d.cha] = {
+          cha: d.cha,
+          pos: d.pos || 'm',
+          l: d.l,
+          face: d.face,
+          pose: d.pose,
+          lyr: d.lyr,
+          thumb: pick && pick.body ? pick.body.thumb : null,
+          entry: pick && pick.body ? pick.body.entry : null,
+        };
+        st.screen = null;
+      } else if (b.type === 'bs_fade' || b.type === 'bsfade') {
+        if (b.type === 'bsfade') st.sprites = {};
+        else delete st.sprites[d.cha];
+      } else if (b.type === 'msg') {
+        st.msg = d.mode;
+      } else if (b.type === 'cha') {
+        st.speaker = d.show || d.name || '';
+      } else if (b.type === 'dia') {
+        st.text = d.text || '';
+      } else if (b.type === 'bgm') {
+        st.bgm = d.no;
+      } else if (b.type === 'bgmstop') {
+        st.bgm = null;
+      } else if (b.type === 'se') {
+        st.se = d.mode === 'end' ? null : d.no;
+      } else if (b.type === 'white' || b.type === 'black' || b.type === 'eyecatch' || b.type === 'movie') {
+        st.screen = b.type;
+      }
+    };
+
+    const hit = sceneOfBlock(block.id);
+    const chapter = hit ? hit.chapter : null;
+    if (!chapter) {
+      flatten(scene.blocks).forEach(run);
+      return st;
+    }
+    for (const sc of chapter.scenes) {
+      for (const b of flatten(sc.blocks)) {
+        run(b);
+        if (b.id === block.id) return st;
+      }
+    }
+    return st;
+  }
+
+  /* 背景名里带的情境决定底色，夜深色配亮字 */
+  function bgTint(name) {
+    const rules = [
+      [/夜/, '#2C3E50'],
+      [/教室|学園|廊下|校舎|校門/, '#F3E7D3'],
+      [/桜/, '#F6DDE3'],
+      [/空/, '#DCE9F5'],
+      [/海/, '#CFE3F2'],
+      [/店|部屋|工房/, '#EDE1D0'],
+      [/神社|石段|駅/, '#E7E0D6'],
+      [/列車|車両|扇形庫/, '#E0E4E8'],
+      [/町|広場|公園|坂|通学路|路地/, '#E4EBD9'],
+    ];
+    for (const [re, fill] of rules) if (re.test(name || '')) return fill;
+    return '#EFEDE8';
+  }
+
+  const STAGE_POS = { l: '4%', m: '34%', r: '64%' };
+
+  function stageCard(scene, block) {
+    const st = stageState(scene, block);
+    const bg = bgById(st.bg);
+    const fill = bgTint(bg ? bg.name : '');
+    const dark = fill === '#2C3E50';
+    const bgEntry = st.bg != null && window.WIRING ? window.WIRING.bgEntry(st.bg, st.bgDiff) : null;
+    const cgEntry = st.cg && window.WIRING ? window.WIRING.cgEntry(st.cg) : null;
+    const sprites = Object.keys(st.sprites).map((k) => st.sprites[k]);
+    const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
+
+    const card = el('div', 'stage' + (dark ? ' is-dark' : ''));
+    const parts = [];
+    parts.push('<div class="stage__frame">');
+    parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" alt="">');
+    if (bg) parts.push('<span class="stage__bgname">' + esc(bg.id + ' ' + bg.name) + '</span>');
+
+    sprites.forEach((s) => {
+      const who = spriteCha(s.cha);
+      const left = STAGE_POS[s.pos] || '34%';
+      if (s.thumb) {
+        parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="left:' + left + '" alt="">');
+        return;
+      }
+      if (s.entry) {
+        parts.push('<img class="stage__sprite-img" data-res="' + esc(JSON.stringify(s.entry)) + '" style="left:' + left + '" alt="">');
+        return;
+      }
+      parts.push(
+        '<div class="stage__sprite" title="' + esc('立绘编号 ' + s.cha + '，按 cha_list 顺序对到角色名') + '" style="left:' + left + '">' +
+          '<b>' + esc(who ? who.name : '立绘 ' + s.cha) + '</b>' +
+          '<span>' + esc('表情 ' + s.face + (s.l === '-10' ? ' 小头像' : '')) + '</span>' +
+          '</div>'
+      );
+    });
+
+    if (st.cg) {
+      if (cgEntry) parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" alt="">');
+      else parts.push('<div class="stage__cg">' + esc('CG ' + st.cg) + '</div>');
+    }
+
+    if (st.screen) {
+      const label = { white: '白屏', black: '黑屏', eyecatch: '过场', movie: '影片' }[st.screen];
+      parts.push('<div class="stage__screen stage__screen--' + st.screen + '">' + label + '</div>');
+    }
+
+    const audio = [];
+    if (st.bgm != null) audio.push('bgm ' + st.bgm);
+    if (st.se != null) audio.push('se ' + st.se);
+    if (audio.length) parts.push('<div class="stage__audio">' + audio.map((a) => '<span class="stage__chip">' + esc(a) + '</span>').join('') + '</div>');
+
+    if (!hideBox && (st.text || st.speaker)) {
+      parts.push(
+        '<div class="stage__box' + (st.msg === 'middle' ? ' is-middle' : '') + '">' +
+          (st.speaker ? '<span class="stage__speaker">' + esc(st.speaker) + '</span>' : '') +
+          '<span class="stage__text">' + esc(st.text) + '</span>' +
+          '</div>'
+      );
+    }
+    parts.push('</div>');
+    card.innerHTML = parts.join('');
+    return card;
+  }
+
+  /* 这个块引用的资源在扫描结果里接上了没有；只读，不改参数 */
+  function refOfBlock(block) {
+    const d = block.data || {};
+    if (block.type === 'bg') {
+      if (d.id == null || d.id === '') return { ok: false, text: '还没选背景' };
+      return window.WIRING ? window.WIRING.bgRef(d.id, d.diff) : { ok: false, text: '没有接线路由' };
+    }
+    if (block.type === 'cg') {
+      if (!d.name) return { ok: false, text: '还没选 CG' };
+      return window.WIRING ? window.WIRING.cgRef(d.name) : { ok: false, text: '没有接线路由' };
+    }
+    if (block.type === 'bs') {
+      const m = window.MAPPING;
+      if (!m || !m.has()) return { ok: false, text: '项目没有映射表，立绘编号无法解析' };
+      const row = m.sprite(d.cha, d.pose, d.cloth);
+      if (!row) return { ok: false, text: '映射表没有 立绘 ' + d.cha + '/' + d.pose + '/' + d.cloth };
+      if (!row.body) return { ok: false, text: '映射表 立绘 ' + d.cha + '/' + d.pose + '/' + d.cloth + ' 没有 body' };
+      const hit = window.RES ? window.RES.find(row.body) : null;
+      return hit
+        ? { ok: true, text: '映射表 立绘 ' + d.cha + '/' + d.pose + '/' + d.cloth + ' → ' + row.body + ' → ' + hit.archive.file }
+        : { ok: false, text: '映射表 立绘 ' + d.cha + '/' + d.pose + '/' + d.cloth + ' → ' + row.body + '；归档里没有' };
+    }
+    if (block.type === 'cha') {
+      const has = d.voice !== '' && d.voice != null;
+      if (!has || !mapVoice(d.voice)) return null;
+      return window.WIRING ? window.WIRING.voiceRef(d.voice) : null;
+    }
+    if (block.type === 'se' || block.type === 'bgm') {
+      if (d.no == null || d.no === '') return { ok: false, text: '还没填编号' };
+      return window.WIRING ? window.WIRING.audioRef(block.type, d.no) : { ok: false, text: '没有接线路由' };
+    }
+    return null;
+  }
+
+  function wireSet(block) {
+    const ref = refOfBlock(block);
+    if (!ref) return null;
+    const fs = el('div', 'fieldset wire-set');
+    fs.appendChild(el('div', 'fieldset__legend', '接线'));
+    fs.appendChild(
+      el('div', 'wire' + (ref.ok ? '' : ' is-broken'), '<span class="wire__dot"></span><span class="wire__text">' + esc(ref.text) + '</span>')
+    );
+    return fs;
+  }
+
+  function allScenes() {
+    const out = [];
+    CHAPTERS.forEach((ch) => (ch.scenes || []).forEach((sc) => out.push({ id: sc.id, no: sc.no, title: sc.title, chapter: ch })));
+    return out;
+  }
+
+  function sceneShortOf(id) {
+    const s = allScenes().find((x) => x.id === id);
+    return s ? s.no + ' ' + s.title : '';
+  }
+
+  function flatten(blocks, out) {
+    out = out || [];
+    (blocks || []).forEach((b) => {
+      out.push(b);
+      if (b.children) flatten(b.children, out);
+    });
+    return out;
+  }
+
+  function sceneOfBlock(blockId) {
+    for (const ch of CHAPTERS) {
+      for (const sc of ch.scenes || []) {
+        if (flatten(sc.blocks).some((b) => b.id === blockId)) return { chapter: ch, scene: sc };
+      }
+    }
+    return null;
+  }
+
+  function listOfBlock(blockId) {
+    for (const ch of CHAPTERS) {
+      for (const sc of ch.scenes || []) {
+        const found = searchList(sc.blocks || [], blockId);
+        if (found) return { list: found, scene: sc, chapter: ch };
+      }
+    }
+    return null;
+  }
+
+  function searchList(list, id) {
+    for (const b of list) {
+      if (b.id === id) return list;
+      if (b.children) {
+        const hit = searchList(b.children, id);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  function countBlocks(ch) {
+    return (ch.scenes || []).reduce((n, sc) => n + flatten(sc.blocks).length, 0);
+  }
+
+  function charCount(ch) {
+    let n = 0;
+    (ch.scenes || []).forEach((sc) =>
+      flatten(sc.blocks).forEach((b) => {
+        if (b.data && typeof b.data.text === 'string') n += b.data.text.length;
+        if (b.data && Array.isArray(b.data.options)) b.data.options.forEach((o) => (n += (o.text || '').length));
+      })
+    );
+    return n;
+  }
+
+  function el(tag, cls, html) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+

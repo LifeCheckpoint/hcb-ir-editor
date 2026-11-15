@@ -1,0 +1,314 @@
+/* ==========================================================================
+   hcb-ir-editor · 布局与组件
+   交互只改颜色，不改几何。功能块是高饱和实心色块，铺同色系白描纹理。
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+svg {
+  display: block;
+}
+
+::selection {
+  background: rgba(46, 170, 220, 0.18);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-16);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-30);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ==========================================================================
+   外壳
+   ========================================================================== */
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebar {
+  flex: 0 0 auto;
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  padding: 0 var(--spacing-16);
+  border-bottom: 1px solid var(--color-hairline);
+  background: var(--color-paper);
+  -webkit-app-region: drag;
+}
+
+body[data-platform='win32'] .titlebar,
+body[data-platform='linux'] .titlebar {
+  padding-right: 148px;
+}
+body[data-platform='darwin'] .titlebar {
+  padding-left: 84px;
+}
+
+.titlebar__lead,
+.titlebar__trail {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.titlebar__trail {
+  -webkit-app-region: no-drag;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.wordmark__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--color-ink);
+  opacity: 0.78;
+}
+
+.titlebar__divider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-hairline);
+}
+
+.titlebar__project {
+  font-size: 13px;
+  color: var(--ink-50);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-label);
+  color: var(--ink-40);
+  padding: 0 var(--spacing-4);
+  white-space: nowrap;
+}
+
+.save-state__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bt-amber);
+}
+
+.save-state:not(.is-dirty) .save-state__dot {
+  background: var(--bt-sage);
+}
+
+/* 顶部浮层：找不到资源目录等 */
+.banner {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(720px, calc(100vw - 48px));
+  padding: 10px 12px 10px 14px;
+  border-radius: var(--radius-cards);
+  background: var(--surface-white-page);
+  border: 1px solid var(--color-hairline);
+  box-shadow: 0 8px 24px rgba(15, 15, 15, 0.14);
+  font-size: 12.5px;
+  color: var(--color-ink);
+}
+
+.banner__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner__btn {
+  flex: 0 0 auto;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-buttons);
+  background: var(--color-hover-grey);
+  font-size: 12px;
+  color: var(--color-ink);
+}
+
+.banner__btn:hover {
+  background: var(--color-active-grey);
+}
+
+.workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+body.hide-left .rail--left,
+body.hide-right .rail--right,
+body.focus-mode .rail--left,
+body.focus-mode .rail--right {
+  display: none;
+}
+
+/* —— 自绘菜单栏 —— */
+.menubar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: var(--spacing-4);
+  -webkit-app-region: no-drag;
+}
+
+.menu-btn {
+  height: 26px;
+  padding: 0 var(--spacing-8);
+  border-radius: var(--radius-buttons);
+  font-size: 13px;
+  color: var(--ink-62);
+  transition: background-color var(--motion-color), color var(--motion-color);
+}
+
+.menu-btn:hover,
+.menu-btn.is-open {
+  background: var(--color-hover-grey);
+  color: var(--color-ink);
+}
+
+.menubar__drop {
+  position: fixed;
+  z-index: 90;
+  min-width: 216px;
+  padding: 4px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: var(--surface-white-page);
+  box-shadow: var(--elev-popover);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.menubar__drop.is-open {
+  opacity: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  width: 100%;
+  padding: 5px var(--spacing-8);
+  border-radius: 3px;
+  font-size: 13px;
+  color: var(--ink-70);
+  text-align: left;
+  transition: background-color var(--motion-color), color var(--motion-color);
+}
+
+.menu-item:hover:not(:disabled),
+.menu-item:focus-visible {
+  background: var(--color-hover-grey);
+  color: var(--color-ink);
+}
+
+.menu-item:disabled {
+  color: var(--ink-30);
+  cursor: not-allowed;
+}
+
+.menu-item__check {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--ink-62);
+}
+
+.menu-item__label {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.menu-item__shortcut {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-30);
+  white-space: nowrap;
+}
+
+.menu-item__note {
+  font-size: 11px;
+  color: var(--ink-30);
+  white-space: nowrap;
+}
+
