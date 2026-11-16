@@ -499,6 +499,112 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'multi') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const dias = () => [...document.querySelectorAll('.block[data-type="dia"]')];
+      const total = () => window.PROJECT.serialize().story.chapters[0].scenes.reduce((n, sc) => n + sc.blocks.reduce(function walk(m, b) { return m + 1 + (b.children ? b.children.reduce(walk, 0) : 0); }, 0), 0);
+      const selectedTexts = () => state.selectedIds.map((id) => {
+        const hit = listOfBlock(id);
+        const b = hit && hit.list.find((x) => x.id === id);
+        return b && b.data ? b.data.text : null;
+      });
+      let d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      const out = {
+        selected: state.selectedIds.length,
+        title: document.querySelector('.inspector-title')?.textContent,
+        hasTextarea: !!document.querySelector('#inspector textarea.control'),
+      };
+      // 结构操作也要能撤销
+      const totalBefore = total();
+      dias()[0].click();
+      await wait(150);
+      document.querySelector('.inspector-foot .btn-ghost:last-child').click();
+      await wait(250);
+      out.deletedTotal = total();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      out.restoreTotal = total();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey: true, bubbles: true }));
+      await wait(300);
+      out.redoDeleteTotal = total();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      out.restoreAgain = total();
+      out.totalBefore = totalBefore;
+
+      let dd = dias();
+      dd[0].click();
+      await wait(150);
+      dd = dias();
+      dd[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      out.selectedAfterStruct = state.selectedIds.length;
+      out.titleAfterStruct = document.querySelector('.inspector-title')?.textContent;
+
+      const ta = document.querySelector('#inspector textarea.control');
+      out.before = selectedTexts();
+      out.selectedTypes = state.selectedIds.map((id) => { const h = listOfBlock(id); const b = h && h.list.find((x) => x.id === id); return b && b.type; });
+      out.inspectorHtml = document.querySelector('.inspector-body')?.innerHTML.slice(0, 500);
+      if (!ta) return out;
+      ta.value = '批量修改的台词';
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      await wait(300);
+      out.after = selectedTexts();
+      out.undo = window.HISTORY.canUndo();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      out.undoText = selectedTexts();
+      out.undoSelected = state.selectedIds.length;
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey: true, bubbles: true }));
+      await wait(300);
+      out.redoText = selectedTexts();
+
+      const dia = dias()[0];
+      dia.click();
+      await wait(150);
+      document.querySelector('.block[data-type="bg"]').dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      out.mixedTitle = document.querySelector('.inspector-title')?.textContent;
+      out.mixedNote = document.querySelector('.inspector-body .note-line')?.textContent;
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true }));
+      await wait(250);
+      out.allSelected = state.selectedIds.length;
+      out.allBlocks = orderedChapterBlocks().length;
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await wait(150);
+      d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[d.length - 1].dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+      await wait(250);
+      out.shiftSelected = state.selectedIds.length;
+      out.shiftPrimary = state.blockId;
+      d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(300);
+      out.finalTitle = document.querySelector('.inspector-title')?.textContent;
+      out.finalPlaceholder = document.querySelector('#inspector textarea.control')?.placeholder;
+      out.finalSelected = state.selectedIds.length;
+      return out;
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -865,5 +971,8 @@ app.whenReady().then(async () => {
   const img = latest || (await win.webContents.capturePage());
   fs.writeFileSync(path.join(root, out), img.toPNG());
   console.log('wrote', out, img.getSize(), 'errors:', errors.length ? errors : 'none');
+  app.quit();
+}).catch((err) => {
+  console.error('capture failed:', (err && err.stack) || err);
   app.quit();
 });

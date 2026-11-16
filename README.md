@@ -26,11 +26,13 @@ src/app/types.js       原语定义 / 色板
 src/app/model.js       块视图 / 舞台 / 接线
 src/app/project.js     项目文件
 src/app/import-export.js DSL 导入 / 导出
-src/app/state.js       全局状态 / 下拉与菜单
+src/app/state.js       全局状态 / 单选多选 / 下拉与菜单
+src/app/history.js     撤销 / 重做
+src/app/multi-inspector.js 多选参数栏
 src/app/chapters.js    章节栏
 src/app/stack.js       主栏 / 场景 / 拖拽
 src/app/palette.js     插入面板 / 默认参数
-src/app/inspector.js   右栏 / 字段 / 立绘选择器
+src/app/inspector.js   右栏 / 单块字段 / 立绘选择器
 src/app/menubar.js     菜单栏 / 快捷键
 src/app/boot.js        启动
 src/dsl.js             DSL 解析与编码解码
@@ -81,6 +83,12 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 - 版本比编辑器新会拒绝打开；块参数始终原样保存，解析不到资源也不改写它。
 - 绑定表随项目走；打开旧项目时按文件里的绑定重建，不再有内置的示例绑定。
 
+## 编辑 / 多选 / 撤销
+
+- **撤销 / 重做**：Ctrl+Z / Ctrl+Shift+Z（Ctrl+Y 也可以）；菜单「编辑」里同样有，栈上限 100 步。覆盖剧本内容（块参数、插入/删除/复制、拖拽、章节/场景增删改），不覆盖映射表、绑定表和折叠这种 UI 状态；新建/打开项目会清空历史。
+- **选择**：单击单选；Ctrl/Cmd+单击切换一块；Shift+单击按当前章节的块顺序选一段；Ctrl+Shift+单击把一段并进已有选择；Ctrl+A 全选当前章节；Esc 清空。
+- **多选参数栏**：选中的块类型不同时只显示「选中了不同类型块」；类型相同时显示该类型的字段。值一致就显示单一值，不一致显示「多个值」；改一次会批量写回所有选中块（文本、数字、开关、下拉、立绘、向量等）。选项列表这类数组字段在多选时只显示汇总，不批量编辑。
+
 ## 导入 DSL
 
 `文件 → 导入 DSL…`（Ctrl+I）读入一份 Simple .hcb Editor 的脚本文本，选编码、选导入目标，确认后直接变成可编辑的原语块。
@@ -94,7 +102,7 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 
 ## 导出 DSL
 
-`文件 → 导出 DSL…`（Ctrl+E）或标题栏「导出」，把当前项目按章节 → 场景 → 块的顺序摊平成一份 DSL，用 **GBK** 写盘（Simple .hcb Editor 用 `encoding='gbk'` 读脚本）。导出的文件可以直接作为它的输入，也能被本编辑器重新导入：冒烟里验证过导出的 50 个块重新解析仍是 50 个块。
+`文件 → 导出 DSL…`（Ctrl+E）或标题栏「导出」，把当前项目按章节 → 场景 → 块的顺序摊平成一份 DSL，用 **GBK** 写盘（Simple .hcb Editor 用 `encoding='gbk'` 读脚本）。导出的文件可以直接作为它的输入，也能被本编辑器重新导入：冒烟里验证过导出的 51 个块重新解析仍是 51 个块。
 
 - 章节和小节只影响空行分隔；DSL 本身没有章节概念，多章项目会按顺序连在一起。
 - 导出前检查 GBK 不支持的字符（例如 emoji），有就报出来，不静默替换。

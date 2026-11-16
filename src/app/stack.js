@@ -12,6 +12,8 @@
   const mainEl = document.getElementById('main');
 
   function renderMain() {
+    normalizeSelection();
+    if (window.HISTORY) window.HISTORY.syncSelection();
     const ch = currentChapter();
     mainEl.innerHTML = '';
 
@@ -121,7 +123,7 @@
 
     const collapsed = !state.collapsedScenes[sc.id];
     state.collapsedScenes[sc.id] = collapsed;
-    touch();
+    touchUI();
 
     const summary = head.querySelector('.scene-group__summary');
     if (collapsed && !summary) head.appendChild(el('span', 'scene-group__summary', flatten(sc.blocks).length + ' 块'));
@@ -175,9 +177,9 @@
     node.dataset.type = block.type;
     node.dataset.blockId = block.id;
     node.setAttribute('role', 'option');
-    node.setAttribute('aria-selected', block.id === state.blockId ? 'true' : 'false');
+    node.setAttribute('aria-selected', isBlockSelected(block.id) ? 'true' : 'false');
     node.tabIndex = 0;
-    if (block.id === state.blockId) node.classList.add('is-selected');
+    if (isBlockSelected(block.id)) node.classList.add('is-selected');
     node.draggable = false;
 
     const codeLine = v.code && !def.hideCode ? v.code[0] + (v.code.length > 1 ? '  +' + (v.code.length - 1) : '') : '';
@@ -199,11 +201,11 @@
       '</span>' +
       '<button class="block__add" type="button" title="在下面插入" aria-label="在下面插入功能块">' + icon('plus', 'icon icon--12') + '</button>';
 
-    node.addEventListener('click', () => {
+    node.addEventListener('click', (e) => {
       // 正在选中这段 DSL 原文时不要重建块栈，否则选区会丢
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed && sel.anchorNode && node.contains(sel.anchorNode)) return;
-      selectBlock(block.id);
+      selectBlock(block.id, { ctrl: e.ctrlKey || e.metaKey, shift: e.shiftKey });
     });
     node.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {

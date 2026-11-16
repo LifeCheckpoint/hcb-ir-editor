@@ -45,6 +45,11 @@
   white-space: nowrap;
 }
 
+.inspector-kind[data-type="multi"] {
+  --bt: var(--bt-sage);
+  --on-bt: #24211d;
+}
+
 .inspector-kind .icon {
   width: 12px;
   height: 12px;

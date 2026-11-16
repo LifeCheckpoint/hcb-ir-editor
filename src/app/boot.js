@@ -16,6 +16,7 @@
     renderChapters();
     renderMain();
     renderInspector();
+    if (window.HISTORY) window.HISTORY.reset();
     setProjectTitle();
     setSaveState();
     document.addEventListener('keydown', onKey);

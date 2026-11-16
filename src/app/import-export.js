@@ -111,6 +111,8 @@
       CHAPTERS = [chapter];
       state.chapterId = chapter.id;
       state.blockId = chapter.scenes[0] && chapter.scenes[0].blocks[0] ? chapter.scenes[0].blocks[0].id : null;
+      state.selectedIds = state.blockId ? [state.blockId] : [];
+      state.anchorId = state.blockId;
       state.collapsedScenes = {};
       state.filter = '';
       projectPath = null;
@@ -128,6 +130,7 @@
       renderAll();
       setProjectTitle();
       setSaveState();
+      if (window.HISTORY) window.HISTORY.reset();
       if (mainEl) mainEl.scrollTop = 0;
       return chapter;
     }
@@ -142,6 +145,8 @@
       sc.blocks = (sc.blocks || []).concat(blocks);
       state.chapterId = ch.id;
       state.blockId = blocks[0] ? blocks[0].id : null;
+      state.selectedIds = state.blockId ? [state.blockId] : [];
+      state.anchorId = state.blockId;
       bindingsFromSections(sections);
       touch();
       renderAll();
@@ -160,6 +165,8 @@
     ch.scenes = (ch.scenes || []).concat(scenes);
     state.chapterId = ch.id;
     state.blockId = scenes[0] && scenes[0].blocks[0] ? scenes[0].blocks[0].id : null;
+    state.selectedIds = state.blockId ? [state.blockId] : [];
+    state.anchorId = state.blockId;
     bindingsFromSections(sections);
     touch();
     renderAll();

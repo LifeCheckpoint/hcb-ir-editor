@@ -12,6 +12,8 @@
   const state = {
     chapterId: null,
     blockId: null,
+    selectedIds: [],
+    anchorId: null,
     filter: '',
     renaming: null,
     renamingScene: null,
@@ -20,6 +22,46 @@
 
   const currentChapter = () => CHAPTERS.find((c) => c.id === state.chapterId) || CHAPTERS[0] || null;
 
+  /* 当前场景顺序里的块；Shift 范围、Ctrl+A 都按这个顺序。 */
+  function orderedChapterBlocks(ch) {
+    ch = ch || currentChapter();
+    const out = [];
+    if (!ch) return out;
+    (ch.scenes || []).forEach((sc) => flatten(sc.blocks || []).forEach((b) => out.push(b)));
+    return out;
+  }
+
+  function selectedBlocks() {
+    const ids = state.selectedIds && state.selectedIds.length ? state.selectedIds : state.blockId ? [state.blockId] : [];
+    return ids
+      .map((id) => {
+        const hit = listOfBlock(id);
+        if (!hit) return null;
+        const block = hit.list.find((b) => b.id === id);
+        return block ? { block, scene: hit.scene, chapter: hit.chapter, list: hit.list } : null;
+      })
+      .filter(Boolean);
+  }
+
+  /* 很多旧代码直接改 state.blockId；在渲染前把多选状态对齐到主块。 */
+  function normalizeSelection() {
+    const ids = (state.selectedIds || []).filter((id) => !!listOfBlock(id));
+    if (!state.blockId) {
+      state.selectedIds = [];
+      state.anchorId = null;
+      return;
+    }
+    if (!ids.includes(state.blockId)) {
+      state.selectedIds = [state.blockId];
+      state.anchorId = state.blockId;
+    } else {
+      state.selectedIds = ids;
+      if (state.anchorId && !ids.includes(state.anchorId)) state.anchorId = ids[0] || null;
+    }
+  }
+
+  const isBlockSelected = (id) => !!id && (state.selectedIds.includes(id) || (!state.selectedIds.length && state.blockId === id));
+
   function currentBlock() {
     if (!state.blockId) return null;
     const hit = listOfBlock(state.blockId);
@@ -27,13 +69,61 @@
     return { block: hit.list.find((b) => b.id === state.blockId), scene: hit.scene };
   }
 
-  function selectBlock(id) {
-    state.blockId = id;
+  function commitSelection() {
     renderMain();
     renderInspector();
     renderChapters();
-    const node = document.querySelector('.block.is-selected');
+    const node = state.blockId && mainEl.querySelector('[data-block-id="' + state.blockId + '"]');
     if (node) node.scrollIntoView({ block: 'nearest' });
+  }
+
+  function selectBlock(id, opts) {
+    opts = opts || {};
+    if (id == null) {
+      state.blockId = null;
+      state.selectedIds = [];
+      state.anchorId = null;
+      commitSelection();
+      return;
+    }
+
+    const all = orderedChapterBlocks();
+    const ids = all.map((b) => b.id);
+    let next = state.selectedIds.filter((x) => ids.includes(x));
+
+    if (opts.shift) {
+      const from = ids.indexOf(state.anchorId);
+      const to = ids.indexOf(id);
+      const range = from >= 0 && to >= 0 ? ids.slice(Math.min(from, to), Math.max(from, to) + 1) : [id];
+      next = opts.ctrl ? Array.from(new Set(next.concat(range))) : range;
+    } else if (opts.ctrl) {
+      next = next.includes(id) ? next.filter((x) => x !== id) : next.concat(id);
+    } else {
+      next = [id];
+    }
+
+    state.selectedIds = next;
+    if (next.includes(id)) state.blockId = id;
+    else state.blockId = next.length ? next[next.length - 1] : null;
+    if (!opts.shift) state.anchorId = id;
+    commitSelection();
+  }
+
+  function selectAllBlocks() {
+    const all = orderedChapterBlocks();
+    if (!all.length) return;
+    const ids = all.map((b) => b.id);
+    state.selectedIds = ids;
+    state.blockId = ids.includes(state.blockId) ? state.blockId : ids[0];
+    state.anchorId = ids[0];
+    commitSelection();
+  }
+
+  function clearSelection() {
+    state.blockId = null;
+    state.selectedIds = [];
+    state.anchorId = null;
+    commitSelection();
   }
 
   /* ------------------------------------------------------------------ *

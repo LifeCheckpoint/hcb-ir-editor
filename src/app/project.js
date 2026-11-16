@@ -56,8 +56,17 @@
     if (wrap) wrap.classList.toggle('is-dirty', dirty);
   }
 
-  function touch() {
+  function touch(key) {
     dropDecls();
+    if (!dirty) {
+      dirty = true;
+      setSaveState();
+    }
+    if (typeof normalizeSelection === 'function') normalizeSelection();
+    if (window.HISTORY) window.HISTORY.commit(key);
+  }
+
+  function touchUI() {
     if (!dirty) {
       dirty = true;
       setSaveState();
@@ -101,6 +110,8 @@
       state.collapsedScenes[id] = !!cs[id];
     });
     state.blockId = null;
+    state.selectedIds = [];
+    state.anchorId = null;
     // 上一版把未知行叫 raw，现在统一成自定义指令
     const fixTypes = (list) =>
       (list || []).forEach((b) => {
@@ -137,6 +148,7 @@
     const btn = document.querySelector('.workspace-switch__btn[data-workspace="' + ws + '"]');
     if (btn) btn.click();
     setSaveState();
+    if (window.HISTORY) window.HISTORY.reset();
   }
 
   async function loadGameRoot(root) {
@@ -237,6 +249,8 @@
     CHAPTERS = [];
     state.chapterId = null;
     state.blockId = null;
+    state.selectedIds = [];
+    state.anchorId = null;
     state.filter = '';
     state.collapsedScenes = {};
     projectPath = null;
@@ -253,6 +267,7 @@
     renderAll();
     setProjectTitle();
     setSaveState();
+    if (window.HISTORY) window.HISTORY.reset();
   }
 
   /* 给自动化测试与后续导出用的小接口 */

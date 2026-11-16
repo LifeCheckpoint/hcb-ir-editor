@@ -12,9 +12,15 @@
   const inspector = document.getElementById('inspector');
 
   function renderInspector() {
+    normalizeSelection();
     closeSelect(true);
     closeMenu();
     inspector.innerHTML = '';
+    const picked = selectedBlocks();
+    if (picked.length > 1) {
+      renderMultiInspector(picked);
+      return;
+    }
     const hit = currentBlock();
 
     if (!hit) {
@@ -77,6 +83,9 @@
       if (copy.children) copy.children = reid(copy.children);
       hitList.list.splice(hitList.list.indexOf(block) + 1, 0, copy);
       state.blockId = copy.id;
+      state.selectedIds = [copy.id];
+      state.anchorId = copy.id;
+      touch();
       renderMain();
       renderInspector();
       renderChapters();
@@ -92,6 +101,9 @@
       const ch = currentChapter();
       const next = hitList.list[i] || hitList.list[i - 1] || (ch && ch.scenes[0] ? flatten(ch.scenes[0].blocks)[0] : null);
       state.blockId = next ? next.id : null;
+      state.selectedIds = next ? [next.id] : [];
+      state.anchorId = next ? next.id : null;
+      touch();
       renderMain();
       renderInspector();
       renderChapters();
@@ -430,7 +442,9 @@
     const hit = listOfBlock(block.id);
     if (!old || !hit) return;
     old.replaceWith(blockNode(block, hit.scene, hit.list));
-    touch();
+    touch('patch:' + block.id);
+    // 多选时右栏是批量标题/字段，不能被单块的标题覆盖
+    if (selectedBlocks().length > 1) return;
     const v = viewOf(block);
     const title = inspector.querySelector('.inspector-title');
     if (title) title.textContent = v.speaker ? v.speaker + '：' + v.text : v.text;
@@ -516,7 +530,7 @@
     });
   }
 
-  function openSpritePicker(block) {
+  function openSpritePicker(block, targets) {
     closeSpritePicker();
     const chars = spriteSource().filter((c) => c.cha != null && c.poses.length && c.cloths.length);
     if (!chars.length) return;
@@ -681,12 +695,21 @@
     panel.querySelector('.spk__cancel').addEventListener('click', closeSpritePicker);
     scrim.addEventListener('click', closeSpritePicker);
     panel.querySelector('.spk__ok').addEventListener('click', () => {
-      block.data.cha = ch.cha;
-      block.data.pose = ch.poseNos[pi];
-      block.data.cloth = ch.clothNos[ci];
-      if (faceTouched) block.data.face = face;
+      const list = targets && targets.length ? targets : [block];
+      const apply = () => {
+        list.forEach((b) => {
+          if (!b.data) b.data = {};
+          b.data.cha = ch.cha;
+          b.data.pose = ch.poseNos[pi];
+          b.data.cloth = ch.clothNos[ci];
+          if (faceTouched) b.data.face = face;
+          patchBlock(b);
+        });
+      };
+      if (window.HISTORY) window.HISTORY.batch(apply);
+      else apply();
+      if (window.HISTORY) window.HISTORY.commit('sprite');
       closeSpritePicker();
-      patchBlock(block);
       renderInspector();
     });
 

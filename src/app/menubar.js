@@ -29,13 +29,13 @@
       id: 'edit',
       label: '编辑',
       items: [
-        { label: '撤销', shortcut: 'Ctrl Z', disabled: true },
-        { label: '重做', shortcut: 'Ctrl Shift Z', disabled: true },
+        { label: '撤销', shortcut: 'Ctrl Z', disabled: () => !window.HISTORY || !window.HISTORY.canUndo(), action: () => window.HISTORY && window.HISTORY.undo() },
+        { label: '重做', shortcut: 'Ctrl Shift Z', disabled: () => !window.HISTORY || !window.HISTORY.canRedo(), action: () => window.HISTORY && window.HISTORY.redo() },
         { sep: true },
         { label: '剪切', shortcut: 'Ctrl X', disabled: true },
         { label: '复制', shortcut: 'Ctrl C', disabled: true },
         { label: '粘贴', shortcut: 'Ctrl V', disabled: true },
-        { label: '全选', shortcut: 'Ctrl A', disabled: true },
+        { label: '全选', shortcut: 'Ctrl A', action: () => selectAllBlocks() },
       ],
     },
     {
@@ -113,7 +113,7 @@
       b.type = 'button';
       b.setAttribute('role', 'menuitemcheckbox');
       b.setAttribute('aria-checked', isChecked ? 'true' : 'false');
-      b.disabled = !!item.disabled;
+      b.disabled = typeof item.disabled === 'function' ? item.disabled() : !!item.disabled;
       b.innerHTML =
         '<span class="menu-item__check">' + (isChecked ? icon('check', 'icon icon--12') : '') + '</span>' +
         '<span class="menu-item__label">' + esc(item.label) + '</span>' +
@@ -206,14 +206,27 @@
         exportDsl();
         return;
       }
+      if (k === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) window.HISTORY && window.HISTORY.redo();
+        else window.HISTORY && window.HISTORY.undo();
+        return;
+      }
+      if (k === 'y') {
+        e.preventDefault();
+        window.HISTORY && window.HISTORY.redo();
+        return;
+      }
+      if (k === 'a' && !typing) {
+        e.preventDefault();
+        selectAllBlocks();
+        return;
+      }
     }
 
     if (e.key === 'Escape' && !typing) {
       if (closeSelectIfOpen() || closeMenuIfOpen()) return;
-      state.blockId = null;
-      renderMain();
-      renderInspector();
-      renderChapters();
+      clearSelection();
       return;
     }
     if (typing) return;
