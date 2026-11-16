@@ -39,6 +39,10 @@ function multiFieldNode(field, picked) {
   const wrap = el('div', 'field' + (stacked ? '' : ' field--row'));
   wrap.appendChild(el('label', 'field__label', esc(field.label || '') + (field.req ? '<span class="field__req">*</span>' : '')));
   const ctl = stacked ? wrap : el('div', 'field__ctl');
+  const done = () => {
+    if (!stacked) wrap.appendChild(ctl);
+    return wrap;
+  };
   const same = multiSame(picked, field.key);
   const first = multiValue(picked, field.key);
   const mixed = !same;
@@ -106,7 +110,7 @@ function multiFieldNode(field, picked) {
       inp.placeholder = placeholder;
       inp.addEventListener('input', () => commit(field.numeric ? (inp.value === '' ? '' : Number(inp.value)) : inp.value, false));
       ctl.appendChild(inp);
-      return wrap;
+      return done();
     }
     const options = (typeof field.options === 'function' ? field.options() : field.options || []).slice();
     if (!field.req) options.unshift({ value: '', label: '—' });
@@ -163,7 +167,7 @@ function multiFieldNode(field, picked) {
         box.appendChild(item);
       });
       ctl.appendChild(box);
-      return wrap;
+      return done();
     }
     const labels = picked.map(({ block }) => {
       const pick = spritePick(block);
@@ -185,7 +189,7 @@ function multiFieldNode(field, picked) {
       inp.placeholder = placeholder;
       inp.addEventListener('input', () => commit(inp.value === '' ? '' : Number(inp.value), false));
       ctl.appendChild(inp);
-      return wrap;
+      return done();
     }
     const options = spriteSource().filter((c) => c.cha != null).map((c) => ({ value: c.cha, label: c.name }));
     if (mixed) options.unshift({ value: '__mixed__', label: '多个值' });
@@ -203,7 +207,7 @@ function multiFieldNode(field, picked) {
     ctl.appendChild(el('span', 'field__note', mixed ? '多个值' : String(first == null ? '' : first)));
   }
 
-  return wrap;
+  return done();
 }
 
 function renderMultiInspector(picked) {

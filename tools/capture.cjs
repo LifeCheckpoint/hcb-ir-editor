@@ -601,7 +601,64 @@ app.whenReady().then(async () => {
       out.finalTitle = document.querySelector('.inspector-title')?.textContent;
       out.finalPlaceholder = document.querySelector('#inspector textarea.control')?.placeholder;
       out.finalSelected = state.selectedIds.length;
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await wait(150);
+      let bss = [...document.querySelectorAll('.block[data-type="bs"]')];
+      bss[0].click();
+      await wait(150);
+      bss = [...document.querySelectorAll('.block[data-type="bs"]')];
+      bss[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(300);
+      out.bsTitle = document.querySelector('.inspector-title')?.textContent;
+      out.bsSelected = state.selectedIds.length;
+      out.bsSelects = document.querySelectorAll('#inspector .select').length;
+      out.bsSegments = document.querySelectorAll('#inspector .segmented').length;
+      out.bsVectorInputs = document.querySelectorAll('#inspector .field__vector input').length;
+      out.bsNumbers = document.querySelectorAll('#inspector input[type="number"]').length;
+      out.bsLabels = [...document.querySelectorAll('#inspector .field__label')].map((n) => n.textContent.trim());
+
+      const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+      window.MAPPING.load(mapRes);
+      window.PROJECT.mappingChanged();
+      await wait(500);
+      out.mappedBsPicker = !!document.querySelector('.sprite-pick');
+      out.mappedBsSelects = document.querySelectorAll('#inspector .select').length;
+      out.mappedBsSegments = document.querySelectorAll('#inspector .segmented').length;
+      out.mappedBsVectorInputs = document.querySelectorAll('#inspector .field__vector input').length;
+      out.mappedBsLabels = [...document.querySelectorAll('#inspector .field__label')].map((n) => n.textContent.trim());
       return out;
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'multifields') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const ch = currentChapter();
+      const list = ch.scenes[0].blocks;
+      const types = Object.keys(TYPES).filter((t) => TYPES[t] && TYPES[t].fields && TYPES[t].fields.length);
+      types.forEach((t) => { list.push(makeBlock(t)); list.push(makeBlock(t)); });
+      renderAll();
+      const missing = [];
+      const summaries = [];
+      for (const t of types) {
+        const nodes = [...document.querySelectorAll('.block[data-type="' + t + '"]')];
+        if (nodes.length < 2) { missing.push({ type: t, reason: 'nodes ' + nodes.length }); continue; }
+        const a = nodes[nodes.length - 2];
+        const b = nodes[nodes.length - 1];
+        state.selectedIds = [a.dataset.blockId, b.dataset.blockId];
+        state.blockId = b.dataset.blockId;
+        state.anchorId = b.dataset.blockId;
+        renderMain();
+        renderInspector();
+        const fields = [...document.querySelectorAll('#inspector .field')];
+        const bad = fields.filter((f) => !f.querySelector('input,textarea,select,button,.segmented,.field__note,.sprite-numbers,.sprite-pick')).map((f) => f.querySelector('.field__label')?.textContent || '?');
+        if (bad.length) missing.push({ type: t, bad });
+        summaries.push({ type: t, fields: fields.length, bad: bad.length, title: document.querySelector('.inspector-title')?.textContent });
+      }
+      return { missing, summaries };
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
