@@ -223,3 +223,95 @@
   color: var(--color-marker-red);
 }
 
+
+
+/* 聚焦模式：类型多选 */
+.focus {
+  width: 620px;
+}
+
+.focus__body {
+  max-height: 62vh;
+  overflow: auto;
+  gap: 14px;
+}
+
+.focus__hint {
+  margin: 0;
+  font-size: var(--text-label);
+  color: var(--ink-40);
+}
+
+.focus__group-title {
+  margin-bottom: 5px;
+  font-size: 10.5px;
+  font-weight: var(--font-weight-medium);
+  color: var(--ink-30);
+}
+
+.focus__types {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.focus-type {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-buttons);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.focus-type:hover {
+  background: var(--color-hover-grey);
+}
+
+.focus-type.is-on {
+  border-color: var(--color-hairline);
+  background: var(--color-active-grey);
+}
+
+.focus-type__cmd {
+  flex: 0 0 58px;
+  overflow: hidden;
+  color: var(--ink-30);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-type.is-on .focus-type__cmd {
+  color: var(--ink-50);
+}
+
+.focus-type__label {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-type.is-on .focus-type__label {
+  font-weight: var(--font-weight-medium);
+}
+
+.focus__count {
+  margin-right: auto;
+  font-size: var(--text-label);
+  color: var(--ink-40);
+}
+
+@media (max-width: 640px) {
+  .focus__types {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

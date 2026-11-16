@@ -112,6 +112,7 @@
     state.blockId = null;
     state.selectedIds = [];
     state.anchorId = null;
+    state.focusTypes = [];
     // 上一版把未知行叫 raw，现在统一成自定义指令
     const fixTypes = (list) =>
       (list || []).forEach((b) => {
@@ -251,6 +252,7 @@
     state.blockId = null;
     state.selectedIds = [];
     state.anchorId = null;
+    state.focusTypes = [];
     state.filter = '';
     state.collapsedScenes = {};
     projectPath = null;

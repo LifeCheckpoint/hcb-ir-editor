@@ -731,6 +731,87 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'focus') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const out = { total: document.querySelectorAll('.block').length };
+      const waits = [...document.querySelectorAll('.block[data-type="wait"]')];
+      if (waits[0]) waits[0].click();
+      await wait(150);
+      document.querySelector('.menu-btn[data-menu="view"]').click();
+      await wait(180);
+      out.viewMenu = [...document.querySelectorAll('.menubar__drop .menu-item')].map((n) => n.textContent.trim());
+      [...document.querySelectorAll('.menubar__drop .menu-item')].find((n) => n.textContent.includes('聚焦模式')).click();
+      await wait(250);
+      out.dialogTypes = document.querySelectorAll('.focus-type').length;
+      document.querySelector('.focus-type[data-type="dia"]').click();
+      document.querySelector('.focus-type[data-type="bg"]').click();
+      out.countText = document.querySelector('.focus__count')?.textContent;
+      document.querySelector('.focus .btn-primary').click();
+      await wait(350);
+      out.focusTypes = state.focusTypes;
+      out.selectedAfterFocus = state.selectedIds.length;
+      out.focusedBlocks = document.querySelectorAll('.block[data-type="dia"],.block[data-type="bg"]').length;
+      out.otherBlocks = [...document.querySelectorAll('.block')].filter((n) => n.dataset.type !== 'dia' && n.dataset.type !== 'bg').length;
+      out.gaps = [...document.querySelectorAll('.focus-gap')].map((n) => n.dataset.count);
+      out.gapText = document.querySelector('.focus-gap')?.textContent;
+      out.inspectorTitle = document.querySelector('.inspector-title')?.textContent || '';
+      const gap = document.querySelector('.focus-gap');
+      if (gap) {
+        gap.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 10, clientY: 10 }));
+        await wait(150);
+      }
+      out.menuAfterGap = document.querySelectorAll('.menu').length;
+      selectAllBlocks();
+      await wait(200);
+      out.allSelected = state.selectedIds.length;
+      out.focusedCount = [...document.querySelectorAll('.block')].length;
+      try {
+        const block = document.querySelector('.block[data-type="dia"]');
+        const gap = [...document.querySelectorAll('.focus-gap')][1] || document.querySelector('.focus-gap');
+        const dt = new DataTransfer();
+        block.querySelector('.block__handle').dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: dt }));
+        gap.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt, clientX: gap.getBoundingClientRect().left + 8, clientY: gap.getBoundingClientRect().top + 2 }));
+        gap.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
+        await wait(300);
+        out.gapDrop = 'ok';
+      } catch (err) {
+        out.gapDrop = String(err && err.message || err);
+      }
+      clearFocusTypes();
+      await wait(250);
+      out.afterClearGaps = document.querySelectorAll('.focus-gap').length;
+      out.afterClearBlocks = document.querySelectorAll('.block').length;
+      out.afterClearFocus = state.focusTypes.length;
+      applyFocusTypes(['dia', 'bg']);
+      await wait(250);
+      return out;
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'focusdialog') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(450);
+      openFocusDialog();
+      await wait(250);
+      document.querySelector('.focus-type[data-type="dia"]').click();
+      document.querySelector('.focus-type[data-type="bg"]').click();
+      await wait(200);
+      return {
+        types: document.querySelectorAll('.focus-type').length,
+        selected: document.querySelectorAll('.focus-type.is-on').length,
+        count: document.querySelector('.focus__count')?.textContent,
+        panelHeight: document.querySelector('.focus').getBoundingClientRect().height,
+        bodyScroll: document.querySelector('.focus__body').scrollHeight,
+        bodyClient: document.querySelector('.focus__body').clientHeight,
+      };
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -32,6 +32,7 @@ app/stack.js
 app/palette.js
 app/inspector.js
 app/multi-inspector.js
+app/focus.js
 app/menubar.js
 app/boot.js
 resource.js
@@ -52,13 +53,14 @@ resource.js
 | `model.js` | `viewOf`、块摘要、舞台 `stageCard`、资源接线 `refOfBlock`、场景/块查找、`el` |
 | `project.js` | `.hcbproj` 读写、`window.PROJECT`、最近项目、保存状态 |
 | `import-export.js` | DSL 导入对话框、导入到新项目/章节/小节、DSL 导出、`window.DSL` |
-| `state.js` | 全局 `state`、单选/多选、当前章/块、自绘下拉、右键菜单 |
+| `state.js` | 全局 `state`、单选/多选/聚焦、当前章/块、自绘下拉、右键菜单 |
 | `history.js` | 撤销/重做快照；100 步，只覆盖剧本内容 |
 | `chapters.js` | 左栏章节/场景、增删改/复制/折叠 |
-| `stack.js` | 主栏场景、块节点、拖拽排序 |
+| `stack.js` | 主栏场景、块节点、聚焦灰条、拖拽排序 |
 | `palette.js` | 插入面板、`DEFAULTS`、`makeBlock` |
 | `inspector.js` | 右栏、单块字段渲染、数字/文本回退、立绘选择器、`patchBlock` |
 | `multi-inspector.js` | 多选参数栏：同类型字段、多个值、批量提交 |
+| `focus.js` | 聚焦模式类型选择；非聚焦块压成灰条 |
 | `menubar.js` | 菜单栏、快捷键、弹层 |
 | `boot.js` | 最后一次初始化 |
 

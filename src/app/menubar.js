@@ -59,6 +59,17 @@
           checked: () => document.body.classList.contains('focus-mode'),
           action: () => document.body.classList.toggle('focus-mode'),
         },
+        { sep: true },
+        {
+          label: '聚焦模式…',
+          checked: () => isFocusActive(),
+          action: () => openFocusDialog(),
+        },
+        {
+          label: '显示全部块',
+          disabled: () => !isFocusActive(),
+          action: () => clearFocusTypes(),
+        },
       ],
     },
     {
@@ -235,7 +246,7 @@
     const ch = currentChapter();
     if (!ch) return;
     const all = [];
-    (ch.scenes || []).forEach((sc) => flatten(sc.blocks).forEach((b) => all.push(b)));
+    (ch.scenes || []).forEach((sc) => flatten(sc.blocks).forEach((b) => { if (isFocusType(b.type)) all.push(b); }));
     if (!all.length) return;
     e.preventDefault();
     const i = all.findIndex((b) => b.id === state.blockId);

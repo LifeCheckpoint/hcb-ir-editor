@@ -14,6 +14,7 @@
     blockId: null,
     selectedIds: [],
     anchorId: null,
+    focusTypes: [],
     filter: '',
     renaming: null,
     renamingScene: null,
@@ -21,6 +22,9 @@
   };
 
   const currentChapter = () => CHAPTERS.find((c) => c.id === state.chapterId) || CHAPTERS[0] || null;
+
+  const isFocusActive = () => !!(state.focusTypes && state.focusTypes.length);
+  const isFocusType = (type) => !isFocusActive() || state.focusTypes.includes(type);
 
   /* 当前场景顺序里的块；Shift 范围、Ctrl+A 都按这个顺序。 */
   function orderedChapterBlocks(ch) {
@@ -38,19 +42,29 @@
         const hit = listOfBlock(id);
         if (!hit) return null;
         const block = hit.list.find((b) => b.id === id);
-        return block ? { block, scene: hit.scene, chapter: hit.chapter, list: hit.list } : null;
+        return block && isFocusType(block.type) ? { block, scene: hit.scene, chapter: hit.chapter, list: hit.list } : null;
       })
       .filter(Boolean);
   }
 
   /* 很多旧代码直接改 state.blockId；在渲染前把多选状态对齐到主块。 */
+  function visibleBlock(id) {
+    if (!id) return null;
+    const hit = listOfBlock(id);
+    if (!hit) return null;
+    const block = hit.list.find((x) => x.id === id);
+    return block && isFocusType(block.type) ? block : null;
+  }
+
   function normalizeSelection() {
-    const ids = (state.selectedIds || []).filter((id) => !!listOfBlock(id));
-    if (!state.blockId) {
+    const primary = visibleBlock(state.blockId);
+    if (!primary) {
+      state.blockId = null;
       state.selectedIds = [];
       state.anchorId = null;
       return;
     }
+    const ids = (state.selectedIds || []).filter((id) => !!visibleBlock(id));
     if (!ids.includes(state.blockId)) {
       state.selectedIds = [state.blockId];
       state.anchorId = state.blockId;
@@ -66,7 +80,9 @@
     if (!state.blockId) return null;
     const hit = listOfBlock(state.blockId);
     if (!hit) return null;
-    return { block: hit.list.find((b) => b.id === state.blockId), scene: hit.scene };
+    const block = hit.list.find((b) => b.id === state.blockId);
+    if (!block || !isFocusType(block.type)) return null;
+    return { block, scene: hit.scene };
   }
 
   function commitSelection(scroll) {
@@ -88,7 +104,7 @@
       return;
     }
 
-    const all = orderedChapterBlocks();
+    const all = orderedChapterBlocks().filter((b) => isFocusType(b.type));
     const ids = all.map((b) => b.id);
     let next = state.selectedIds.filter((x) => ids.includes(x));
 
@@ -111,7 +127,7 @@
   }
 
   function selectAllBlocks() {
-    const all = orderedChapterBlocks();
+    const all = orderedChapterBlocks().filter((b) => isFocusType(b.type));
     if (!all.length) return;
     const ids = all.map((b) => b.id);
     state.selectedIds = ids;

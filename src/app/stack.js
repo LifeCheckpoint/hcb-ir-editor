@@ -100,7 +100,7 @@
     const stack = el('div', 'stack');
     stack.setAttribute('role', 'group');
     stack.setAttribute('aria-label', sc.title);
-    sc.blocks.forEach((b) => stack.appendChild(blockNode(b, sc, sc.blocks)));
+    blockListNodes(sc.blocks, sc).forEach((node) => stack.appendChild(node));
     body.appendChild(stack);
 
     const add = el('button', 'add-row', icon('plus', 'icon icon--12') + '<span>添加功能块</span>');
@@ -167,6 +167,72 @@
       body.offsetHeight;
       body.style.height = body.scrollHeight + 'px';
     }
+  }
+
+  /* 聚焦模式：同类型的块正常显示，连续的非聚焦块合成一条灰条。 */
+  function blockListNodes(list, sc) {
+    if (!isFocusActive()) return list.map((b) => blockNode(b, sc, list));
+    const out = [];
+    let i = 0;
+    while (i < list.length) {
+      if (isFocusType(list[i].type)) {
+        out.push(blockNode(list[i], sc, list));
+        i += 1;
+        continue;
+      }
+      let j = i;
+      while (j < list.length && !isFocusType(list[j].type)) j += 1;
+      out.push(focusGapNode(list.slice(i, j), list));
+      i = j;
+    }
+    return out;
+  }
+
+  function focusGapNode(run, list) {
+    const gap = el('div', 'focus-gap');
+    gap.dataset.focusGap = 'true';
+    gap.dataset.count = String(run.length);
+    gap.setAttribute('title', run.length + ' 个块已收起');
+    gap.appendChild(el('span', 'focus-gap__count', run.length + ' 个块'));
+    gap.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    gap.addEventListener('dragover', (e) => {
+      if (!drag || drag.list !== list) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const r = gap.getBoundingClientRect();
+      const after = e.clientY > r.top + r.height / 2;
+      clearDropMarks();
+      dropTarget = null;
+      gap.classList.add(after ? 'is-drop-after' : 'is-drop-before');
+      dropGap = { run, list, after };
+    });
+    gap.addEventListener('dragleave', (e) => {
+      if (!gap.contains(e.relatedTarget)) gap.classList.remove('is-drop-before', 'is-drop-after');
+    });
+    gap.addEventListener('drop', (e) => {
+      if (!drag || !dropGap || drag.list !== list) return;
+      e.preventDefault();
+      const from = list.indexOf(drag.block);
+      if (from < 0) return endDrag();
+      const anchor = dropGap.after ? run[run.length - 1] : run[0];
+      list.splice(from, 1);
+      let at = list.indexOf(anchor);
+      if (at < 0) return endDrag();
+      if (dropGap.after) at += 1;
+      list.splice(at, 0, drag.block);
+      state.blockId = drag.block.id;
+      state.selectedIds = [drag.block.id];
+      state.anchorId = drag.block.id;
+      touch();
+      endDrag();
+      renderMain();
+      renderInspector();
+      renderChapters();
+    });
+    return gap;
   }
 
   function blockNode(block, sc, list) {
@@ -244,7 +310,7 @@
     const nested = el('div', 'stack stack--nested');
     nested.setAttribute('role', 'group');
     nested.setAttribute('aria-label', '条件成立时执行');
-    block.children.forEach((c) => nested.appendChild(blockNode(c, sc, block.children)));
+    blockListNodes(block.children, sc).forEach((c) => nested.appendChild(c));
     wrap.appendChild(nested);
     return wrap;
   }
@@ -255,6 +321,7 @@
 
   let drag = null;
   let dropTarget = null;
+  let dropGap = null;
 
   function startDrag(e, block, list, node) {
     drag = { block, list, node, id: block.id };
@@ -279,11 +346,13 @@
     const r = node.getBoundingClientRect();
     const after = e.clientY > r.top + r.height / 2;
     clearDropMarks();
+    dropGap = null;
     node.classList.add(after ? 'is-drop-after' : 'is-drop-before');
     dropTarget = { block, list, after };
   }
 
   function onDrop(e, block, list) {
+    dropGap = null;
     if (!drag || !dropTarget || drag.list !== list) return;
     e.preventDefault();
     const from = list.indexOf(drag.block);
@@ -327,5 +396,6 @@
     clearDropMarks();
     drag = null;
     dropTarget = null;
+    dropGap = null;
   }
 

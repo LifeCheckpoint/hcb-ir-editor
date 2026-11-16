@@ -113,6 +113,7 @@
       state.blockId = chapter.scenes[0] && chapter.scenes[0].blocks[0] ? chapter.scenes[0].blocks[0].id : null;
       state.selectedIds = state.blockId ? [state.blockId] : [];
       state.anchorId = state.blockId;
+      state.focusTypes = [];
       state.collapsedScenes = {};
       state.filter = '';
       projectPath = null;
