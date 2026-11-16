@@ -132,7 +132,6 @@ function multiFieldNode(field, picked) {
     });
     ctl.appendChild(sel);
   } else if (field.type === 'segmented') {
-    if (mixed) wrap.appendChild(el('span', 'spk__hint', '多个值'));
     const box = el('div', 'segmented');
     box.setAttribute('role', 'radiogroup');
     (field.options || []).forEach((raw) => {
@@ -145,7 +144,14 @@ function multiFieldNode(field, picked) {
       b.addEventListener('click', () => commit(opt.value));
       box.appendChild(b);
     });
-    ctl.appendChild(box);
+    if (mixed) {
+      const stack = el('div', 'segmented-wrap');
+      stack.appendChild(el('div', 'field__note', '多个值'));
+      stack.appendChild(box);
+      ctl.appendChild(stack);
+    } else {
+      ctl.appendChild(box);
+    }
   } else if (field.type === 'sprite') {
     if (!hasMapping()) {
       const box = el('div', 'sprite-numbers');

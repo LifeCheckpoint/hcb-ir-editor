@@ -617,6 +617,12 @@ app.whenReady().then(async () => {
       out.bsVectorInputs = document.querySelectorAll('#inspector .field__vector input').length;
       out.bsNumbers = document.querySelectorAll('#inspector input[type="number"]').length;
       out.bsLabels = [...document.querySelectorAll('#inspector .field__label')].map((n) => n.textContent.trim());
+      const firstHit = listOfBlock(state.selectedIds[0]);
+      const firstBlock = firstHit && firstHit.list.find((x) => x.id === state.selectedIds[0]);
+      if (firstBlock) { firstBlock.data.pos = 'l'; firstBlock.data.l = '0'; }
+      renderInspector();
+      await wait(200);
+      out.mixedSegmented = !!document.querySelector('#inspector .segmented-wrap');
 
       const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
       window.MAPPING.load(mapRes);
