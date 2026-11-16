@@ -668,6 +668,69 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'ctxmulti') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const total = () => window.PROJECT.serialize().story.chapters[0].scenes.reduce((n, sc) => n + sc.blocks.reduce(function walk(m, b) { return m + 1 + (b.children ? b.children.reduce(walk, 0) : 0); }, 0), 0);
+      const dias = () => [...document.querySelectorAll('.block[data-type="dia"]')];
+      const openMenuOn = async (node) => {
+        const r = node.getBoundingClientRect();
+        node.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left + 30, clientY: r.top + 20 }));
+        await wait(200);
+        return [...document.querySelectorAll('.menu__item')].map((n) => n.textContent.trim());
+      };
+      let d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      const out = { selected: state.selectedIds.length, total: total() };
+      out.menu = await openMenuOn(dias()[1]);
+      out.deleteMenu = out.menu.includes('删除 2 个块');
+      [...document.querySelectorAll('.menu__item')].find((n) => n.textContent.includes('删除 2 个块')).click();
+      await wait(300);
+      out.afterDelete = total();
+      out.selAfterDelete = state.selectedIds.length;
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      out.undoDelete = total();
+
+      d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      out.copyMenu = await openMenuOn(dias()[1]);
+      out.copyMenuHas = out.copyMenu.includes('复制 2 个块');
+      [...document.querySelectorAll('.menu__item')].find((n) => n.textContent.includes('复制 2 个块')).click();
+      await wait(300);
+      out.afterCopy = total();
+      out.copySelected = state.selectedIds.length;
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+      await wait(300);
+      out.undoCopy = total();
+
+      // 右键未选中的块：应该只选它，菜单回到单块
+      d = dias();
+      d[0].click();
+      await wait(150);
+      d = dias();
+      d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(250);
+      const other = document.querySelector('.block[data-type="bg"]');
+      const r = other.getBoundingClientRect();
+      other.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left + 30, clientY: r.top + 20 }));
+      await wait(200);
+      out.outsideMenu = [...document.querySelectorAll('.menu__item')].map((n) => n.textContent.trim());
+      out.outsideSelected = state.selectedIds.length;
+      return out;
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

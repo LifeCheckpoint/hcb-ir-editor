@@ -69,10 +69,11 @@
     return { block: hit.list.find((b) => b.id === state.blockId), scene: hit.scene };
   }
 
-  function commitSelection() {
+  function commitSelection(scroll) {
     renderMain();
     renderInspector();
     renderChapters();
+    if (scroll === false) return;
     const node = state.blockId && mainEl.querySelector('[data-block-id="' + state.blockId + '"]');
     if (node) node.scrollIntoView({ block: 'nearest' });
   }
@@ -83,7 +84,7 @@
       state.blockId = null;
       state.selectedIds = [];
       state.anchorId = null;
-      commitSelection();
+      commitSelection(opts.scroll);
       return;
     }
 
@@ -106,7 +107,7 @@
     if (next.includes(id)) state.blockId = id;
     else state.blockId = next.length ? next[next.length - 1] : null;
     if (!opts.shift) state.anchorId = id;
-    commitSelection();
+    commitSelection(opts.scroll);
   }
 
   function selectAllBlocks() {

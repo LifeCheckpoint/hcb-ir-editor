@@ -344,13 +344,22 @@
   }
 
   function openBlockMenu(x, y, block, sc, list) {
+    const picked = selectedBlocks();
+    let targets;
+    if (picked.length > 1 && picked.some((x) => x.block.id === block.id)) {
+      targets = picked;
+    } else {
+      if (state.blockId !== block.id || picked.length !== 1) selectBlock(block.id, { scroll: false });
+      targets = selectedBlocks();
+    }
+    const count = targets.length;
     const at = list.indexOf(block);
     showMenu(x, y, [
-      { label: '复制', icon: 'copy', action: () => duplicateBlock(block, list) },
+      { label: count > 1 ? '复制 ' + count + ' 个块' : '复制', icon: 'copy', action: () => duplicateBlocks(targets) },
       { label: '在上方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at) },
       { label: '在下方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at + 1) },
       { sep: true },
-      { label: '删除', icon: 'trash-2', danger: true, action: () => deleteBlock(block, list) },
+      { label: count > 1 ? '删除 ' + count + ' 个块' : '删除', icon: 'trash-2', danger: true, action: () => deleteBlocks(targets) },
     ]);
   }
 
@@ -361,25 +370,73 @@
     openPalette(anchor, sc, list, index);
   }
 
-  function duplicateBlock(block, list) {
-    const copy = JSON.parse(JSON.stringify(block));
-    copy.id = nid();
-    if (copy.children) copy.children = reid(copy.children);
-    list.splice(list.indexOf(block) + 1, 0, copy);
+  function duplicateBlocks(targets) {
+    if (!targets.length) return;
+    const primary = targets.find((x) => x.block.id === state.blockId) || targets[0];
+    const copies = [];
+    targets.forEach(({ block, list }) => {
+      const copy = JSON.parse(JSON.stringify(block));
+      copy.id = nid();
+      if (copy.children) copy.children = reid(copy.children);
+      list.splice(list.indexOf(block) + 1, 0, copy);
+      copies.push({ copy, block });
+    });
+    const primaryCopy = copies.find((x) => x.block.id === primary.block.id);
+    state.chapterId = primary.chapter.id;
+    state.blockId = primaryCopy ? primaryCopy.copy.id : copies[copies.length - 1].copy.id;
+    state.selectedIds = copies.map((x) => x.copy.id);
+    state.anchorId = primaryCopy ? primaryCopy.copy.id : state.selectedIds[0];
     touch();
-    state.blockId = copy.id;
     renderAll();
+    const node = mainEl.querySelector('[data-block-id="' + state.blockId + '"]');
+    if (node) node.scrollIntoView({ block: 'nearest' });
   }
 
-  function deleteBlock(block, list) {
-    const i = list.indexOf(block);
-    if (i < 0) return;
-    list.splice(i, 1);
-    touch();
-    const ch = currentChapter();
-    const next = list[i] || list[i - 1] || (ch && ch.scenes[0] ? flatten(ch.scenes[0].blocks)[0] : null);
+  function deleteBlocks(targets) {
+    if (!targets.length) return;
+    const primary = targets.find((x) => x.block.id === state.blockId) || targets[0];
+    const chapter = primary.chapter;
+    const scene = primary.scene;
+    const oldSceneBlocks = flatten(scene.blocks).slice();
+    const oldIndex = Math.max(0, oldSceneBlocks.findIndex((b) => b.id === primary.block.id));
+
+    targets.forEach(({ block, list }) => {
+      const i = list.indexOf(block);
+      if (i >= 0) list.splice(i, 1);
+    });
+
+    const remaining = flatten(scene.blocks);
+    let next = remaining[Math.min(oldIndex, remaining.length - 1)] || null;
+    if (!next) {
+      for (const sc of chapter.scenes || []) {
+        const first = flatten(sc.blocks)[0];
+        if (first) {
+          next = first;
+          break;
+        }
+      }
+    }
+    if (!next) {
+      for (const ch of CHAPTERS) {
+        for (const sc of ch.scenes || []) {
+          const first = flatten(sc.blocks)[0];
+          if (first) {
+            next = first;
+            break;
+          }
+        }
+        if (next) break;
+      }
+    }
+
+    state.chapterId = CHAPTERS.some((c) => c.id === chapter.id) ? chapter.id : CHAPTERS[0] ? CHAPTERS[0].id : null;
     state.blockId = next ? next.id : null;
+    state.selectedIds = next ? [next.id] : [];
+    state.anchorId = next ? next.id : null;
+    touch();
     renderAll();
+    const node = next && mainEl.querySelector('[data-block-id="' + next.id + '"]');
+    if (node) node.scrollIntoView({ block: 'nearest' });
   }
 
   function duplicateChapter(ch) {
