@@ -33,6 +33,7 @@ app/palette.js
 app/block-actions.js
 app/inspector.js
 app/multi-inspector.js
+app/preview.js
 app/focus.js
 app/shortcuts.js
 app/menubar.js
@@ -53,7 +54,7 @@ resource.js
 |---|---|
 | `core.js` | 图标、DOM/字符串工具、分组色、`dsl` 参数拼接、选项列表（bg/cha/cg） |
 | `types.js` | `TYPES` 原语定义、Flat UI 色板、对比度选字色、注入 block 类型样式 |
-| `model.js` | `viewOf`、块摘要、舞台 `stageCard`、资源接线 `refOfBlock`、场景/块查找、`el` |
+| `model.js` | `viewOf`、块摘要、模拟预览 `stageCard`、资源接线 `refOfBlock`、场景/块查找、`el` |
 | `project.js` | `.hcbproj` 读写、`window.PROJECT`、最近项目、保存状态 |
 | `import-export.js` | DSL 导入对话框、导入到新项目/章节/小节、DSL 导出、`window.DSL` |
 | `state.js` | 全局 `state`、单选/多选/聚焦、当前章/块、自绘下拉、右键菜单 |
@@ -65,6 +66,7 @@ resource.js
 | `shortcuts.js` | 快捷键窗口 |
 | `inspector.js` | 右栏、单块字段渲染、数字/文本回退、立绘选择器、`patchBlock` |
 | `multi-inspector.js` | 多选参数栏：同类型字段、多个值、批量提交 |
+| `preview.js` | 模拟预览浮窗、拖动缩放、最小化、BGM、跳到下一块 |
 | `focus.js` | 聚焦模式类型选择；非聚焦块压成灰条 |
 | `menubar.js` | 菜单栏、快捷键、弹层 |
 | `boot.js` | 最后一次初始化 |

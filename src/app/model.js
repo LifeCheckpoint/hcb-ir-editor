@@ -195,10 +195,8 @@
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
     if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" alt="">');
-    if (bg) parts.push('<span class="stage__bgname">' + esc(bg.id + ' ' + bg.name) + '</span>');
 
     sprites.forEach((s) => {
-      const who = spriteCha(s.cha);
       const left = STAGE_POS[s.pos] || '34%';
       if (s.thumb) {
         parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="left:' + left + '" alt="">');
@@ -206,30 +204,17 @@
       }
       if (s.entry) {
         parts.push('<img class="stage__sprite-img" data-res="' + esc(JSON.stringify(s.entry)) + '" style="left:' + left + '" alt="">');
-        return;
       }
-      parts.push(
-        '<div class="stage__sprite" title="' + esc('立绘编号 ' + s.cha + '，按 cha_list 顺序对到角色名') + '" style="left:' + left + '">' +
-          '<b>' + esc(who ? who.name : '立绘 ' + s.cha) + '</b>' +
-          '<span>' + esc('表情 ' + s.face + (s.l === '-10' ? ' 小头像' : '')) + '</span>' +
-          '</div>'
-      );
     });
 
-    if (st.cg) {
-      if (cgEntry) parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" alt="">');
-      else parts.push('<div class="stage__cg">' + esc('CG ' + st.cg) + '</div>');
+    if (st.cg && cgEntry) {
+      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" alt="">');
     }
 
     if (st.screen) {
-      const label = { white: '白屏', black: '黑屏', eyecatch: '过场', movie: '影片' }[st.screen];
-      parts.push('<div class="stage__screen stage__screen--' + st.screen + '">' + label + '</div>');
+      parts.push('<div class="stage__screen stage__screen--' + st.screen + '"></div>');
     }
 
-    const audio = [];
-    if (st.bgm != null) audio.push('bgm ' + st.bgm);
-    if (st.se != null) audio.push('se ' + st.se);
-    if (audio.length) parts.push('<div class="stage__audio">' + audio.map((a) => '<span class="stage__chip">' + esc(a) + '</span>').join('') + '</div>');
 
     if (!hideBox && (st.text || st.speaker)) {
       parts.push(

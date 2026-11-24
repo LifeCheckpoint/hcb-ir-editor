@@ -1,0 +1,166 @@
+/* ==========================================================================
+   模拟预览浮窗
+   ========================================================================== */
+
+.preview {
+  position: fixed;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  overflow: hidden;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: var(--surface-white-page);
+  box-shadow: 0 12px 32px rgba(15, 15, 15, 0.16);
+  user-select: none;
+  transition: width 0.16s ease, height 0.16s ease, border-radius 0.16s ease;
+}
+
+.preview__bar {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 10px;
+  border-bottom: 1px solid var(--color-hairline);
+  background: var(--surface-paper);
+  cursor: grab;
+}
+
+.preview__bar.is-dragging {
+  cursor: grabbing;
+}
+
+.preview__title {
+  color: var(--ink-40);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.preview__actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.preview__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink-40);
+  cursor: pointer;
+}
+
+.preview__btn:hover:not(:disabled) {
+  background: var(--color-hover-grey);
+  color: var(--color-ink);
+}
+
+.preview__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.preview__btn.is-on {
+  color: var(--ink-50);
+}
+
+.preview__body {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-hover-grey);
+  cursor: pointer;
+}
+
+.preview__stage,
+.preview__stage .stage,
+.preview__stage .stage__frame {
+  width: 100%;
+  height: 100%;
+}
+
+.preview__stage .stage__frame {
+  border: 0;
+  border-radius: 0;
+  aspect-ratio: auto;
+}
+
+.preview__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-40);
+  font-size: 11px;
+}
+
+.preview__resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 2;
+}
+
+.preview__resize::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--ink-30);
+  border-bottom: 1px solid var(--ink-30);
+}
+
+.preview__bubble {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-white-page);
+  color: var(--ink-50);
+  cursor: pointer;
+}
+
+.preview__bubble:hover {
+  color: var(--color-ink);
+}
+
+.preview.is-min {
+  min-width: 0;
+  border-radius: 50%;
+  box-shadow: 0 6px 20px rgba(15, 15, 15, 0.18);
+}
+
+.preview.is-min .preview__bar,
+.preview.is-min .preview__body,
+.preview.is-min .preview__resize {
+  display: none;
+}
+
+.preview.is-min .preview__bubble {
+  display: grid;
+  place-items: center;
+}
+
+/* 浮动预览里的舞台文字随窗口宽度略微放大，仍然保持紧凑 */
+.preview__stage .stage__text {
+  font-size: 11px;
+}
+
+.preview__stage .stage__speaker {
+  font-size: 10px;
+}

@@ -244,12 +244,6 @@ function renderMultiInspector(picked) {
     return;
   }
 
-  const stageSet = el('div', 'fieldset');
-  stageSet.appendChild(el('div', 'fieldset__legend', '舞台'));
-  stageSet.appendChild(stageCard(primary.scene, primary.block));
-  body.appendChild(stageSet);
-  hydrateSpriteImages(stageSet);
-
   if (!def.fields.length) body.appendChild(el('p', 'note-line', '这个原语没有参数'));
 
   const groups = [];

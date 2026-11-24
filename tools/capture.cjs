@@ -1024,6 +1024,67 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewtest') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+        await wait(500);
+        const black = [...document.querySelectorAll('.block')].find((n) => n.dataset.type === 'black');
+        black.click();
+        await wait(300);
+        const preview = document.getElementById('preview');
+        const out = {
+          preview: !!preview,
+          inspectorStage: !!document.querySelector('#inspector .stage'),
+          stage: !!preview?.querySelector('.stage'),
+          screenText: preview?.querySelector('.stage__screen')?.textContent || '',
+          bgLabel: !!preview?.querySelector('.stage__bgname'),
+          audioLabel: !!preview?.querySelector('.stage__audio'),
+          toolbar: preview?.querySelectorAll('.preview__btn').length,
+          block: state.blockId,
+        };
+        preview.querySelector('[data-preview-min]').click();
+        await wait(250);
+        out.minClass = preview.classList.contains('is-min');
+        out.minWidth = preview.offsetWidth;
+        preview.querySelector('[data-preview-bubble]').click();
+        await wait(250);
+        out.expanded = !preview.classList.contains('is-min');
+        out.expandedWidth = preview.offsetWidth;
+        const before = state.blockId;
+        preview.querySelector('[data-preview-body]').click();
+        await wait(300);
+        out.nextChanged = state.blockId !== before;
+        return out;
+      } catch (err) {
+        return { error: String(err && err.message || err), stack: err && err.stack };
+      }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewaudio') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(SAKURA_MAP)});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(500);
+        document.querySelector('.block[data-type="bgm"]').click();
+        await wait(900);
+        const preview = document.getElementById('preview');
+        const btn = preview?.querySelector('[data-preview-audio]');
+        const out = { preview: !!preview, button: !!btn, disabled: btn?.disabled, title: btn?.title };
+        if (btn) { btn.click(); await wait(250); out.titleAfter = btn.title; }
+        return out;
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

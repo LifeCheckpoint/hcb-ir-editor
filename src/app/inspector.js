@@ -13,6 +13,7 @@
 
   function renderInspector() {
     normalizeSelection();
+    if (typeof renderPreview === 'function') renderPreview();
     closeSelect(true);
     closeMenu();
     inspector.innerHTML = '';
@@ -44,11 +45,6 @@
 
     const body = el('div', 'inspector-body');
 
-    const stageSet = el('div', 'fieldset');
-    stageSet.appendChild(el('div', 'fieldset__legend', '舞台'));
-    stageSet.appendChild(stageCard(scene, block));
-    body.appendChild(stageSet);
-    hydrateSpriteImages(stageSet);
     const wire = wireSet(block);
     if (wire) body.appendChild(wire);
 
@@ -443,22 +439,17 @@
     if (!old || !hit) return;
     old.replaceWith(blockNode(block, hit.scene, hit.list));
     touch('patch:' + block.id);
+    if (typeof renderPreview === 'function') renderPreview();
     // 多选时右栏是批量标题/字段，不能被单块的标题覆盖
     if (selectedBlocks().length > 1) return;
     const v = viewOf(block);
     const title = inspector.querySelector('.inspector-title');
     if (title) title.textContent = v.speaker ? v.speaker + '：' + v.text : v.text;
-    const stage = inspector.querySelector('.stage');
-    if (stage) {
-      const fresh = stageCard(hit.scene, block);
-      const stageFs = stage.closest('.fieldset');
-      stage.replaceWith(fresh);
-      hydrateSpriteImages(inspector);
-      const oldWire = inspector.querySelector('.wire-set');
-      if (oldWire) oldWire.remove();
-      const nextWire = wireSet(block);
-      if (nextWire && stageFs) stageFs.after(nextWire);
-    }
+    const body = inspector.querySelector('.inspector-body');
+    const oldWire = inspector.querySelector('.wire-set');
+    const nextWire = wireSet(block);
+    if (oldWire) oldWire.remove();
+    if (nextWire && body) body.insertBefore(nextWire, body.firstChild);
     const code = inspector.querySelector('.inspector-code');
     if (code) code.textContent = v.code ? v.code.join('\n') : '';
     if (!code && v.code) {
