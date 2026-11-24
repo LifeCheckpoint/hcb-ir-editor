@@ -56,10 +56,19 @@
       </div>
     </div>
 
+    <div class="scan-progress" id="scan-progress" hidden role="status" aria-live="polite">
+      <div class="scan-progress__row">
+        <span class="scan-progress__text">正在读取游戏资源…</span>
+        <span class="scan-progress__meta"></span>
+      </div>
+      <div class="scan-progress__track"><div class="scan-progress__fill"></div></div>
+    </div>
+
     <script src="icons.js"></script>
     <script src="dsl.js"></script>
     <script src="mapping.js"></script>
     <script src="resource-store.js"></script>
+    <script src="scan-progress.js"></script>
     <script src="wiring.js"></script>
     <!-- 无打包器：按依赖顺序同步加载，app/*.js 共享全局词法作用域；顺序不要随意改。 -->
     <script src="app/core.js"></script>

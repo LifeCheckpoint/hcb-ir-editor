@@ -75,21 +75,57 @@ function parseArchive(file) {
   }
 }
 
-function scanDirectory(dir) {
+function scanDirectory(dir, onProgress) {
+  const report = (p) => {
+    if (typeof onProgress !== 'function') return;
+    try {
+      onProgress(p);
+    } catch (_) {
+      /* 进度订阅方出错不影响扫描 */
+    }
+  };
+  report({ phase: 'list', percent: 0, text: '正在读取游戏目录…' });
   const files = fs
     .readdirSync(dir, { withFileTypes: true })
     .filter((d) => d.isFile() && /\.bin$/i.test(d.name))
     .map((d) => path.join(dir, d.name))
     .sort();
+  const total = files.length;
   const archives = [];
-  for (const f of files) {
+  report({
+    phase: 'scan',
+    completed: 0,
+    total,
+    percent: total ? 2 : 100,
+    text: total ? '找到 ' + total + ' 个归档' : '目录里没有 .bin 归档',
+  });
+  for (let i = 0; i < total; i += 1) {
+    const f = files[i];
+    const name = path.basename(f);
+    report({
+      phase: 'scan',
+      completed: i,
+      total,
+      percent: Math.round((i / total) * 100),
+      file: name,
+      text: '正在读取 ' + name,
+    });
     try {
       const a = parseArchive(f);
       if (a) archives.push(a);
     } catch (err) {
-      archives.push({ file: path.basename(f), path: f, error: String(err.message || err), entries: [] });
+      archives.push({ file: name, path: f, error: String(err.message || err), entries: [] });
     }
+    report({
+      phase: 'scan',
+      completed: i + 1,
+      total,
+      percent: Math.round(((i + 1) / total) * 100),
+      file: name,
+      text: '已读取 ' + name,
+    });
   }
+  report({ phase: 'scan', completed: total, total, percent: 100, text: '读取完成' });
   return { root: dir, scannedAt: Date.now(), archives };
 }
 

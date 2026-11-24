@@ -51,7 +51,7 @@
     pop.appendChild(body);
 
     const pick = (key) => {
-      const block = makeBlock(key);
+      const block = makeBlock(key, { sc, list, index });
       list.splice(typeof index === 'number' ? index : list.length, 0, block);
       touch();
       closePalette();
@@ -183,7 +183,74 @@
     custom: { line: '' },
   };
 
-  function makeBlock(type) {
-    return { id: nid(), type, data: JSON.parse(JSON.stringify(DEFAULTS[type] || {})) };
+  function cloneData(data) {
+    return JSON.parse(JSON.stringify(data || {}));
+  }
+
+  function listOwner(blocks, list) {
+    for (const b of blocks || []) {
+      if (b.children === list) return b;
+      if (b.children) {
+        const hit = listOwner(b.children, list);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  function allProjectBlocks() {
+    const out = [];
+    (CHAPTERS || []).forEach((ch) => (ch.scenes || []).forEach((sc) => flatten(sc.blocks, out)));
+    return out;
+  }
+
+  function blocksBeforeScene(sc) {
+    const out = [];
+    for (const ch of CHAPTERS || []) {
+      for (const s of ch.scenes || []) {
+        if (s === sc) return out;
+        flatten(s.blocks, out);
+      }
+    }
+    return out;
+  }
+
+  /* 插入点之前最近的一个同类型块。 */
+  function previousSameBlock(type, sc, list, index) {
+    const at = typeof index === 'number' ? Math.max(0, Math.min(index, list.length)) : list.length;
+    for (let i = at - 1; i >= 0; i -= 1) {
+      if (list[i].type === type) return list[i];
+    }
+
+    const owner = listOwner(sc.blocks, list);
+    const boundary = list[0] || owner;
+    if (boundary) {
+      const all = allProjectBlocks();
+      const pos = all.indexOf(boundary);
+      if (pos >= 0) {
+        // 列表为空时插入点在 owner 之后，owner 本身也算前一个；否则从列表首块之前找。
+        const start = list.length ? pos - 1 : pos;
+        for (let i = start; i >= 0; i -= 1) {
+          if (all[i].type === type) return all[i];
+        }
+      }
+      return null;
+    }
+
+    // 空场景：从这份场景之前的块里找。
+    const before = blocksBeforeScene(sc);
+    for (let i = before.length - 1; i >= 0; i -= 1) {
+      if (before[i].type === type) return before[i];
+    }
+    return null;
+  }
+
+  function makeBlock(type, ctx) {
+    const source = ctx && ctx.sc && ctx.list ? previousSameBlock(type, ctx.sc, ctx.list, ctx.index) : null;
+    return {
+      id: nid(),
+      type,
+      data: source ? cloneData(source.data) : cloneData(DEFAULTS[type]),
+    };
   }
 

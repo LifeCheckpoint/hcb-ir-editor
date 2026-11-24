@@ -185,13 +185,28 @@
       spriteCache = null;
       listeners.forEach((fn) => fn(RES));
     },
+    async scanDirectory(dir) {
+      if (!window.shell || !window.shell.scanResources) return { error: '没有扫描通道' };
+      if (window.SCAN_UI) window.SCAN_UI.start();
+      let res;
+      try {
+        res = await window.shell.scanResources(dir);
+      } catch (err) {
+        res = { error: String((err && err.message) || err) };
+      }
+      if (res && res.archives && res.archives.length) RES.setScan(res);
+      if (res && res.error === '已取消') return null;
+      if (window.SCAN_UI) {
+        if (res && res.error) window.SCAN_UI.fail(res.error);
+        else window.SCAN_UI.finish();
+      }
+      return res;
+    },
     async pickAndScan() {
       if (!window.shell || !window.shell.scanResources) return { error: '没有扫描通道' };
       const dir = await window.shell.pickDirectory();
       if (!dir) return null;
-      const res = await window.shell.scanResources(dir);
-      if (res && res.archives) RES.setScan(res);
-      return res;
+      return RES.scanDirectory(dir);
     },
     thumb(entry, w) {
       const key = (entry.path || '') + ':' + entry.offset;

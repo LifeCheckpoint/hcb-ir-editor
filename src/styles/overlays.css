@@ -334,3 +334,70 @@
   }
 }
 
+
+
+/* 游戏资源扫描进度：固定底部，不遮挡编辑 */
+.scan-progress {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 90;
+  width: min(360px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: var(--surface-white-page);
+  box-shadow: 0 8px 24px rgba(15, 15, 15, 0.12);
+  transform: translateX(-50%);
+}
+
+.scan-progress[hidden] {
+  display: none;
+}
+
+.scan-progress__row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.scan-progress__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scan-progress__meta {
+  flex: 0 0 auto;
+  color: var(--ink-30);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.scan-progress__track {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--color-hover-grey);
+}
+
+.scan-progress__fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: var(--color-link-blue);
+  transition: width 0.15s linear;
+}
+
+.scan-progress.is-error .scan-progress__fill {
+  background: var(--color-marker-red);
+}
+
+.scan-progress.is-error .scan-progress__text {
+  color: var(--color-marker-red);
+}

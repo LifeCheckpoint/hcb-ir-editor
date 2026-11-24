@@ -47,6 +47,7 @@ tools/build-mapping.py 从 hcb 的 Lua IR 生成立绘/角色/背景映射
 tools/dump-mapping-inputs.cjs 扫描归档，准备生成用的条目/格数
 src/resource.js        资源工作区（下一步拆分候选）
 src/resource-store.js  扫描结果，两个工作区共用
+src/scan-progress.js  扫描进度条与正在读取提示
 src/styles/tokens.css  颜色/间距变量
 src/styles/base.css    基础与外壳
 src/styles/write.css   写作区左栏/主栏
@@ -54,7 +55,8 @@ src/styles/inspector.css 右栏/字段/立绘
 src/styles/overlays.css 下拉/弹层/窄屏
 src/styles/resource.css 资源工作区
 src/styles/dialogs.css 起始页/导入/接线
-electron/scan.js       读 .bin 名称表、解 hzc1、按范围取音频（主进程）
+electron/scan.js       读 .bin 名称表、解 hzc1、按范围取音频
+electron/scan-worker.js 后台扫描 worker，进度回传主进程
 electron/main.js       窗口 + 扫描/缩略图/音频/映射表的 IPC 通道
 electron/gbk.js        导出 DSL 用的 GBK 编码器
 tools/capture.cjs      离屏截图与冒烟测试
@@ -114,6 +116,8 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 ## 写作工作区
 
 块 = 原语，名字就是脚本里的命令字。39 个原语按 8 组，另加一个「扩展」组里的**自定义指令**，一起放进插入面板（流程、台词、画面、立绘、声音、演出、变量、备注、扩展），面板可搜 `bg`、`dia`、`bs_move`、`custom` 这类命令字。
+
+新块默认取插入点前最近一个同类型块的参数，跨场景和章节也会继续往前找；找不到才用内置默认。只复制参数，不复制子块。
 
 每块右侧显示它展开后的 DSL 行，右栏顶部显示完整调用（选项这种多行原语就展开成 `[sel,start,…]` / `[sel,op,…]` / `[sel,end]`）。改参数，这一行立刻跟着变。
 
@@ -232,7 +236,7 @@ zlib 流
 
 ## 资源工作区
 
-左栏顶部是「来源」：没扫描时这里只有扫描入口，点「扫描游戏目录」选到放 .bin 的那一层，主进程会把目录里所有 .bin 的名称表读出来，标题、条目数、大小、偏移、hzc1 的宽高与类型都来自真实文件。扫描后图片条目点开就是解出来的真图。
+左栏顶部是「来源」：没扫描时这里只有扫描入口，点「扫描游戏目录」选到放 .bin 的那一层。扫描在 worker 线程里跑，界面底部显示进度条、当前读取的 .bin 和完成数；主进程只收进度和结果，不阻塞窗口。标题、条目数、大小、偏移、hzc1 的宽高与类型都来自真实文件。扫描后图片条目点开就是解出来的真图。
 
 下面两个入口：绑定表、归档。
 

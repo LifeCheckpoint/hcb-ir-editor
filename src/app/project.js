@@ -154,9 +154,11 @@
 
   async function loadGameRoot(root) {
     if (!root || !window.shell || !window.shell.scanResources) return;
-    const res = await window.shell.scanResources(root);
-    if (res && res.archives && res.archives.length) {
-      window.RES.setScan(res);
+    const res = window.RES && window.RES.scanDirectory ? await window.RES.scanDirectory(root) : await window.shell.scanResources(root);
+    if (!res) return;
+    if (res.error === '已取消') return;
+    if (res.archives && res.archives.length) {
+      if (!window.RES || !window.RES.scanDirectory) window.RES.setScan(res);
       hideBanner();
       return;
     }
@@ -166,9 +168,9 @@
         action: async () => {
           const dir = await window.shell.pickDirectory();
           if (!dir) return;
-          const r = await window.shell.scanResources(dir);
+          const r = window.RES && window.RES.scanDirectory ? await window.RES.scanDirectory(dir) : await window.shell.scanResources(dir);
           if (r && r.archives && r.archives.length) {
-            window.RES.setScan(r);
+            if (!window.RES || !window.RES.scanDirectory) window.RES.setScan(r);
             hideBanner();
           }
         },

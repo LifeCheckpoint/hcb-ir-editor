@@ -1,7 +1,8 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
-const { scanDirectory, decodeThumb, decodeSheet } = require('./scan');
+const { decodeThumb, decodeSheet } = require('./scan');
+const { Worker } = require('node:worker_threads');
 const { encodeGbk } = require('./gbk');
 const toml = require('@iarna/toml');
 
@@ -23,15 +24,87 @@ ipcMain.handle('res:pick', async () => {
   return r.canceled ? null : r.filePaths[0];
 });
 
-ipcMain.handle('res:scan', (_e, dir) => {
+let scanSeq = 0;
+let activeScan = null;
+
+ipcMain.handle('res:scan', (event, dir) => {
   if (typeof dir !== 'string' || !dir) return { error: '目录为空' };
-  try {
-    const res = scanDirectory(dir);
-    roots.add(path.resolve(dir));
-    return res;
-  } catch (err) {
-    return { error: String((err && err.message) || err) };
+  const seq = ++scanSeq;
+  if (activeScan) {
+    const old = activeScan;
+    activeScan = null;
+    old.cancel();
+    try {
+      old.worker.terminate();
+    } catch (_) {
+      /* 已经退出 */
+    }
   }
+
+  const sender = event.sender;
+  const send = (payload) => {
+    if (!sender.isDestroyed()) sender.send('res:scan-progress', { scanId: seq, ...payload });
+  };
+  send({ phase: 'listing', percent: 0, text: '正在读取游戏目录…' });
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      if (activeScan && activeScan.seq === seq) activeScan = null;
+      resolve(value);
+    };
+
+    let worker;
+    try {
+      worker = new Worker(path.join(__dirname, 'scan-worker.js'), { workerData: { dir } });
+    } catch (err) {
+      const message = String((err && err.message) || err);
+      send({ phase: 'error', text: '读取失败：' + message });
+      finish({ error: message });
+      return;
+    }
+
+    activeScan = {
+      seq,
+      worker,
+      cancel: () => finish({ error: '已取消' }),
+    };
+
+    worker.on('message', (msg) => {
+      if (seq !== scanSeq || !msg || typeof msg !== 'object') return;
+      if (msg.type === 'progress') {
+        send(msg.progress || {});
+        return;
+      }
+      if (msg.type === 'done') {
+        roots.add(path.resolve(dir));
+        send({ phase: 'done', percent: 100, text: '游戏资源读取完成' });
+        finish(msg.result);
+        return;
+      }
+      if (msg.type === 'error') {
+        const message = String(msg.error || '未知错误');
+        send({ phase: 'error', text: '读取失败：' + message });
+        finish({ error: message });
+      }
+    });
+
+    worker.on('error', (err) => {
+      if (seq !== scanSeq) return;
+      const message = String((err && err.message) || err);
+      send({ phase: 'error', text: '读取失败：' + message });
+      finish({ error: message });
+    });
+
+    worker.on('exit', (code) => {
+      if (seq !== scanSeq || settled) return;
+      const message = '扫描线程退出（' + code + '）';
+      send({ phase: 'error', text: '读取失败：' + message });
+      finish({ error: message });
+    });
+  });
 });
 
 ipcMain.handle('res:thumb', (_e, req) => {

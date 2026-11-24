@@ -42,6 +42,7 @@ resource.js
 - `app/types.js` 的 `TYPES` 里大量箭头函数会引用后面的 `mapCg` / `spritePick`，但只在 render 时执行，加载时不会碰 TDZ；
 - `app/project.js` 在加载时挂 `window.PROJECT`；`app/import-export.js` 挂 `window.DSL`；
 - `app/boot.js` 只注册 `DOMContentLoaded`；`resource.js` 自己也有 boot，顺序保持先写作后资源。
+- 游戏目录扫描在 `electron/scan-worker.js` 的 worker 里执行，主进程通过 `res:scan-progress` 转发进度。
 - **不要随意改顺序**；移动脚本后先检查顶层 `const` 是否在被初始化前使用。
 
 ## 写作区（app/）

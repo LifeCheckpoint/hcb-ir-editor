@@ -9,6 +9,11 @@ contextBridge.exposeInMainWorld('shell', {
   },
   pickDirectory: () => ipcRenderer.invoke('res:pick'),
   scanResources: (dir) => ipcRenderer.invoke('res:scan', dir),
+  onScanProgress: (cb) => {
+    const listener = (_event, payload) => cb(payload);
+    ipcRenderer.on('res:scan-progress', listener);
+    return () => ipcRenderer.removeListener('res:scan-progress', listener);
+  },
   loadThumb: (req) => ipcRenderer.invoke('res:thumb', req),
   loadSheet: (req) => ipcRenderer.invoke('res:sheet', req),
   loadAudio: (req) => ipcRenderer.invoke('res:audio', req),

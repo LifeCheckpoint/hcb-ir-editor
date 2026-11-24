@@ -812,6 +812,65 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'neighbor') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const ch = currentChapter();
+      const sc = ch.scenes.find((x) => x.blocks.some((b) => b.type === 'bg'));
+      const list = sc.blocks;
+      const marker = { id: nid(), type: 'bg', data: { id: '999', diff: '7' } };
+      list.push(marker);
+      const next = makeBlock('bg', { sc, list, index: list.length });
+      const other = makeBlock('fog', { sc, list, index: list.length });
+      const scenes = ch.scenes;
+      let nextScene = null;
+      for (let i = 0; i < scenes.length; i += 1) {
+        if (scenes[i] === sc && scenes[i + 1]) nextScene = scenes[i + 1];
+      }
+      const atStart = nextScene ? makeBlock('bg', { sc: nextScene, list: nextScene.blocks, index: 0 }) : null;
+      const anchor = { getBoundingClientRect: () => ({ left: 200, right: 200, top: 200, bottom: 200, width: 0, height: 0 }) };
+      openPalette(anchor, sc, list, list.length);
+      await wait(180);
+      document.querySelector('.palette-item[data-type="bg"]').click();
+      await wait(250);
+      const inserted = list[list.length - 1];
+      const paletteOk = inserted && inserted.type === 'bg' && JSON.stringify(inserted.data) === JSON.stringify(marker.data);
+      return {
+        paletteOk,
+        sameScene: next.data,
+        marker: marker.data,
+        sameSceneOk: JSON.stringify(next.data) === JSON.stringify(marker.data),
+        fallback: other.data,
+        fallbackOk: JSON.stringify(other.data) === '{}',
+        nextScene: atStart ? atStart.data : null,
+        nextSceneOk: atStart ? JSON.stringify(atStart.data) === JSON.stringify(marker.data) : null,
+      };
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'scanui') {
+    win.webContents.send('res:scan-progress', { scanId: 1, phase: 'list', percent: 0, text: '正在读取游戏目录…' });
+    await wait(200);
+    win.webContents.send('res:scan-progress', {
+      scanId: 1,
+      phase: 'scan',
+      completed: 3,
+      total: 12,
+      percent: 25,
+      file: 'graph_bs.bin',
+      text: '正在读取 graph_bs.bin',
+    });
+    await wait(300);
+    const info = await run(`(() => ({
+      hidden: document.getElementById('scan-progress').hidden,
+      text: document.querySelector('.scan-progress__text').textContent,
+      meta: document.querySelector('.scan-progress__meta').textContent,
+      width: document.querySelector('.scan-progress__fill').style.width,
+    }))()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
