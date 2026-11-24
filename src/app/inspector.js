@@ -593,31 +593,37 @@
             }
           }
           if (!canvas.isConnected) return;
-          const scale = Math.min(1, 700 / spec.h);
-          canvas.width = Math.max(1, Math.round(spec.w * scale));
-          canvas.height = Math.max(1, Math.round(spec.h * scale));
-          const ctx = canvas.getContext('2d');
-          ctx.imageSmoothingQuality = 'high';
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
+          // 先在全身原尺寸上拼脸，再整体缩放，避免脸和身体各自缩放时出现亚像素错位
+          const composite = document.createElement('canvas');
+          composite.width = Math.max(1, Math.round(spec.w));
+          composite.height = Math.max(1, Math.round(spec.h));
+          const cctx = composite.getContext('2d');
+          cctx.drawImage(bodyImg, 0, 0, composite.width, composite.height);
           if (sheetImg && spec.sheet) {
             const cols = spec.sheet.cols || 6;
             const cells = spec.sheet.cells || 1;
             const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
             const sx = (idx % cols) * spec.sheet.cellW;
             const sy = Math.floor(idx / cols) * spec.sheet.cellH;
-            ctx.drawImage(
+            cctx.drawImage(
               sheetImg,
               sx,
               sy,
               spec.sheet.cellW,
               spec.sheet.cellH,
-              (spec.sheet.faceX || 0) * scale,
-              (spec.sheet.faceY || 0) * scale,
-              spec.sheet.cellW * scale,
-              spec.sheet.cellH * scale
+              spec.sheet.faceX || 0,
+              spec.sheet.faceY || 0,
+              spec.sheet.cellW,
+              spec.sheet.cellH
             );
           }
+          const scale = Math.min(1, 700 / spec.h);
+          canvas.width = Math.max(1, Math.round(spec.w * scale));
+          canvas.height = Math.max(1, Math.round(spec.h * scale));
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(composite, 0, 0, canvas.width, canvas.height);
         })().catch(() => {})
       );
     });
@@ -784,6 +790,30 @@
           if (seq !== sideSeq || !canvas.isConnected) return;
           const bw = body.w || bodyImg.naturalWidth;
           const bh = body.h || bodyImg.naturalHeight;
+          // 原尺寸拼好再缩小，避免身体与表情层分别缩放产生 1px 级偏移
+          const composite = document.createElement('canvas');
+          composite.width = Math.max(1, Math.round(bw));
+          composite.height = Math.max(1, Math.round(bh));
+          const cctx = composite.getContext('2d');
+          cctx.drawImage(bodyImg, 0, 0, composite.width, composite.height);
+          if (sheetImg && sheetData) {
+            const cols = sheetData.cols || 6;
+            const cellCount = sheetData.cells || 1;
+            const idx = Math.max(0, Math.min(cellCount - 1, face - 1));
+            const sx = (idx % cols) * sheetData.cellW;
+            const sy = Math.floor(idx / cols) * sheetData.cellH;
+            cctx.drawImage(
+              sheetImg,
+              sx,
+              sy,
+              sheetData.cellW,
+              sheetData.cellH,
+              sheet.faceX || 0,
+              sheet.faceY || 0,
+              sheetData.cellW,
+              sheetData.cellH
+            );
+          }
           const scale = Math.min(150 / bw, 210 / bh, 1);
           canvas.width = Math.max(1, Math.round(bw * scale));
           canvas.height = Math.max(1, Math.round(bh * scale));
@@ -792,27 +822,7 @@
           const ctx = canvas.getContext('2d');
           ctx.imageSmoothingQuality = 'high';
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
-          if (sheetImg && sheetData) {
-            const cols = sheetData.cols || 6;
-            const cellCount = sheetData.cells || 1;
-            const idx = Math.max(0, Math.min(cellCount - 1, face - 1));
-            const sx = (idx % cols) * sheetData.cellW;
-            const sy = Math.floor(idx / cols) * sheetData.cellH;
-            const fx = (sheet.faceX || 0) * scale;
-            const fy = (sheet.faceY || 0) * scale;
-            ctx.drawImage(
-              sheetImg,
-              sx,
-              sy,
-              sheetData.cellW,
-              sheetData.cellH,
-              fx,
-              fy,
-              sheetData.cellW * scale,
-              sheetData.cellH * scale
-            );
-          }
+          ctx.drawImage(composite, 0, 0, canvas.width, canvas.height);
         })
         .catch(() => {});
     };
