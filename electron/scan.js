@@ -75,6 +75,135 @@ function parseArchive(file) {
   }
 }
 
+const LOOSE_BASES = new Set([
+  'graph_bs',
+  'graph_bg',
+  'graph_vis',
+  'graph_vish',
+  'graph',
+  'graph_sd',
+  'patch',
+  'voice',
+  'bgm',
+  'se',
+  'se_env',
+  'se_sys',
+]);
+
+const PNG_SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+function looseName(root, file) {
+  const rel = path.relative(root, file).split(path.sep).join('/');
+  const ext = path.extname(rel);
+  return ext ? rel.slice(0, -ext.length) : rel;
+}
+
+/* 免封包文件：散装目录里的文件没有归档偏移，直接按整文件读取。 */
+function parseLooseFile(file, root) {
+  const stat = fs.statSync(file);
+  const fd = fs.openSync(file, 'r');
+  let head;
+  try {
+    head = readAt(fd, 0, 64);
+  } finally {
+    fs.closeSync(fd);
+  }
+  const rel = path.relative(root, file).split(path.sep).join('/');
+  const ext = path.extname(rel);
+  const row = {
+    name: looseName(root, file),
+    off: 0,
+    size: stat.size,
+    magic: head.length >= 4 ? head.subarray(0, 4).toString('latin1') : '',
+    loose: true,
+    path: file,
+    ext: ext ? ext.slice(1).toLowerCase() : '',
+  };
+
+  if (row.magic === 'hzc1' && head.length >= 28) {
+    const raw = head.readUInt32LE(4);
+    const type = head[18];
+    const w = head.readUInt16LE(20);
+    const h = head.readUInt16LE(22);
+    row.kind = 'image';
+    row.raw = raw;
+    row.type = type;
+    row.w = w;
+    row.h = h;
+    row.bpp = w && h ? Math.round(raw / (w * h)) : 0;
+    row.cells = type === 2 ? Math.max(1, Math.round(row.bpp / 4)) : 1;
+  } else if (head.length >= 24 && head.subarray(0, 8).equals(PNG_SIG)) {
+    row.kind = 'image';
+    row.magic = 'PNG';
+    row.type = 0;
+    row.bpp = 4;
+    row.cells = 1;
+    row.w = head.readUInt32BE(16);
+    row.h = head.readUInt32BE(20);
+  } else if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) {
+    row.kind = 'image';
+    row.magic = 'JPEG';
+    row.type = 0;
+    row.bpp = 4;
+    row.cells = 1;
+  } else if (head.length >= 4 && head.subarray(0, 4).toString('latin1') === 'GIF8') {
+    row.kind = 'image';
+    row.magic = 'GIF';
+    row.type = 0;
+    row.bpp = 4;
+    row.cells = 1;
+  } else if (head.length >= 12 && head.subarray(0, 4).toString('latin1') === 'RIFF' && head.subarray(8, 12).toString('latin1') === 'WEBP') {
+    row.kind = 'image';
+    row.magic = 'WEBP';
+    row.type = 0;
+    row.bpp = 4;
+    row.cells = 1;
+  } else if (row.magic === 'OggS' || row.magic === 'RIFF') {
+    row.kind = 'audio';
+  } else {
+    row.kind = 'other';
+  }
+  return row;
+}
+
+function scanLooseDirectory(root) {
+  const found = new Map();
+  const walk = (dir) => {
+    let list;
+    try {
+      list = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (_) {
+      return;
+    }
+    for (const ent of list) {
+      const file = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        walk(file);
+      } else if (ent.isFile()) {
+        try {
+          const row = parseLooseFile(file, root);
+          if (!found.has(row.name)) found.set(row.name, row);
+        } catch (err) {
+          const name = looseName(root, file);
+          if (!found.has(name)) {
+            found.set(name, {
+              name,
+              off: 0,
+              size: 0,
+              magic: '',
+              loose: true,
+              path: file,
+              error: String((err && err.message) || err),
+            });
+          }
+        }
+      }
+    }
+  };
+  walk(root);
+  return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function scanDirectory(dir, onProgress) {
   const report = (p) => {
     if (typeof onProgress !== 'function') return;
@@ -85,44 +214,104 @@ function scanDirectory(dir, onProgress) {
     }
   };
   report({ phase: 'list', percent: 0, text: '正在读取游戏目录…' });
-  const files = fs
-    .readdirSync(dir, { withFileTypes: true })
-    .filter((d) => d.isFile() && /\.bin$/i.test(d.name))
-    .map((d) => path.join(dir, d.name))
-    .sort();
-  const total = files.length;
+  const dirents = fs.readdirSync(dir, { withFileTypes: true });
+  const bins = new Map();
+  const dirs = new Map();
+  for (const ent of dirents) {
+    if (ent.isFile() && /\.bin$/i.test(ent.name)) {
+      const key = ent.name.replace(/\.bin$/i, '').toLowerCase();
+      if (!bins.has(key)) bins.set(key, { name: ent.name, path: path.join(dir, ent.name) });
+    } else if (ent.isDirectory()) {
+      const key = ent.name.replace(/\.bin$/i, '').toLowerCase();
+      if (!dirs.has(key)) dirs.set(key, { name: ent.name, path: path.join(dir, ent.name) });
+    }
+  }
+
+  const work = [];
+  for (const [key, bin] of bins) {
+    work.push({ key, bin, folder: dirs.get(key) || null });
+  }
+  for (const [key, folder] of dirs) {
+    if (!bins.has(key) && LOOSE_BASES.has(key)) work.push({ key, bin: null, folder });
+  }
+  work.sort((a, b) => a.key.localeCompare(b.key));
+
+  const total = work.length;
   const archives = [];
   report({
     phase: 'scan',
     completed: 0,
     total,
     percent: total ? 2 : 100,
-    text: total ? '找到 ' + total + ' 个归档' : '目录里没有 .bin 归档',
+    text: total ? '找到 ' + total + ' 个资源组' : '目录里没有 .bin 或散装资源目录',
   });
+
   for (let i = 0; i < total; i += 1) {
-    const f = files[i];
-    const name = path.basename(f);
+    const item = work[i];
+    const label = item.bin ? item.bin.name : item.folder.name;
     report({
       phase: 'scan',
       completed: i,
       total,
       percent: Math.round((i / total) * 100),
-      file: name,
-      text: '正在读取 ' + name,
+      file: label,
+      text: '正在读取 ' + label,
     });
-    try {
-      const a = parseArchive(f);
-      if (a) archives.push(a);
-    } catch (err) {
-      archives.push({ file: name, path: f, error: String(err.message || err), entries: [] });
+
+    let archive = null;
+    if (item.bin) {
+      try {
+        archive = parseArchive(item.bin.path);
+      } catch (err) {
+        archive = {
+          file: item.bin.name,
+          path: item.bin.path,
+          error: String((err && err.message) || err),
+          entries: [],
+        };
+      }
     }
+
+    const loose = item.folder ? scanLooseDirectory(item.folder.path) : [];
+    if (loose.length) {
+      const baseEntries = archive && Array.isArray(archive.entries) ? archive.entries : [];
+      const looseNames = new Set(loose.map((e) => e.name));
+      const entries = loose.concat(baseEntries.filter((e) => !looseNames.has(e.name)));
+      const looseBytes = loose.reduce((n, e) => n + (e.size || 0), 0);
+      const file = archive ? archive.file : item.key + '.bin';
+      archives.push({
+        ...(archive || {}),
+        file,
+        path: archive ? archive.path : item.folder.path,
+        count: entries.length,
+        bytes: (archive ? archive.bytes || 0 : 0) + looseBytes,
+        entries,
+        loose: true,
+        looseCount: loose.length,
+        looseOnly: !archive,
+      });
+    } else if (archive) {
+      archives.push(archive);
+    } else if (item.folder) {
+      archives.push({
+        file: item.key + '.bin',
+        path: item.folder.path,
+        count: 0,
+        bytes: 0,
+        entries: [],
+        loose: true,
+        looseCount: 0,
+        looseOnly: true,
+      });
+    }
+
     report({
       phase: 'scan',
       completed: i + 1,
       total,
       percent: Math.round(((i + 1) / total) * 100),
-      file: name,
-      text: '已读取 ' + name,
+      file: label,
+      text: '已读取 ' + label,
     });
   }
   report({ phase: 'scan', completed: total, total, percent: 100, text: '读取完成' });
@@ -215,9 +404,40 @@ function readEntry(file, off, size) {
   }
 }
 
+function imageMime(buf) {
+  if (buf.length >= 24 && buf.subarray(0, 8).equals(PNG_SIG)) return 'image/png';
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  if (buf.length >= 4 && buf.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif';
+  if (buf.length >= 12 && buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
+  return '';
+}
+
+function imageSize(buf, mime) {
+  if (mime === 'image/png' && buf.length >= 24) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  return { w: 0, h: 0 };
+}
+
+/* 免封包图片直接回原文件；PNG 能读出宽高。 */
+function decodeLooseImage(buf) {
+  const mime = imageMime(buf);
+  if (!mime) return null;
+  const size = imageSize(buf, mime);
+  return {
+    w: size.w,
+    h: size.h,
+    type: 0,
+    bpp: 4,
+    cells: 1,
+    dataUrl: 'data:' + mime + ';base64,' + buf.toString('base64'),
+  };
+}
+
 /* 解一条 hzc1 的缩略图（类型 2 只取第一格） */
 function decodeThumb(file, off, size, maxW) {
   const buf = readEntry(file, off, size);
+  const looseImage = decodeLooseImage(buf);
+  if (looseImage) return looseImage;
+  if (buf.length < 28) return { error: 'unsupported' };
   const raw = buf.readUInt32LE(4);
   const type = buf[18];
   const w = buf.readUInt16LE(20);
@@ -247,6 +467,11 @@ function decodeThumb(file, off, size, maxW) {
 /* 表情表：按格拼回整图再缩小 */
 function decodeSheet(file, off, size, maxW) {
   const buf = readEntry(file, off, size);
+  const looseImage = decodeLooseImage(buf);
+  if (looseImage) {
+    return { type: 0, cells: 1, cols: 1, rows: 1, cellW: looseImage.w, cellH: looseImage.h, w: looseImage.w, h: looseImage.h, tw: looseImage.w, th: looseImage.h, dataUrl: looseImage.dataUrl };
+  }
+  if (buf.length < 28) return { error: 'unsupported' };
   const type = buf[18];
   const cw = buf.readUInt16LE(20);
   const ch = buf.readUInt16LE(22);

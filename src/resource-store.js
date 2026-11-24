@@ -54,7 +54,8 @@
           h: e.h,
           type: e.type,
           cells: e.cells,
-          path: a.path,
+          path: e.path || a.path,
+          loose: !!e.loose,
         });
         g.shown = g.items.length;
       }
@@ -68,6 +69,9 @@
       count: a.count,
       bytes: a.bytes,
       magic: (a.entries[0] || {}).magic || '',
+      loose: !!a.loose,
+      looseCount: a.looseCount || 0,
+      looseOnly: !!a.looseOnly,
       groups,
       scanned: true,
     };
@@ -152,13 +156,13 @@
       if (!state.raw) return [];
       const a = state.raw.find((x) => x.file === file);
       if (!a) return [];
-      return a.entries.map((e) => ({ ...e, offset: e.off, path: a.path, group: groupKey(e.name) }));
+      return a.entries.map((e) => ({ ...e, offset: e.off, path: e.path || a.path, group: groupKey(e.name) }));
     },
     find(name) {
       if (!state.raw) return null;
       for (const a of state.raw) {
         const hit = a.entries.find((e) => e.name === name);
-        if (hit) return { archive: a, entry: { ...hit, offset: hit.off, path: a.path } };
+        if (hit) return { archive: a, entry: { ...hit, offset: hit.off, path: hit.path || a.path } };
       }
       return null;
     },

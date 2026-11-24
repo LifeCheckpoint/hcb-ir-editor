@@ -1001,6 +1001,29 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'loose') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+      window.RES.setScan(scan);
+      const archives = window.RES.archives();
+      const voice = archives.find((a) => a.file === 'voice.bin');
+      const index = archives.indexOf(voice);
+      document.querySelector('.workspace-switch__btn[data-workspace="resource"]').click();
+      await wait(250);
+      document.querySelector('[data-archive="' + index + '"]').click();
+      await wait(250);
+      return {
+        scanArchives: scan.archives.length,
+        voice: voice && { count: voice.count, loose: voice.loose, looseCount: voice.looseCount, looseOnly: voice.looseOnly, magic: voice.magic },
+        navText: document.querySelector('[data-archive="' + index + '"]')?.textContent,
+        title: document.querySelector('.res-title')?.textContent,
+        rows: document.querySelectorAll('.res-table tbody tr').length,
+        firstRows: [...document.querySelectorAll('.res-table tbody tr')].slice(0, 5).map((tr) => tr.textContent.trim()),
+      };
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

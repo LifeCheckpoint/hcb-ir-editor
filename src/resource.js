@@ -162,6 +162,7 @@
         cells: e.cells,
         path: e.path,
         group: e.group,
+        loose: !!e.loose,
       }));
       return state.group === '*' ? list : list.filter((e) => e.group === state.group);
     }
@@ -193,7 +194,7 @@
     const navArchive = (a, i) =>
       '<button class="res-nav__item' + (state.view === 'assets' && i === state.archive ? ' is-active' : '') + '" type="button" data-archive="' + i + '">' +
       icon(a.kind === 'voice' ? 'mic' : a.kind === 'bgm' || a.kind === 'se' ? 'volume-2' : a.kind === 'background' ? 'mountain' : a.kind === 'sprite' ? 'user-round' : 'image', 'icon icon--14') +
-      '<span>' + esc(a.file.replace('.bin', '')) + '</span><span class="res-nav__count">' + a.count + '</span></button>';
+      '<span>' + esc(a.file.replace('.bin', '') + (a.loose ? '（散装）' : '')) + '</span><span class="res-nav__count">' + a.count + '</span></button>';
 
     const scanned = window.RES.mode() === 'scan';
     const mapStats = window.MAPPING ? window.MAPPING.stats() : { total: 0 };
@@ -212,15 +213,15 @@
       '</div>' +
       (scanned
         ? '<label class="search">' + icon('search', 'icon icon--14') + '<input type="search" placeholder="搜索" aria-label="搜索" /></label>' +
-          '<div class="res-nav__group"><div class="res-nav__group-label">归档</div>' + ARCHIVES.map(navArchive).join('') + '</div>'
-        : '<p class="res-hint">选到放 .bin 的那一层。</p>');
+          '<div class="res-nav__group"><div class="res-nav__group-label">资源组</div>' + ARCHIVES.map(navArchive).join('') + '</div>'
+        : '<p class="res-hint">选到放 .bin 或同名资源文件夹的那一层。</p>');
   }
 
   function sourceText() {
     if (window.RES.mode() === 'scan') {
       const root = window.RES.root() || '';
       const short = root.length > 26 ? '…' + root.slice(-24) : root;
-      return short + '　' + ARCHIVES.length + ' 个归档';
+      return short + '　' + ARCHIVES.length + ' 个资源组';
     }
     return '还没扫描';
   }
@@ -243,7 +244,7 @@
           '<td class="res-cell-name">' + esc(e.name) + '</td>' +
           '<td class="res-num">' + kb(e.size) + '</td>' +
           '<td class="res-num">' + (e.rawSize ? kb(e.rawSize) : '—') + '</td>' +
-          '<td class="res-num">' + hex(e.offset) + '</td></tr>'
+          '<td class="res-num">' + (e.loose ? '—' : hex(e.offset)) + '</td></tr>'
       )
       .join('');
 
@@ -495,8 +496,11 @@
       tab === 'preview'
         ? assetPreview(a, e)
         : '<div class="res-meta">' +
-          meta('归档', a.file, true) + meta('格式', e.magic, true) + meta('压缩大小', kb(e.size), true) +
-          meta('解压后', e.rawSize ? kb(e.rawSize) : '—', true) + meta('偏移', hex(e.offset), true) +
+          meta('归档', a.file, true) + meta('格式', e.magic, true) +
+          (e.loose ? meta('来源', '散装文件', true) : '') +
+          meta(e.loose ? '文件大小' : '压缩大小', kb(e.size), true) +
+          meta('解压后', e.rawSize ? kb(e.rawSize) : '—', true) +
+          meta('偏移', e.loose ? '—' : hex(e.offset), true) +
           (g ? meta('分组', g.key + '　' + g.count + ' 条') : '') + '</div>';
 
     detailEl.innerHTML =
