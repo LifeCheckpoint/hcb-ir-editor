@@ -88,7 +88,7 @@
     const chars = new Map();
     const entryOf = (e) => ({ path: a.path, offset: e.off, size: e.size, name: e.name });
     const findEntry = (name) => a.entries.find((e) => e.name === name) || null;
-    const sheetOf = (e) => ({ entry: entryOf(e), cellW: e.w, cellH: e.h, cells: e.cells || 1, cols: 6 });
+    const sheetOf = (e) => ({ entry: entryOf(e), cellW: e.w, cellH: e.h, cells: e.cells || 1, cols: 6, faceX: e.faceX || 0, faceY: e.faceY || 0 });
     const addPose = (g, no, name) => {
       const i = g.poseNos.indexOf(no);
       if (i < 0) {
@@ -213,7 +213,7 @@
       return RES.scanDirectory(dir);
     },
     thumb(entry, w) {
-      const key = (entry.path || '') + ':' + entry.offset;
+      const key = (entry.path || '') + ':' + entry.offset + ':' + (w || 160);
       if (thumbCache.has(key)) return thumbCache.get(key);
       if (!window.shell || !window.shell.loadThumb || !entry.path) return Promise.resolve(null);
       const p = window.shell
@@ -224,7 +224,7 @@
       return p;
     },
     sheet(entry, w) {
-      const key = 'sheet:' + (entry.path || '') + ':' + entry.offset;
+      const key = 'sheet:' + (entry.path || '') + ':' + entry.offset + ':' + (w || 420);
       if (thumbCache.has(key)) return thumbCache.get(key);
       if (!window.shell || !window.shell.loadSheet || !entry.path) return Promise.resolve(null);
       const p = window.shell

@@ -1251,6 +1251,43 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'spriteface') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bs,2,1,0,1]', { target: 'new', name: 'spriteface' });
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(700);
+        document.querySelector('.block[data-type="bs"]').click();
+        await wait(500);
+        const thumb = document.querySelector('.sprite-pick__thumb');
+        const thumbInfo = { src: !!thumb?.src, natural: thumb?.naturalWidth || 0 };
+        document.querySelector('.sprite-pick')?.click();
+        await wait(1000);
+        const pick = document.querySelector('.spk');
+        const faces = [...pick.querySelectorAll('.spk-face:not(.is-empty)')];
+        faces[4]?.click();
+        await wait(1000);
+        const canvas = pick.querySelector('.spk__canvas');
+        let painted = 0;
+        if (canvas) {
+          const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+          for (let i = 3; i < d.length; i += 4) if (d[i]) painted += 1;
+        }
+        return {
+          thumbInfo,
+          faces: faces.length,
+          canvas: canvas ? { w: canvas.width, h: canvas.height, painted } : null,
+          side: pick.querySelector('.spk__meta')?.textContent.replace(/\s+/g, ' ').trim(),
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

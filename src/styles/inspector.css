@@ -458,10 +458,15 @@
   background: repeating-conic-gradient(#f3f1ec 0 25%, #ffffff 0 50%) 0 0 / 12px 12px;
 }
 
-.spk__shot img {
+.spk__shot img,
+.spk__shot canvas {
   max-height: 100%;
   max-width: 100%;
   object-fit: contain;
+}
+
+.spk__canvas {
+  display: block;
 }
 
 .spk__meta {

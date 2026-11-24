@@ -57,6 +57,8 @@ function parseArchive(file) {
         row.type = h[18];
         row.w = h.readUInt16LE(20);
         row.h = h.readUInt16LE(22);
+        row.faceX = h.readUInt16LE(24);
+        row.faceY = h.readUInt16LE(26);
         // 0 = BGR 24 位，1 = BGRA 32 位，2 = 逐格表情表（32 位），3/4 = 暂未解
         row.bpp = row.w && row.h ? Math.round(row.raw / (row.w * row.h)) : 0;
         row.cells = row.type === 2 ? Math.max(1, Math.round(row.bpp / 4)) : 1;
@@ -130,6 +132,8 @@ function parseLooseFile(file, root) {
     row.type = type;
     row.w = w;
     row.h = h;
+    row.faceX = head.readUInt16LE(24);
+    row.faceY = head.readUInt16LE(26);
     row.bpp = w && h ? Math.round(raw / (w * h)) : 0;
     row.cells = type === 2 ? Math.max(1, Math.round(row.bpp / 4)) : 1;
   } else if (head.length >= 24 && head.subarray(0, 8).equals(PNG_SIG)) {

@@ -20,6 +20,7 @@
     const picked = selectedBlocks();
     if (picked.length > 1) {
       renderMultiInspector(picked);
+      hydrateSpriteImages(inspector);
       return;
     }
     const hit = currentBlock();
@@ -108,6 +109,7 @@
     foot.appendChild(dup);
     foot.appendChild(del);
     inspector.appendChild(foot);
+    hydrateSpriteImages(inspector);
   }
 
   function fieldNode(field, block) {
@@ -568,6 +570,7 @@
     if (ci < 0) ci = 0;
     let face = Math.max(1, Number(block.data.face) || 1);
     let faceTouched = false;
+    let sideSeq = 0;
 
     const keyOf = () => (ch.poseNos[pi] == null ? 1 : ch.poseNos[pi]) + '|' + (ch.clothNos[ci] == null ? 0 : ch.clothNos[ci]);
     const bodyOf = () => ch.bodies[keyOf()] || null;
@@ -664,15 +667,69 @@
       facesEl.innerHTML = '<div class="spk__label">表情表 <em>' + s.cells + ' 格</em>' + note + '</div>' + '<div class="spk__faces">' + cells.join('') + '</div>';
     };
 
+    const loadImage = (src) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+
     const paintSide = () => {
       const body = bodyOf();
+      const sheet = sheetOf();
       const file = body && (body.file || (body.entry && body.entry.path ? body.entry.path.split(/[\\/]/).pop() : ''));
+      const seq = ++sideSeq;
       sideEl.innerHTML =
         '<div class="spk__label">预览</div>' +
-        '<div class="spk__shot">' + (body ? spriteImgTag(body, '') : '<span class="spk__empty">缺图</span>') + '</div>' +
+        '<div class="spk__shot">' + (body ? '<canvas class="spk__canvas" aria-label="立绘预览"></canvas>' : '<span class="spk__empty">缺图</span>') + '</div>' +
         '<div class="spk__meta"><b>' + esc(ch.name) + ' ' + esc(ch.cloths[ci]) + '</b>' +
         '<span>' + (body ? body.w + '×' + body.h + ' 全身' : '这个组合没有立绘') + '</span>' +
         '<span class="spk__file">' + esc(file || '') + '</span></div>';
+      if (!body || !window.RES) return;
+      const canvas = sideEl.querySelector('.spk__canvas');
+      if (!canvas) return;
+      const bodyUrl = window.RES.thumb(body.entry, body.w);
+      const sheetUrl = sheet ? window.RES.sheet(sheet.entry, sheet.cellW * (sheet.cols || 6)) : Promise.resolve(null);
+      Promise.all([bodyUrl, sheetUrl])
+        .then(async ([bodyData, sheetData]) => {
+          if (seq !== sideSeq || !canvas.isConnected || !bodyData) return;
+          const bodyImg = await loadImage(bodyData);
+          const sheetImg = sheetData ? await loadImage(sheetData.dataUrl) : null;
+          if (seq !== sideSeq || !canvas.isConnected) return;
+          const bw = body.w || bodyImg.naturalWidth;
+          const bh = body.h || bodyImg.naturalHeight;
+          const scale = Math.min(150 / bw, 210 / bh, 1);
+          canvas.width = Math.max(1, Math.round(bw * scale));
+          canvas.height = Math.max(1, Math.round(bh * scale));
+          canvas.style.width = canvas.width + 'px';
+          canvas.style.height = canvas.height + 'px';
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
+          if (sheetImg && sheetData) {
+            const cols = sheetData.cols || 6;
+            const cellCount = sheetData.cells || 1;
+            const idx = Math.max(0, Math.min(cellCount - 1, face - 1));
+            const sx = (idx % cols) * sheetData.cellW;
+            const sy = Math.floor(idx / cols) * sheetData.cellH;
+            const fx = (sheet.faceX || 0) * scale;
+            const fy = (sheet.faceY || 0) * scale;
+            ctx.drawImage(
+              sheetImg,
+              sx,
+              sy,
+              sheetData.cellW,
+              sheetData.cellH,
+              fx,
+              fy,
+              sheetData.cellW * scale,
+              sheetData.cellH * scale
+            );
+          }
+        })
+        .catch(() => {});
     };
 
     const paintAll = () => {
