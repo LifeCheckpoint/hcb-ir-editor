@@ -355,7 +355,7 @@
     const count = targets.length;
     const at = list.indexOf(block);
     showMenu(x, y, [
-      { label: count > 1 ? '复制 ' + count + ' 个块' : '复制', icon: 'copy', action: () => duplicateBlocks(targets) },
+      { label: count > 1 ? '创建 ' + count + ' 个副本' : '创建副本', icon: 'copy', action: () => duplicateBlocks(targets) },
       { label: '在上方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at) },
       { label: '在下方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at + 1) },
       { sep: true },

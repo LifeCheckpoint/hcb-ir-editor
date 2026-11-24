@@ -30,9 +30,11 @@ app/history.js
 app/chapters.js
 app/stack.js
 app/palette.js
+app/block-actions.js
 app/inspector.js
 app/multi-inspector.js
 app/focus.js
+app/shortcuts.js
 app/menubar.js
 app/boot.js
 resource.js
@@ -59,6 +61,8 @@ resource.js
 | `chapters.js` | 左栏章节/场景、增删改/复制/折叠 |
 | `stack.js` | 主栏场景、块节点、聚焦灰条、拖拽排序 |
 | `palette.js` | 插入面板、`DEFAULTS`、`makeBlock` |
+| `block-actions.js` | 块级复制/剪切/粘贴/删除/新建/移动 |
+| `shortcuts.js` | 快捷键窗口 |
 | `inspector.js` | 右栏、单块字段渲染、数字/文本回退、立绘选择器、`patchBlock` |
 | `multi-inspector.js` | 多选参数栏：同类型字段、多个值、批量提交 |
 | `focus.js` | 聚焦模式类型选择；非聚焦块压成灰条 |

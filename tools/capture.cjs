@@ -705,8 +705,8 @@ app.whenReady().then(async () => {
       d[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
       await wait(250);
       out.copyMenu = await openMenuOn(dias()[1]);
-      out.copyMenuHas = out.copyMenu.includes('复制 2 个块');
-      [...document.querySelectorAll('.menu__item')].find((n) => n.textContent.includes('复制 2 个块')).click();
+      out.copyMenuHas = out.copyMenu.includes('创建 2 个副本');
+      [...document.querySelectorAll('.menu__item')].find((n) => n.textContent.includes('创建 2 个副本')).click();
       await wait(300);
       out.afterCopy = total();
       out.copySelected = state.selectedIds.length;
@@ -869,6 +869,136 @@ app.whenReady().then(async () => {
       meta: document.querySelector('.scan-progress__meta').textContent,
       width: document.querySelector('.scan-progress__fill').style.width,
     }))()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'shortcuts') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(500);
+      const total = () => window.PROJECT.serialize().story.chapters[0].scenes.reduce((n, sc) => n + sc.blocks.reduce(function walk(m, b) { return m + 1 + (b.children ? b.children.reduce(walk, 0) : 0); }, 0), 0);
+      const key = (k, opts) => document.dispatchEvent(new KeyboardEvent('keydown', Object.assign({ key: k, bubbles: true, cancelable: true }, opts || {})));
+      const nodes = (t) => [...document.querySelectorAll('.block[data-type="' + t + '"]')];
+      const pick = async (t) => { const list = nodes(t); list[0].click(); await wait(150); return list[0]; };
+      const blockOfSelected = () => { const hit = listOfBlock(state.blockId); return hit && hit.list.find((b) => b.id === state.blockId); };
+      const out = { total: total() };
+
+      await pick('bg');
+      const src = blockOfSelected();
+      const srcData = JSON.parse(JSON.stringify(src.data));
+      key('c', { ctrlKey: true });
+      await wait(100);
+      out.clipboard = hasBlockClipboard();
+      const bgNodes = nodes('bg');
+      bgNodes[bgNodes.length - 1].click();
+      await wait(150);
+      key('v', { ctrlKey: true });
+      await wait(300);
+      out.afterPaste = total();
+      out.pasteSelected = state.selectedIds.length;
+      const pasted = blockOfSelected();
+      out.pasteType = pasted && pasted.type;
+      out.pasteSame = pasted && JSON.stringify(pasted.data) === JSON.stringify(srcData);
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.pasteUndo = total();
+
+      let ds = nodes('dia');
+      ds[0].click();
+      await wait(150);
+      ds = nodes('dia');
+      ds[1].dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
+      await wait(200);
+      key('c', { ctrlKey: true });
+      await wait(100);
+      await pick('bg');
+      key('v', { ctrlKey: true });
+      await wait(300);
+      out.multiPaste = total();
+      out.multiPasteSelected = state.selectedIds.length;
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.multiPasteUndo = total();
+
+      await pick('wait');
+      key('x', { ctrlKey: true });
+      await wait(300);
+      out.afterCut = total();
+      out.cutClipboard = hasBlockClipboard();
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.cutUndo = total();
+
+      await pick('wait');
+      key('Delete');
+      await wait(300);
+      out.afterDelete = total();
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.deleteUndo = total();
+
+      await pick('wait');
+      key('k', { ctrlKey: true, shiftKey: true });
+      await wait(300);
+      out.afterShiftK = total();
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.shiftKUndo = total();
+
+      await pick('bs');
+      const bsBefore = blockOfSelected();
+      const bsData = JSON.parse(JSON.stringify(bsBefore.data));
+      key('Enter', { ctrlKey: true });
+      await wait(300);
+      const below = blockOfSelected();
+      out.afterNewBelow = total();
+      out.newBelowType = below && below.type;
+      out.newBelowSame = below && JSON.stringify(below.data) === JSON.stringify(bsData);
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.newBelowUndo = total();
+
+      await pick('bs');
+      const bsAbove = blockOfSelected();
+      const aboveData = JSON.parse(JSON.stringify(bsAbove.data));
+      key('Enter', { ctrlKey: true, shiftKey: true });
+      await wait(300);
+      const above = blockOfSelected();
+      out.afterNewAbove = total();
+      out.newAboveSame = above && JSON.stringify(above.data) === JSON.stringify(aboveData);
+      key('z', { ctrlKey: true });
+      await wait(300);
+      out.newAboveUndo = total();
+
+      const bgMove = nodes('bg')[0];
+      bgMove.click();
+      await wait(150);
+      const order = () => flatten(currentChapter().scenes.flatMap((sc) => sc.blocks));
+      const beforeIndex = order().findIndex((b) => b.id === state.blockId);
+      key('ArrowDown', { altKey: true });
+      await wait(300);
+      const afterIndex = order().findIndex((b) => b.id === state.blockId);
+      out.moved = afterIndex > beforeIndex;
+      key('z', { ctrlKey: true });
+      await wait(300);
+
+      document.querySelector('.menu-btn[data-menu="settings"]').click();
+      await wait(200);
+      const menu = [...document.querySelectorAll('.menubar__drop .menu-item')].map((n) => n.textContent.trim());
+      [...document.querySelectorAll('.menubar__drop .menu-item')].find((n) => n.textContent.includes('键盘快捷键')).click();
+      await wait(250);
+      out.shortcutModal = !!document.querySelector('.shortcuts');
+      out.shortcutRows = document.querySelectorAll('.shortcut-row').length;
+      out.shortcutGroups = [...document.querySelectorAll('.shortcut-group__title')].map((n) => n.textContent);
+      key('Escape');
+      await wait(200);
+      out.shortcutClosed = !document.querySelector('.shortcuts');
+      key('k', { ctrlKey: true });
+      await wait(250);
+      out.ctrlK = !!document.querySelector('.shortcuts');
+      out.menu = menu;
+      return out;
+    })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {

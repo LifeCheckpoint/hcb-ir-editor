@@ -315,3 +315,77 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* 键盘快捷键 */
+.shortcuts {
+  width: 520px;
+}
+
+.shortcuts__body {
+  max-height: 62vh;
+  overflow: auto;
+  gap: 18px;
+}
+
+.shortcut-group__title {
+  margin-bottom: 5px;
+  color: var(--ink-30);
+  font-size: 10.5px;
+  font-weight: var(--font-weight-medium);
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 28px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.shortcut-row:last-child {
+  border-bottom: 0;
+}
+
+.shortcut-row__desc {
+  color: var(--color-ink);
+  font-size: 12px;
+}
+
+.shortcut-row__keys {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.shortcuts kbd {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 3px;
+  background: var(--surface-paper);
+  color: var(--ink-50);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1;
+}
+
+.shortcut-plus,
+.shortcut-or {
+  color: var(--ink-30);
+  font-size: 10px;
+}
+
+.shortcut-or {
+  padding: 0 2px;
+}
+
+.shortcuts__note {
+  margin-right: auto;
+  color: var(--ink-40);
+  font-size: 11px;
+}

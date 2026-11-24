@@ -32,9 +32,9 @@
         { label: '撤销', shortcut: 'Ctrl Z', disabled: () => !window.HISTORY || !window.HISTORY.canUndo(), action: () => window.HISTORY && window.HISTORY.undo() },
         { label: '重做', shortcut: 'Ctrl Shift Z', disabled: () => !window.HISTORY || !window.HISTORY.canRedo(), action: () => window.HISTORY && window.HISTORY.redo() },
         { sep: true },
-        { label: '剪切', shortcut: 'Ctrl X', disabled: true },
-        { label: '复制', shortcut: 'Ctrl C', disabled: true },
-        { label: '粘贴', shortcut: 'Ctrl V', disabled: true },
+        { label: '剪切', shortcut: 'Ctrl X', disabled: () => !hasSelectedBlocks(), action: () => cutSelectedBlocks() },
+        { label: '复制', shortcut: 'Ctrl C', disabled: () => !hasSelectedBlocks(), action: () => copySelectedBlocks() },
+        { label: '粘贴', shortcut: 'Ctrl V', disabled: () => !hasBlockClipboard() || !hasSelectedBlocks(), action: () => pasteBlocks() },
         { label: '全选', shortcut: 'Ctrl A', action: () => selectAllBlocks() },
       ],
     },
@@ -77,7 +77,7 @@
       label: '设置',
       items: [
         { label: '偏好设置…', shortcut: 'Ctrl ,' },
-        { label: '键盘快捷键', shortcut: 'Ctrl K' },
+        { label: '键盘快捷键', shortcut: 'Ctrl K', action: () => openShortcutsDialog() },
         { sep: true },
         { label: '关于 hcb-ir-editor', note: 'v0.1.0' },
       ],
@@ -186,6 +186,7 @@
    * ------------------------------------------------------------------ */
 
   function onKey(e) {
+    const modalOpen = !!document.querySelector('.modal');
     const tag = (e.target.tagName || '').toLowerCase();
     const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
 
@@ -217,6 +218,37 @@
         exportDsl();
         return;
       }
+      if (!typing && !modalOpen) {
+        if (k === 'c') {
+          if (copySelectedBlocks()) {
+            e.preventDefault();
+            return;
+          }
+        }
+        if (k === 'x') {
+          if (cutSelectedBlocks()) {
+            e.preventDefault();
+            return;
+          }
+        }
+        if (k === 'v') {
+          if (pasteBlocks()) {
+            e.preventDefault();
+            return;
+          }
+        }
+        if (k === 'k') {
+          e.preventDefault();
+          if (e.shiftKey) deleteSelectedBlocks();
+          else openShortcutsDialog();
+          return;
+        }
+        if (k === 'enter') {
+          e.preventDefault();
+          newSameBlock(e.shiftKey ? 'above' : 'below');
+          return;
+        }
+      }
       if (k === 'z') {
         e.preventDefault();
         if (e.shiftKey) window.HISTORY && window.HISTORY.redo();
@@ -228,19 +260,28 @@
         window.HISTORY && window.HISTORY.redo();
         return;
       }
-      if (k === 'a' && !typing) {
+      if (k === 'a' && !typing && !modalOpen) {
         e.preventDefault();
         selectAllBlocks();
         return;
       }
     }
 
-    if (e.key === 'Escape' && !typing) {
+    if (e.key === 'Escape' && !typing && !modalOpen) {
       if (closeSelectIfOpen() || closeMenuIfOpen()) return;
       clearSelection();
       return;
     }
-    if (typing) return;
+    if (typing || modalOpen) return;
+    if (e.key === 'Delete') {
+      if (deleteSelectedBlocks()) e.preventDefault();
+      return;
+    }
+    if (e.altKey && !mod && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      moveSelectedBlock(e.key === 'ArrowUp' ? -1 : 1);
+      return;
+    }
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
 
     const ch = currentChapter();
