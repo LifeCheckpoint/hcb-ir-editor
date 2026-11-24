@@ -255,7 +255,7 @@
       '<span class="block__body">' +
       '<span class="block__head">' +
       '<span class="block__kind">' + esc(block.type) + '</span>' +
-      '<span class="block__name">' + esc(def.label) + '</span>' +
+      '<span class="block__name">' + esc(v.label || def.label) + '</span>' +
       (v.speaker ? '<span class="block__speaker">' + esc(v.speaker) + '</span>' : '') +
       (v.warn ? '<span class="block__warn" title="参数不完整"></span>' : '') +
       (v.meta ? '<span class="block__meta">' + esc(v.meta) + '</span>' : '') +

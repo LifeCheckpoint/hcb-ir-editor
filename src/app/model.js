@@ -29,11 +29,13 @@
   function viewOf(block) {
     const def = TYPES[block.type] || { label: block.type, group: 'flow', icon: 'sticky-note', text: () => '', fields: [] };
     const d = block.data || {};
+    const speaker = def.speaker ? def.speaker(d, block) : '';
     return {
       def,
+      label: block.type === 'dia' ? (speaker ? '对话' : '旁白') : def.label,
       text: def.text ? def.text(d, block) : '',
       meta: def.meta ? def.meta(d, block) : '',
-      speaker: def.speaker ? def.speaker(d, block) : '',
+      speaker,
       empty: def.empty ? def.empty(d, block) : false,
       warn: def.warn ? def.warn(d, block) : false,
       mono: !!def.mono,
@@ -135,8 +137,7 @@
       } else if (b.type === 'msg') {
         st.msg = d.mode;
       } else if (b.type === 'cha') {
-        st.speaker = d.show || d.name || '';
-        speakerRun = st.speaker;
+        speakerRun = d.show || d.name || '';
       } else if (b.type === 'dia') {
         st.speaker = speakerRun;
         st.text = d.text || '';
@@ -160,8 +161,6 @@
     }
     for (const sc of chapter.scenes) {
       speakerRun = '';
-      st.speaker = '';
-      st.text = '';
       for (const b of flatten(sc.blocks)) {
         run(b);
         if (b.id === block.id) return st;
@@ -189,50 +188,28 @@
 
   const STAGE_POS = { l: '4%', m: '34%', r: '64%' };
 
-  /* 台词里的 ~ 换行，[注解|正文] 组成居中的 ruby 小字 */
+  /* 台词里的 ~ 换行，每个 [注解|正文] 单独成一个 ruby 小字 */
   function stageTextHtml(text) {
     const raw = String(text == null ? '' : text);
     let out = '';
     let pos = 0;
-    let group = null;
-    const flush = () => {
-      if (!group) return;
-      if (group.anno && group.base) {
-        out += '<ruby class="stage-ruby">' + esc(group.base) + '<rt>' + esc(group.anno) + '</rt></ruby>';
-      } else if (group.base) {
-        out += esc(group.base);
-      } else if (group.anno) {
-        out += esc(group.anno);
-      }
-      group = null;
-    };
     const re = /\[([^\]\r\n]*)\|([^\]\r\n]*)\]|~/g;
     let m;
     while ((m = re.exec(raw))) {
       const between = raw.slice(pos, m.index);
-      if (between) {
-        flush();
-        out += esc(between).replace(/\n/g, '<br>');
-      }
+      if (between) out += esc(between).replace(/\n/g, '<br>');
       if (m[0] === '~') {
-        flush();
         out += '<br>';
       } else if (m[1] || m[2]) {
-        if (!group) group = { anno: '', base: '' };
-        group.anno += m[1];
-        group.base += m[2];
+        if (m[1] && m[2]) out += '<ruby class="stage-ruby">' + esc(m[2]) + '<rt>' + esc(m[1]) + '</rt></ruby>';
+        else out += esc(m[2] || m[1]);
       } else {
-        flush();
         out += esc(m[0]);
       }
       pos = re.lastIndex;
     }
     const tail = raw.slice(pos);
-    if (tail) {
-      flush();
-      out += esc(tail).replace(/\n/g, '<br>');
-    }
-    flush();
+    if (tail) out += esc(tail).replace(/\n/g, '<br>');
     return out;
   }
 

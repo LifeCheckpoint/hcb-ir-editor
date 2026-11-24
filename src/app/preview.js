@@ -20,6 +20,7 @@ let previewLeft = 0;
 let previewTop = 64;
 let previewMin = false;
 let previewRestore = null;
+let previewAnimTimer = null;
 let previewBlockId = null;
 
 let previewDrag = null;
@@ -49,13 +50,23 @@ function applyPreviewGeometry() {
   previewEl.style.height = '';
 }
 
+function animatePreviewLayout() {
+  if (!previewEl) return;
+  previewEl.classList.add('is-animating');
+  void previewEl.offsetWidth;
+  clearTimeout(previewAnimTimer);
+  previewAnimTimer = setTimeout(() => previewEl.classList.remove('is-animating'), 220);
+}
+
 function setPreviewMinimized(min) {
   if (!previewEl || min === previewMin) return;
   if (min) {
-    previewRestore = { left: previewLeft, top: previewTop, width: previewWidth };
+    previewRestore = { right: previewLeft + previewWidth, top: previewTop, width: previewWidth };
     previewMin = true;
     previewEl.classList.add('is-min');
-    previewLeft = previewClamp(previewRestore.left, 8, Math.max(8, window.innerWidth - 56));
+    animatePreviewLayout();
+    const right = previewClamp(previewRestore.right, 56, Math.max(56, window.innerWidth - 8));
+    previewLeft = previewClamp(right - 48, 8, Math.max(8, window.innerWidth - 56));
     previewTop = previewClamp(previewRestore.top, 8, Math.max(8, window.innerHeight - 56));
     previewEl.style.left = previewLeft + 'px';
     previewEl.style.top = previewTop + 'px';
@@ -64,9 +75,11 @@ function setPreviewMinimized(min) {
   } else {
     previewMin = false;
     previewEl.classList.remove('is-min');
+    animatePreviewLayout();
     if (previewRestore) {
       previewWidth = previewClamp(previewRestore.width, 320, previewMaxWidth());
-      previewLeft = previewClamp(previewRestore.left, 8, Math.max(8, window.innerWidth - previewWidth - 8));
+      const right = previewClamp(previewRestore.right, previewWidth + 8, Math.max(previewWidth + 8, window.innerWidth - 8));
+      previewLeft = previewClamp(right - previewWidth, 8, Math.max(8, window.innerWidth - previewWidth - 8));
       previewTop = previewClamp(previewRestore.top, 8, Math.max(8, window.innerHeight - 60));
     }
     applyPreviewGeometry();
@@ -182,7 +195,7 @@ function initPreview() {
     previewEl.style.left = previewLeft + 'px';
     previewEl.style.top = previewTop + 'px';
     if (previewRestore) {
-      previewRestore.left = previewLeft;
+      previewRestore.right = previewLeft + 48;
       previewRestore.top = previewTop;
     }
   });

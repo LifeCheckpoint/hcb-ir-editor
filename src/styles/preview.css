@@ -14,7 +14,10 @@
   background: var(--surface-white-page);
   box-shadow: 0 12px 32px rgba(15, 15, 15, 0.16);
   user-select: none;
-  transition: width 0.16s ease, height 0.16s ease, border-radius 0.16s ease;
+}
+
+.preview.is-animating {
+  transition: left 0.16s ease, width 0.16s ease, height 0.16s ease, border-radius 0.16s ease;
 }
 
 .preview__bar {

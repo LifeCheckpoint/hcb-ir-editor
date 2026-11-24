@@ -145,7 +145,7 @@
     renderChapters();
     renderMain();
     renderInspector();
-    const ws = (data.ui && data.ui.workspace) || 'write';
+    const ws = 'write';
     const btn = document.querySelector('.workspace-switch__btn[data-workspace="' + ws + '"]');
     if (btn) btn.click();
     setSaveState();

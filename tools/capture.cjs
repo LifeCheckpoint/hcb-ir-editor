@@ -1213,6 +1213,44 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify({ before, after }, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'bgafter') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[cha,其他角色/落叶,1003]\\n[dia,测试台词]\\n[bg,500]', { target: 'new', name: 'bgafter' });
+        await wait(400);
+        [...document.querySelectorAll('.block[data-type="bg"]')].pop().click();
+        await wait(300);
+        const box = document.querySelector('#preview .stage__box');
+        return {
+          box: !!box,
+          speaker: box?.querySelector('.stage__speaker')?.textContent || '',
+          text: box?.querySelector('.stage__text')?.textContent || '',
+          html: box?.querySelector('.stage__text')?.innerHTML || '',
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'startwrite') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[wait,1]', { target: 'new', name: 'startwrite' });
+        await wait(300);
+        const data = window.PROJECT.serialize();
+        data.ui.workspace = 'resource';
+        window.PROJECT.apply(data);
+        await wait(300);
+        return {
+          writeHidden: document.getElementById('workspace-write').hidden,
+          resourceHidden: document.getElementById('workspace-resource').hidden,
+          active: document.querySelector('.workspace-switch__btn.is-on')?.dataset.workspace,
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));
