@@ -41,14 +41,13 @@
     };
   }
 
-  /* 最近的 cha 决定这一句是谁说的 */
+  /* 连续的 dia 算同一段对话；中间夹了其它原语就变成旁白 */
   function speakerBefore(block) {
     const hit = listOfBlock(block.id);
     if (!hit) return '';
-    for (let i = hit.list.indexOf(block) - 1; i >= 0; i--) {
-      if (hit.list[i].type === 'cha') return hit.list[i].data.show || hit.list[i].data.name || '';
-      if (hit.list[i].type === 'start') break;
-    }
+    let i = hit.list.indexOf(block) - 1;
+    while (i >= 0 && hit.list[i].type === 'dia') i -= 1;
+    if (i >= 0 && hit.list[i].type === 'cha') return hit.list[i].data.show || hit.list[i].data.name || '';
     return '';
   }
 
@@ -103,6 +102,7 @@
      背景、立绘、BGM 都跨场景留着，和脚本里一样 */
   function stageState(scene, block) {
     const st = { bg: null, cg: null, msg: 'normal', sprites: {}, bgm: null, se: null, text: '', speaker: '', screen: null };
+    let speakerRun = '';
     const run = (b) => {
       const d = b.data || {};
       if (b.type === 'bg') {
@@ -113,7 +113,10 @@
         st.cg = d.name;
         st.screen = null;
       } else if (b.type === 'bs') {
-        if (d.l === '-10') return;
+        if (d.l === '-10') {
+          speakerRun = '';
+          return;
+        }
         const pick = spritePick(b);
         st.sprites[d.cha] = {
           cha: d.cha,
@@ -133,7 +136,9 @@
         st.msg = d.mode;
       } else if (b.type === 'cha') {
         st.speaker = d.show || d.name || '';
+        speakerRun = st.speaker;
       } else if (b.type === 'dia') {
+        st.speaker = speakerRun;
         st.text = d.text || '';
       } else if (b.type === 'bgm') {
         st.bgm = d.no;
@@ -144,6 +149,7 @@
       } else if (b.type === 'white' || b.type === 'black' || b.type === 'eyecatch' || b.type === 'movie') {
         st.screen = b.type;
       }
+      if (b.type !== 'cha' && b.type !== 'dia') speakerRun = '';
     };
 
     const hit = sceneOfBlock(block.id);
@@ -153,6 +159,9 @@
       return st;
     }
     for (const sc of chapter.scenes) {
+      speakerRun = '';
+      st.speaker = '';
+      st.text = '';
       for (const b of flatten(sc.blocks)) {
         run(b);
         if (b.id === block.id) return st;

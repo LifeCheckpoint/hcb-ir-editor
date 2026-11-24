@@ -1085,6 +1085,69 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'dialogue') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bg,500]\\n[dia,旁白甲]\\n[cha,其他角色/落叶,1003]\\n[dia,对话一]\\n[dia,对话二]\\n[bg,67]\\n[dia,旁白乙]', { target: 'new', name: 'dialog test' });
+        await wait(400);
+        return [...document.querySelectorAll('.block[data-type="dia"]')].map((n) => {
+          const hit = listOfBlock(n.dataset.blockId);
+          const b = hit && hit.list.find((x) => x.id === n.dataset.blockId);
+          return {
+            text: b?.data?.text,
+            viewSpeaker: b ? viewOf(b).speaker : null,
+            stageSpeaker: b ? stageState(hit.scene, b).speaker : null,
+          };
+        });
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewdia') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bg,500]\\n[dia,旁白甲]\\n[cha,其他角色/落叶,1003]\\n[dia,对话一]\\n[dia,对话二]', { target: 'new', name: 'dialog test' });
+        await wait(400);
+        const dia = [...document.querySelectorAll('.block[data-type="dia"]')].find((n) => n.textContent.includes('对话一'));
+        dia.click();
+        await wait(300);
+        const box = document.querySelector('#preview .stage__box');
+        const txt = document.querySelector('#preview .stage__text');
+        const speaker = document.querySelector('#preview .stage__speaker');
+        const cs = box ? getComputedStyle(box) : null;
+        const ts = txt ? getComputedStyle(txt) : null;
+        return {
+          box: !!box,
+          z: cs?.zIndex,
+          background: cs?.backgroundColor,
+          text: txt?.textContent,
+          color: ts?.color,
+          stroke: ts?.webkitTextStroke,
+          speaker: speaker?.textContent,
+          speakerColor: speaker ? getComputedStyle(speaker).color : null,
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewmin') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+      await wait(400);
+      document.querySelector('.block[data-type="bg"]').click();
+      await wait(250);
+      const p = document.getElementById('preview');
+      const left = p.style.left;
+      p.querySelector('[data-preview-min]').click();
+      await wait(400);
+      const cs = getComputedStyle(p);
+      return { beforeLeft: left, afterLeft: p.style.left, width: p.offsetWidth, height: p.offsetHeight, radius: cs.borderRadius, min: p.classList.contains('is-min') };
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -53,12 +53,10 @@ function setPreviewMinimized(min) {
     previewRestore = { left: previewLeft, top: previewTop, width: previewWidth };
     previewMin = true;
     previewEl.classList.add('is-min');
-    const left = previewClamp(previewRestore.left + previewRestore.width - 48, 8, window.innerWidth - 56);
-    const top = previewClamp(previewRestore.top, 8, window.innerHeight - 56);
-    previewLeft = left;
-    previewTop = top;
-    previewEl.style.left = left + 'px';
-    previewEl.style.top = top + 'px';
+    previewLeft = previewClamp(previewRestore.left, 8, Math.max(8, window.innerWidth - 56));
+    previewTop = previewClamp(previewRestore.top, 8, Math.max(8, window.innerHeight - 56));
+    previewEl.style.left = previewLeft + 'px';
+    previewEl.style.top = previewTop + 'px';
     previewEl.style.width = '48px';
     previewEl.style.height = '48px';
   } else {
