@@ -161,7 +161,7 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 资源工作区 → 映射表 → 导入 TOML…；映射表会存进项目文件，换机器也还在。
 
 - [mappings/sample.toml](mappings/sample.toml) 是最小示例，解释字段；
-- [mappings/sakura.toml](mappings/sakura.toml) 是从 `Sakura.hcb` 生成的完整表：24 个角色、99 个立绘组合、62 个背景（54 条差分）、238 个 CG、70 个 BGM、304 个音效，共 797 条。角色编号来自 hcb `f_00058B8C` 的 `a1`，姿势/服装来自 `a2`/`a3`；**cloth 从 0 开始**，`0` 是制服。
+- [mappings/sakura.toml](mappings/sakura.toml) 是从 `Sakura.hcb` 生成的完整表：24 个角色、99 个立绘组合、62 个背景（54 条差分）、238 个 CG、70 个 BGM、304 个音效，共 797 条。角色编号来自 hcb `f_00058B8C` 的 `a1`，姿势/服装来自 `a2`/`a3`；**cloth 从 0 开始**，`0` 是制服。生成表用内联数组，一条资源一行；手写示例仍用展开写法，两种都能读。
 - 背景差分按 hcb 的 `a7` 还原：`diff=1` 是底图，`diff=2/3` 选变体；函数里 `a9/a10=100` 的时段/天气分支需要额外参数，DSL 的 `diff` 不覆盖，没有并入。
 - 映射表的 TOML 路径会写进项目文件；映射表视图显示路径，重开项目后路径还在，可以用「重新载入」从原文件刷新。映射表内容本身也内嵌在项目里，文件被移走时仍能打开项目。
 - 没有映射表时，`bg` 编号、`bs` 的 `cha/pose/cloth/face`、`chaPick` 的 `cha` 退回数字输入，`cha`/`chaload` 的角色名退回文本输入；不再用推断的名字和立绘选择器。导入映射表后恢复选择器。
@@ -170,7 +170,7 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 
 - `character`：`no`（DSL 角色编号）、`name`、`aliases`；
 - `sprite`：`cha / pose / cloth` 三个数字，`body` / `sheet` 指向 `graph_bs.bin` 条目，`faces` 是表情格数，`pose_name / cloth_name` 是选择器里的显示名；
-- `bg`：`no / name / file`，可选 `[[bg.variant]]` 把 `[bg,67,2]` 的差分接到另一个条目；
+- `bg`：`no / name / file`，可选 `bg.variants` 把 `[bg,67,2]` 的差分接到另一个条目；旧式 `[[bg.variant]]` 仍然接受；
 - `cg`：`name` 是 DSL 里的名字，`label` 是显示名，`file` 是实际条目；
 - `voice`：`no / name / file`；本表暂时 0 条。DSL 的 voice 是 hcb 语音表里的序号，不是 `voice.bin` 的 8 位文件号，没有基表就只能留空，agent 可以按这份 schema 补；
 - `bgm` / `se`：`no / name / file`，完整表把 70 / 304 条全部列了，`file` 是归档里的 `001` 这种条目名。
@@ -249,7 +249,7 @@ zlib 流
 ## 已知限制
 
 - 扫描结果只存在内存里，重启要再扫一次（项目里只记了游戏目录）
-- 接线只按映射表走 bg / cg / bs / se / bgm；voice 的 schema 已留，但表里还没有行。背景差分通过 `[[bg.variant]]` 接，完整表已收 a7 的默认分支；`a9/a10=100` 的时段/天气分支没并入
+- 接线只按映射表走 bg / cg / bs / se / bgm；voice 的 schema 已留，但表里还没有行。背景差分通过 `bg.variants` 接，完整表已收 a7 的默认分支；`a9/a10=100` 的时段/天气分支没并入
 - `graph.bin` 里 67 条 1 字节/像素的图像（type 3/4）还没解，预览显示「这种格式还没解」
 - 断线后还没有「重新链接」按钮，只能通过原有字段重新选；绑定表仍只读；映射表只能整份导入，不能在界面里逐条改
 - 衣装、姿势的编号现在只来自映射表；`face` 仍是表情表格子序号，PartsSelect 的 a4 还没映射

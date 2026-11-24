@@ -51,6 +51,41 @@ def q(value: str) -> str:
     return '"' + str(value).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
+def inline_key(key) -> str:
+    key = str(key)
+    return key if re.match(r"^[A-Za-z0-9_-]+$", key) else q(key)
+
+
+def inline_value(value) -> str:
+    if isinstance(value, str):
+        return q(value)
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, list):
+        return "[" + ", ".join(inline_value(v) for v in value) + "]"
+    if isinstance(value, dict):
+        parts = ["%s = %s" % (inline_key(k), inline_value(v)) for k, v in value.items() if v is not None]
+        return "{ " + ", ".join(parts) + " }"
+    raise TypeError("不能写成内联 TOML 的值: %r" % (value,))
+
+
+def inline_row(row: dict) -> str:
+    parts = ["%s = %s" % (inline_key(k), inline_value(v)) for k, v in row.items() if v is not None]
+    return "{ " + ", ".join(parts) + " }"
+
+
+def emit_rows(out: list[str], name: str, rows: list[dict]) -> None:
+    if not rows:
+        out += [name + " = []", ""]
+        return
+    out.append(name + " = [")
+    for row in rows:
+        out.append("  " + inline_row(row) + ",")
+    out += ["]", ""]
+
+
 def parse_sprite_function(lines: list[str]) -> tuple[dict, list]:
     start = next(i for i, line in enumerate(lines) if line.startswith("function f_00058B8C("))
     end = next(i for i in range(start + 1, len(lines)) if lines[i].startswith("function "))
@@ -335,7 +370,7 @@ def main() -> None:
         "# 来源：Sakura.hcb → fvpanalysis hcb_to_ir.py 的 Lua IR；立绘条目/表情格数来自 graph_bs.bin。",
         "# 角色编号 = f_00058B8C 的 a1；pose = a2；cloth = a3（0 合法）。",
         "# 立绘只收录 hcb 实际引用、且 graph_bs.bin 里存在的组合。",
-        "# 背景默认 _000；没有 _000 的取第一个变体；a7 差分已还原到 [[bg.variant]]。",
+        "# 背景默认 _000；没有 _000 的取第一个变体；a7 差分写成 bg.variants 内联表。",
         "# 差分分支里 a9/a10=100 的时段/天气版本没有并入：那需要额外参数，DSL 的 diff 只选默认分支。",
         "# CG 来自 cg_loaded.txt；BGM / 音效按归档条目全量列出；voice 段留给人工/agent 补。",
         "#",
@@ -352,48 +387,42 @@ def main() -> None:
         "# —— 角色 ——",
         "",
     ]
+    character_rows = []
     for no in sorted(chars):
         c = chars[no]
-        out += ["[[character]]", "no = %d" % no, "name = %s" % q(c["name"])]
+        row = {"no": no, "name": c["name"]}
         if c["aliases"]:
-            out.append("aliases = [%s]" % ", ".join(q(a) for a in c["aliases"]))
-        out.append("")
+            row["aliases"] = c["aliases"]
+        character_rows.append(row)
+    emit_rows(out, "character", character_rows)
 
     out += ["# —— 立绘 ——", ""]
-    for s in sprites:
-        out += [
-            "[[sprite]]",
-            "cha = %d" % s["cha"],
-            "pose = %d" % s["pose"],
-            "cloth = %d" % s["cloth"],
-            "pose_name = %s" % q(s["pose_name"]),
-            "cloth_name = %s" % q(s["cloth_name"]),
-            "body = %s" % q(s["body"]),
-        ]
-        if s.get("sheet"):
-            out.append("sheet = %s" % q(s["sheet"]))
-        if s.get("faces") is not None:
-            out.append("faces = %d" % s["faces"])
-        out.append("")
+    emit_rows(out, "sprite", sprites)
 
     out += ["# —— 背景 ——", ""]
+    bg_inline = []
     for b in bg_rows:
-        out += ["[[bg]]", "no = %d" % b["no"], "name = %s" % q(b["name"]), "file = %s" % q(b["file"]), ""]
-        for v in b.get("variants", []):
-            out += ["[[bg.variant]]", "diff = %d" % v["diff"], "file = %s" % q(v["file"]), ""]
+        row = {"no": b["no"], "name": b["name"], "file": b["file"]}
+        if b.get("variants"):
+            row["variants"] = {str(v["diff"]): v["file"] for v in b["variants"]}
+        bg_inline.append(row)
+    emit_rows(out, "bg", bg_inline)
 
     out += ["# —— CG ——", ""]
+    cg_inline = []
     for c in cg_rows:
-        out += ["[[cg]]", "name = %s" % q(c["name"])]
+        row = {"name": c["name"]}
         if c["file"] != c["name"]:
-            out.append("file = %s" % q(c["file"]))
-        out.append("")
+            row["file"] = c["file"]
+        cg_inline.append(row)
+    emit_rows(out, "cg", cg_inline)
 
     out += ["# —— 音频 ——", ""]
-    for name in audio_names.get("bgm", []):
-        out += ["[[bgm]]", "no = %d" % int(name), "file = %s" % q(name), ""]
-    for name in audio_names.get("se", []):
-        out += ["[[se]]", "no = %d" % int(name), "file = %s" % q(name), ""]
+    bgm_rows = [{"no": int(name), "file": name} for name in audio_names.get("bgm", [])]
+    se_rows = [{"no": int(name), "file": name} for name in audio_names.get("se", [])]
+    emit_rows(out, "bgm", bgm_rows)
+    emit_rows(out, "se", se_rows)
+
     Path(args.out).write_text("\n".join(out), encoding="utf-8")
     print("wrote %s: %d characters, %d sprites, %d bg, %d cg" % (args.out, len(chars), len(sprites), len(bg_rows), len(cg_rows)))
 
