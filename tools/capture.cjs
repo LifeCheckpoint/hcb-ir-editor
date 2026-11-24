@@ -1148,6 +1148,71 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'richtext') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[cha,其他角色/落叶,1003]\\n[dia,你好abc~第二行[A|园][B|区]]', { target: 'new', name: 'rich' });
+        await wait(400);
+        document.querySelector('.block[data-type="dia"]').click();
+        await wait(300);
+        const t = document.querySelector('#preview .stage__text');
+        return {
+          text: t?.textContent,
+          html: t?.innerHTML,
+          ruby: t?.querySelectorAll('ruby').length,
+          rt: t?.querySelector('rt')?.textContent,
+          br: t?.querySelectorAll('br').length,
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'emphasis') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[dia,你好abc]', { target: 'new', name: 'em' });
+        await wait(400);
+        document.querySelector('.block[data-type="dia"]').click();
+        await wait(250);
+        const ta = document.querySelector('#inspector textarea');
+        ta.focus();
+        ta.setSelectionRange(0, 5);
+        ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true, cancelable: true }));
+        await wait(250);
+        const marked = ta.value;
+        ta.focus();
+        ta.setSelectionRange(0, marked.length);
+        ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, bubbles: true, cancelable: true }));
+        await wait(250);
+        return { marked, plain: ta.value, selection: [ta.selectionStart, ta.selectionEnd] };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewdrag') {
+    await run(`window.DSL.importFile(${JSON.stringify(FIXTURE)})`);
+    await wait(400);
+    await run(`document.querySelector('.block[data-type="bg"]').click()`);
+    await wait(250);
+    await run(`document.querySelector('[data-preview-min]').click()`);
+    await wait(350);
+    const before = await run(`(() => {
+      const p = document.getElementById('preview');
+      const r = p.querySelector('[data-preview-bubble]').getBoundingClientRect();
+      return { left: p.style.left, top: p.style.top, x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2), min: p.classList.contains('is-min') };
+    })()`);
+    win.webContents.sendInputEvent({ type: 'mouseDown', x: before.x, y: before.y, button: 'left', clickCount: 1 });
+    win.webContents.sendInputEvent({ type: 'mouseMove', x: before.x + 40, y: before.y + 20, button: 'left' });
+    win.webContents.sendInputEvent({ type: 'mouseUp', x: before.x + 40, y: before.y + 20, button: 'left', clickCount: 1 });
+    await wait(350);
+    const after = await run(`(() => {
+      const p = document.getElementById('preview');
+      return { left: p.style.left, top: p.style.top, min: p.classList.contains('is-min'), width: p.offsetWidth };
+    })()`);
+    console.log(JSON.stringify({ before, after }, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

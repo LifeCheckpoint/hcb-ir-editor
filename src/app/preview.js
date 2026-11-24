@@ -24,6 +24,8 @@ let previewBlockId = null;
 
 let previewDrag = null;
 let previewResizing = null;
+let previewBubbleDrag = null;
+let previewBubbleMoved = false;
 
 let bgmAudio = null;
 let bgmKey = '';
@@ -157,7 +159,54 @@ function initPreview() {
     e.stopPropagation();
     setPreviewMinimized(true);
   });
-  previewBubble.addEventListener('click', () => setPreviewMinimized(false));
+  previewBubble.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    setPreviewMinimized(false);
+  });
+  previewBubble.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || !previewMin) return;
+    previewBubbleDrag = { x: e.clientX, y: e.clientY, left: previewLeft, top: previewTop, moved: false };
+    previewBubbleMoved = false;
+    previewBubble.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  previewBubble.addEventListener('pointermove', (e) => {
+    if (!previewBubbleDrag) return;
+    const dx = e.clientX - previewBubbleDrag.x;
+    const dy = e.clientY - previewBubbleDrag.y;
+    if (!previewBubbleDrag.moved && Math.abs(dx) + Math.abs(dy) < 3) return;
+    previewBubbleDrag.moved = true;
+    previewLeft = previewClamp(previewBubbleDrag.left + dx, 8, Math.max(8, window.innerWidth - 56));
+    previewTop = previewClamp(previewBubbleDrag.top + dy, 8, Math.max(8, window.innerHeight - 56));
+    previewEl.style.left = previewLeft + 'px';
+    previewEl.style.top = previewTop + 'px';
+    if (previewRestore) {
+      previewRestore.left = previewLeft;
+      previewRestore.top = previewTop;
+    }
+  });
+  previewBubble.addEventListener('pointerup', () => {
+    if (!previewBubbleDrag) return;
+    const moved = previewBubbleDrag.moved;
+    previewBubbleDrag = null;
+    if (moved) {
+      previewBubbleMoved = true;
+      setTimeout(() => { previewBubbleMoved = false; }, 250);
+    } else {
+      setPreviewMinimized(false);
+    }
+  });
+  previewBubble.addEventListener('click', () => {
+    if (previewBubbleMoved) {
+      previewBubbleMoved = false;
+      return;
+    }
+    setPreviewMinimized(false);
+  });
+  previewBubble.addEventListener('pointercancel', () => {
+    previewBubbleDrag = null;
+  });
   previewAudioBtn.addEventListener('click', () => {
     if (!bgmAudio) return;
     bgmPaused = !bgmPaused;

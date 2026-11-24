@@ -133,6 +133,7 @@
       if (field.placeholder) ta.placeholder = field.placeholder;
       if (field.rows) ta.rows = field.rows;
       ta.addEventListener('input', () => commit(ta.value));
+      bindEmphasisShortcut(ta);
       ctl.appendChild(ta);
     } else if (field.type === 'text') {
       const inp = el('input', 'control' + (field.mono ? ' control--mono' : ''));
@@ -140,6 +141,7 @@
       inp.value = value == null ? '' : value;
       if (field.placeholder) inp.placeholder = field.placeholder;
       inp.addEventListener('input', () => commit(inp.value));
+      bindEmphasisShortcut(inp);
       if (field.list) {
         const listId = 'dl-' + field.key + '-' + block.id;
         inp.setAttribute('list', listId);
@@ -428,6 +430,39 @@
       if (txt) (stacked ? wrap : ctl).appendChild(el('span', 'field__note', esc(txt)));
     }
     return wrap;
+  }
+
+  /* Ctrl+B：把选中的文字包成着重注解，再按一次去掉 */
+  function bindEmphasisShortcut(control) {
+    control.addEventListener('keydown', (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+      if (String(e.key).toLowerCase() !== 'b') return;
+      if (control.selectionStart == null || control.selectionEnd == null || control.selectionStart === control.selectionEnd) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleEmphasis(control);
+    });
+  }
+
+  function toggleEmphasis(control) {
+    const start = control.selectionStart;
+    const end = control.selectionEnd;
+    if (start == null || end == null || start === end) return;
+    const selected = control.value.slice(start, end);
+    const tokens = selected.match(/\[·\|[^\]\r\n]\]/gu);
+    let next;
+    if (tokens && tokens.join('') === selected) {
+      next = tokens.map((t) => t.slice(3, -1)).join('');
+    } else {
+      next = Array.from(selected)
+        .map((ch) => (/[\s~]/.test(ch) ? ch : '[·|' + ch + ']'))
+        .join('');
+    }
+    if (next === selected) return;
+    control.setRangeText(next, start, end, 'end');
+    control.selectionStart = start;
+    control.selectionEnd = start + next.length;
+    control.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
   /* 只重建被改动的那一块，避免输入时整页重绘 */

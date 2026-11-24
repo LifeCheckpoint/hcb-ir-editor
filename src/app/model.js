@@ -189,6 +189,59 @@
 
   const STAGE_POS = { l: '4%', m: '34%', r: '64%' };
 
+  /* 台词里的 ~ 换行，[注解|正文] 组成居中的 ruby 小字 */
+  function stageTextHtml(text) {
+    const raw = String(text == null ? '' : text);
+    let out = '';
+    let pos = 0;
+    let group = null;
+    const flush = () => {
+      if (!group) return;
+      if (group.anno && group.base) {
+        out += '<ruby class="stage-ruby">' + esc(group.base) + '<rt>' + esc(group.anno) + '</rt></ruby>';
+      } else if (group.base) {
+        out += esc(group.base);
+      } else if (group.anno) {
+        out += esc(group.anno);
+      }
+      group = null;
+    };
+    const re = /\[([^\]\r\n]*)\|([^\]\r\n]*)\]|~/g;
+    let m;
+    while ((m = re.exec(raw))) {
+      const between = raw.slice(pos, m.index);
+      if (between) {
+        flush();
+        out += esc(between).replace(/\n/g, '<br>');
+      }
+      if (m[0] === '~') {
+        flush();
+        out += '<br>';
+      } else if (m[1] || m[2]) {
+        if (!group) group = { anno: '', base: '' };
+        group.anno += m[1];
+        group.base += m[2];
+      } else {
+        flush();
+        out += esc(m[0]);
+      }
+      pos = re.lastIndex;
+    }
+    const tail = raw.slice(pos);
+    if (tail) {
+      flush();
+      out += esc(tail).replace(/\n/g, '<br>');
+    }
+    flush();
+    return out;
+  }
+
+  function stageHasOuterQuotes(text) {
+    const raw = String(text == null ? '' : text).trim();
+    if (raw.length < 2) return false;
+    return (raw[0] === '「' && raw[raw.length - 1] === '」') || (raw[0] === '『' && raw[raw.length - 1] === '』');
+  }
+
   function stageCard(scene, block) {
     const st = stageState(scene, block);
     const bg = bgById(st.bg);
@@ -226,10 +279,12 @@
 
 
     if (!hideBox && (st.text || st.speaker)) {
+      let textHtml = stageTextHtml(st.text);
+      if (st.speaker && st.text && !stageHasOuterQuotes(st.text)) textHtml = '「' + textHtml + '」';
       parts.push(
         '<div class="stage__box' + (st.msg === 'middle' ? ' is-middle' : '') + '">' +
           (st.speaker ? '<span class="stage__speaker">' + esc(st.speaker) + '</span>' : '') +
-          '<span class="stage__text">' + esc(st.text) + '</span>' +
+          '<span class="stage__text">' + textHtml + '</span>' +
           '</div>'
       );
     }
