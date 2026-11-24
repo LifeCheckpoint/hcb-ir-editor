@@ -10,6 +10,7 @@ let previewStage = null;
 let previewEmpty = null;
 let previewBody = null;
 let previewAudioBtn = null;
+let previewNextBtn = null;
 let previewMinBtn = null;
 let previewResize = null;
 let previewBubble = null;
@@ -72,6 +73,25 @@ function setPreviewMinimized(min) {
   }
 }
 
+function nextPreviewBlock() {
+  if (!previewBlockId) return;
+  const all = [];
+  (CHAPTERS || []).forEach((ch) =>
+    (ch.scenes || []).forEach((sc) =>
+      flatten(sc.blocks).forEach((b) => {
+        if (!isFocusActive() || isFocusType(b.type)) all.push(b);
+      })
+    )
+  );
+  const at = all.findIndex((b) => b.id === previewBlockId);
+  if (at < 0 || at + 1 >= all.length) return;
+  const next = all[at + 1];
+  const hit = listOfBlock(next.id);
+  if (!hit) return;
+  state.chapterId = hit.chapter.id;
+  selectBlock(next.id);
+}
+
 function initPreview() {
   if (previewEl) return;
   previewEl = el('div', 'preview');
@@ -89,6 +109,12 @@ function initPreview() {
   previewAudioBtn.setAttribute('aria-label', '暂停 BGM');
   previewAudioBtn.dataset.previewAudio = '';
   previewAudioBtn.innerHTML = icon('pause', 'icon icon--12');
+  previewNextBtn = el('button', 'preview__btn');
+  previewNextBtn.type = 'button';
+  previewNextBtn.title = '下一个功能块';
+  previewNextBtn.setAttribute('aria-label', '下一个功能块');
+  previewNextBtn.dataset.previewNext = '';
+  previewNextBtn.innerHTML = icon('chevron-right', 'icon icon--12');
   previewMinBtn = el('button', 'preview__btn');
   previewMinBtn.type = 'button';
   previewMinBtn.title = '缩小预览';
@@ -96,6 +122,7 @@ function initPreview() {
   previewMinBtn.dataset.previewMin = '';
   previewMinBtn.innerHTML = icon('chevron-down', 'icon icon--12');
   actions.appendChild(previewAudioBtn);
+  actions.appendChild(previewNextBtn);
   actions.appendChild(previewMinBtn);
   bar.appendChild(actions);
   previewEl.appendChild(bar);
@@ -141,23 +168,10 @@ function initPreview() {
     updateAudioButton(true);
   });
 
-  previewBody.addEventListener('click', () => {
-    if (!previewBlockId) return;
-    const all = [];
-    (CHAPTERS || []).forEach((ch) =>
-      (ch.scenes || []).forEach((sc) =>
-        flatten(sc.blocks).forEach((b) => {
-          if (!isFocusActive() || isFocusType(b.type)) all.push(b);
-        })
-      )
-    );
-    const at = all.findIndex((b) => b.id === previewBlockId);
-    if (at < 0 || at + 1 >= all.length) return;
-    const next = all[at + 1];
-    const hit = listOfBlock(next.id);
-    if (!hit) return;
-    state.chapterId = hit.chapter.id;
-    selectBlock(next.id);
+  previewBody.addEventListener('click', nextPreviewBlock);
+  previewNextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextPreviewBlock();
   });
 
   bar.addEventListener('pointerdown', (e) => {
