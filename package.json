@@ -1,7 +1,7 @@
 {
   "name": "hcb-ir-editor",
   "productName": "hcb-ir-editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "hcb-ir-editor：Galgame 剧情编辑器雏形，Notion 风格三栏布局（章节 / 功能块栈 / 参数面板）",
   "main": "electron/main.js",

@@ -1,4 +1,4 @@
-# hcb-ir-editor
+﻿# hcb-ir-editor
 
 Galgame 剧情编辑器雏形，FVP / hcb 项目与 Simple .hcb Editor 的 DSL 编辑界面。
 
@@ -29,8 +29,8 @@ npm run dist
 
 产物在 `dist/`：
 
-- `hcb-ir-editor-0.1.0-setup.exe`：NSIS 安装包，可以选安装目录，创建桌面和开始菜单快捷方式。
-- `hcb-ir-editor-0.1.0-portable.exe`：单文件便携版，双击直接运行，适合直接发给别人。
+- `hcb-ir-editor-0.2.0-setup.exe`：NSIS 安装包，可以选安装目录，创建桌面和开始菜单快捷方式。
+- `hcb-ir-editor-0.2.0-portable.exe`：单文件便携版，双击直接运行，适合直接发给别人。
 
 只想要一种：
 
