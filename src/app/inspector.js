@@ -524,78 +524,104 @@
   }
 
   function hydrateSpriteImages(root) {
-    if (!window.RES || window.RES.mode() !== 'scan') return;
-    root.querySelectorAll('img[data-res]').forEach(async (img) => {
-      const entry = JSON.parse(img.dataset.res);
-      const url = await window.RES.thumb(entry, 160);
-      if (url) img.src = url;
+    if (!window.RES || window.RES.mode() !== 'scan') return Promise.resolve();
+    const jobs = [];
+    const settle = (img) =>
+      new Promise((resolve) => {
+        if (!img.isConnected) return resolve();
+        if (img.complete) return resolve();
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    root.querySelectorAll('img[data-res]').forEach((img) => {
+      jobs.push(
+        (async () => {
+          const entry = JSON.parse(img.dataset.res);
+          const url = await window.RES.thumb(entry, 160);
+          if (!url || !img.isConnected) return;
+          img.src = url;
+          await settle(img);
+        })().catch(() => {})
+      );
     });
-    root.querySelectorAll('img[data-bg],img[data-cg]').forEach(async (img) => {
-      const raw = img.dataset.bg || img.dataset.cg;
-      if (!raw) return;
-      const entry = JSON.parse(raw);
-      const url = await window.RES.thumb(entry, 960);
-      if (url && img.isConnected) img.src = url;
+    root.querySelectorAll('img[data-bg],img[data-cg]').forEach((img) => {
+      jobs.push(
+        (async () => {
+          const raw = img.dataset.bg || img.dataset.cg;
+          if (!raw) return;
+          const entry = JSON.parse(raw);
+          const url = await window.RES.thumb(entry, 960);
+          if (!url || !img.isConnected) return;
+          img.src = url;
+          await settle(img);
+        })().catch(() => {})
+      );
     });
+    return Promise.all(jobs);
   }
 
   function hydrateSpriteCanvases(root) {
-    if (!window.RES || window.RES.mode() !== 'scan') return;
-    root.querySelectorAll('canvas[data-sprite]').forEach(async (canvas) => {
-      const spec = JSON.parse(canvas.dataset.sprite || '{}');
-      if (!spec.body || !spec.w || !spec.h) return;
-      const load = (src) =>
-        new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = src;
-        });
-      const bodyUrl = await window.RES.thumb(spec.body, spec.w);
-      if (!bodyUrl || !canvas.isConnected) return;
-      const bodyImg = await load(bodyUrl);
-      let sheetImg = null;
-      if (spec.sheet && spec.sheet.entry) {
-        const sheetData = await window.RES.sheet(spec.sheet.entry, spec.sheet.cellW * (spec.sheet.cols || 6));
-        if (sheetData) {
-          const dataUrl = sheetData.dataUrl;
-          if (dataUrl) {
-            try {
-              sheetImg = await load(dataUrl);
-            } catch (_) {
-              sheetImg = null;
+    if (!window.RES || window.RES.mode() !== 'scan') return Promise.resolve();
+    const jobs = [];
+    const load = (src) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    root.querySelectorAll('canvas[data-sprite]').forEach((canvas) => {
+      jobs.push(
+        (async () => {
+          const spec = JSON.parse(canvas.dataset.sprite || '{}');
+          if (!spec.body || !spec.w || !spec.h) return;
+          const bodyUrl = await window.RES.thumb(spec.body, spec.w);
+          if (!bodyUrl || !canvas.isConnected) return;
+          const bodyImg = await load(bodyUrl);
+          let sheetImg = null;
+          if (spec.sheet && spec.sheet.entry) {
+            const sheetData = await window.RES.sheet(spec.sheet.entry, spec.sheet.cellW * (spec.sheet.cols || 6));
+            if (sheetData) {
+              if (sheetData.dataUrl) {
+                try {
+                  sheetImg = await load(sheetData.dataUrl);
+                } catch (_) {
+                  sheetImg = null;
+                }
+              }
+              spec.sheet = Object.assign({}, spec.sheet, sheetData);
             }
           }
-          if (sheetData) spec.sheet = Object.assign({}, spec.sheet, sheetData);
-        }
-      }
-      if (!canvas.isConnected) return;
-      const scale = Math.min(1, 700 / spec.h);
-      canvas.width = Math.max(1, Math.round(spec.w * scale));
-      canvas.height = Math.max(1, Math.round(spec.h * scale));
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingQuality = 'high';
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
-      if (sheetImg && spec.sheet) {
-        const cols = spec.sheet.cols || 6;
-        const cells = spec.sheet.cells || 1;
-        const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
-        const sx = (idx % cols) * spec.sheet.cellW;
-        const sy = Math.floor(idx / cols) * spec.sheet.cellH;
-        ctx.drawImage(
-          sheetImg,
-          sx,
-          sy,
-          spec.sheet.cellW,
-          spec.sheet.cellH,
-          (spec.sheet.faceX || 0) * scale,
-          (spec.sheet.faceY || 0) * scale,
-          spec.sheet.cellW * scale,
-          spec.sheet.cellH * scale
-        );
-      }
+          if (!canvas.isConnected) return;
+          const scale = Math.min(1, 700 / spec.h);
+          canvas.width = Math.max(1, Math.round(spec.w * scale));
+          canvas.height = Math.max(1, Math.round(spec.h * scale));
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
+          if (sheetImg && spec.sheet) {
+            const cols = spec.sheet.cols || 6;
+            const cells = spec.sheet.cells || 1;
+            const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
+            const sx = (idx % cols) * spec.sheet.cellW;
+            const sy = Math.floor(idx / cols) * spec.sheet.cellH;
+            ctx.drawImage(
+              sheetImg,
+              sx,
+              sy,
+              spec.sheet.cellW,
+              spec.sheet.cellH,
+              (spec.sheet.faceX || 0) * scale,
+              (spec.sheet.faceY || 0) * scale,
+              spec.sheet.cellW * scale,
+              spec.sheet.cellH * scale
+            );
+          }
+        })().catch(() => {})
+      );
     });
+    return Promise.all(jobs);
   }
 
   async function hydrateSpriteSheet(root, sheet) {

@@ -7,6 +7,7 @@
 
 let previewEl = null;
 let previewStage = null;
+let previewPending = null;
 let previewEmpty = null;
 let previewBody = null;
 let previewAudioBtn = null;
@@ -22,6 +23,7 @@ let previewMin = false;
 let previewRestore = null;
 let previewAnimTimer = null;
 let previewBlockId = null;
+let previewRenderToken = 0;
 
 let previewDrag = null;
 let previewResizing = null;
@@ -144,8 +146,10 @@ function initPreview() {
   previewBody.title = '点击跳到下一个功能块';
   previewBody.dataset.previewBody = '';
   previewStage = el('div', 'preview__stage');
+  previewPending = el('div', 'preview__pending');
   previewEmpty = el('div', 'preview__empty', '选择一个功能块');
   previewBody.appendChild(previewStage);
+  previewBody.appendChild(previewPending);
   previewBody.appendChild(previewEmpty);
   previewEl.appendChild(previewBody);
 
@@ -376,10 +380,12 @@ function syncBgm(no) {
 
 function renderPreview() {
   if (!previewEl) initPreview();
+  const token = ++previewRenderToken;
   const hit = currentBlock();
   if (!hit) {
     previewBlockId = null;
     previewStage.innerHTML = '';
+    previewPending.innerHTML = '';
     previewEmpty.hidden = false;
     stopBgm();
     updateAudioButton(false);
@@ -387,13 +393,20 @@ function renderPreview() {
   }
   previewBlockId = hit.block.id;
   previewEmpty.hidden = true;
-  previewStage.innerHTML = '';
   const card = stageCard(hit.scene, hit.block);
-  previewStage.appendChild(card);
-  if (typeof hydrateSpriteImages === 'function') hydrateSpriteImages(previewStage);
-  if (typeof hydrateSpriteCanvases === 'function') hydrateSpriteCanvases(previewStage);
-  const st = stageState(hit.scene, hit.block);
-  syncBgm(st.bgm);
+  previewPending.innerHTML = '';
+  previewPending.appendChild(card);
+  const ready = [];
+  if (typeof hydrateSpriteImages === 'function') ready.push(hydrateSpriteImages(previewPending));
+  if (typeof hydrateSpriteCanvases === 'function') ready.push(hydrateSpriteCanvases(previewPending));
+  Promise.all(ready)
+    .then(() => {
+      if (token !== previewRenderToken) return;
+      previewStage.replaceChildren(card);
+      const st = stageState(hit.scene, hit.block);
+      syncBgm(st.bgm);
+    })
+    .catch(() => {});
 }
 
 initPreview();
