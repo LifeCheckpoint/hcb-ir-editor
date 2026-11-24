@@ -316,7 +316,6 @@ function syncBgm(no) {
 
 function renderPreview() {
   if (!previewEl) initPreview();
-if (window.RES && window.RES.on) window.RES.on(() => renderPreview());
   const hit = currentBlock();
   if (!hit) {
     previewBlockId = null;
@@ -337,3 +336,4 @@ if (window.RES && window.RES.on) window.RES.on(() => renderPreview());
 }
 
 initPreview();
+if (window.RES && window.RES.on) window.RES.on(() => renderPreview());
