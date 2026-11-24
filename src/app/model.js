@@ -129,6 +129,9 @@
           lyr: d.lyr,
           thumb: pick && pick.body ? pick.body.thumb : null,
           entry: pick && pick.body ? pick.body.entry : null,
+          w: pick && pick.body ? pick.body.w : null,
+          h: pick && pick.body ? pick.body.h : null,
+          sheet: pick && pick.sheet ? pick.sheet : null,
         };
         st.screen = null;
       } else if (b.type === 'bs_fade' || b.type === 'bsfade') {
@@ -237,12 +240,29 @@
 
     sprites.forEach((s) => {
       const left = STAGE_POS[s.pos] || '34%';
-      if (s.thumb) {
-        parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="left:' + left + '" alt="">');
+      if (s.entry) {
+        const spec = {
+          body: s.entry,
+          w: s.w,
+          h: s.h,
+          face: s.face,
+          sheet: s.sheet
+            ? {
+                entry: s.sheet.entry,
+                cellW: s.sheet.cellW,
+                cellH: s.sheet.cellH,
+                cells: s.sheet.cells,
+                cols: s.sheet.cols,
+                faceX: s.sheet.faceX,
+                faceY: s.sheet.faceY,
+              }
+            : null,
+        };
+        parts.push('<canvas class="stage__sprite-img stage__sprite-canvas" data-sprite="' + esc(JSON.stringify(spec)) + '" style="left:' + left + '" aria-hidden="true"></canvas>');
         return;
       }
-      if (s.entry) {
-        parts.push('<img class="stage__sprite-img" data-res="' + esc(JSON.stringify(s.entry)) + '" style="left:' + left + '" alt="">');
+      if (s.thumb) {
+        parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="left:' + left + '" alt="">');
       }
     });
 

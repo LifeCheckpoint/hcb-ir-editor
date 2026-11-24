@@ -539,6 +539,65 @@
     });
   }
 
+  function hydrateSpriteCanvases(root) {
+    if (!window.RES || window.RES.mode() !== 'scan') return;
+    root.querySelectorAll('canvas[data-sprite]').forEach(async (canvas) => {
+      const spec = JSON.parse(canvas.dataset.sprite || '{}');
+      if (!spec.body || !spec.w || !spec.h) return;
+      const load = (src) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+      const bodyUrl = await window.RES.thumb(spec.body, spec.w);
+      if (!bodyUrl || !canvas.isConnected) return;
+      const bodyImg = await load(bodyUrl);
+      let sheetImg = null;
+      if (spec.sheet && spec.sheet.entry) {
+        const sheetData = await window.RES.sheet(spec.sheet.entry, spec.sheet.cellW * (spec.sheet.cols || 6));
+        if (sheetData) {
+          const dataUrl = sheetData.dataUrl;
+          if (dataUrl) {
+            try {
+              sheetImg = await load(dataUrl);
+            } catch (_) {
+              sheetImg = null;
+            }
+          }
+          if (sheetData) spec.sheet = Object.assign({}, spec.sheet, sheetData);
+        }
+      }
+      if (!canvas.isConnected) return;
+      const scale = Math.min(1, 700 / spec.h);
+      canvas.width = Math.max(1, Math.round(spec.w * scale));
+      canvas.height = Math.max(1, Math.round(spec.h * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bodyImg, 0, 0, canvas.width, canvas.height);
+      if (sheetImg && spec.sheet) {
+        const cols = spec.sheet.cols || 6;
+        const cells = spec.sheet.cells || 1;
+        const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
+        const sx = (idx % cols) * spec.sheet.cellW;
+        const sy = Math.floor(idx / cols) * spec.sheet.cellH;
+        ctx.drawImage(
+          sheetImg,
+          sx,
+          sy,
+          spec.sheet.cellW,
+          spec.sheet.cellH,
+          (spec.sheet.faceX || 0) * scale,
+          (spec.sheet.faceY || 0) * scale,
+          spec.sheet.cellW * scale,
+          spec.sheet.cellH * scale
+        );
+      }
+    });
+  }
+
   async function hydrateSpriteSheet(root, sheet) {
     if (!sheet || !sheet.entry || !window.RES || window.RES.mode() !== 'scan') return;
     const box = root.querySelector('.spk__faces');

@@ -1278,10 +1278,19 @@ app.whenReady().then(async () => {
           const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
           for (let i = 3; i < d.length; i += 4) if (d[i]) painted += 1;
         }
+        pick.querySelector('.spk__ok')?.click();
+        await wait(1200);
+        const stageCanvas = document.querySelector('#preview .stage__sprite-canvas');
+        let stagePainted = 0;
+        if (stageCanvas) {
+          const d = stageCanvas.getContext('2d').getImageData(0, 0, stageCanvas.width, stageCanvas.height).data;
+          for (let i = 3; i < d.length; i += 4) if (d[i]) stagePainted += 1;
+        }
         return {
           thumbInfo,
           faces: faces.length,
           canvas: canvas ? { w: canvas.width, h: canvas.height, painted } : null,
+          stageCanvas: stageCanvas ? { w: stageCanvas.width, h: stageCanvas.height, painted: stagePainted } : null,
           side: pick.querySelector('.spk__meta')?.textContent.replace(/\s+/g, ' ').trim(),
         };
       } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }

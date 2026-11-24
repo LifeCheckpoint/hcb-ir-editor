@@ -391,6 +391,7 @@ function renderPreview() {
   const card = stageCard(hit.scene, hit.block);
   previewStage.appendChild(card);
   if (typeof hydrateSpriteImages === 'function') hydrateSpriteImages(previewStage);
+  if (typeof hydrateSpriteCanvases === 'function') hydrateSpriteCanvases(previewStage);
   const st = stageState(hit.scene, hit.block);
   syncBgm(st.bgm);
 }
