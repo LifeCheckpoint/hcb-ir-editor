@@ -15,13 +15,19 @@
     "test:dsl": "node tools/test-dsl.cjs",
     "smoke": "electron tools/capture.cjs shots/shot.png smoke",
     "test:mapping": "node tools/test-mapping.cjs",
-    "test:scan": "node tools/test-loose.cjs"
+    "test:scan": "node tools/test-loose.cjs",
+    "dist": "electron-builder --win",
+    "dist:installer": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable",
+    "dist:dir": "electron-builder --dir"
   },
   "devDependencies": {
     "electron": "^38.2.0",
-    "lucide-static": "^1.73.0"
+    "lucide-static": "^1.73.0",
+    "electron-builder": "^26.18.0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5"
-  }
+  },
+  "author": "LifeCheckpoint"
 }

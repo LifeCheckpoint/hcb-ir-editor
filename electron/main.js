@@ -14,6 +14,13 @@ const isMac = process.platform === 'darwin';
 
 // 只允许解扫描过的目录里的文件
 const roots = new Set();
+
+function scanWorkerPath() {
+  if (!app.isPackaged) return path.join(__dirname, 'scan-worker.js');
+  const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'scan-worker.js');
+  if (fs.existsSync(unpacked)) return unpacked;
+  return path.join(process.resourcesPath, 'app', 'electron', 'scan-worker.js');
+}
 const insideRoots = (file) => {
   const abs = path.resolve(file);
   return [...roots].some((r) => abs === r || abs.startsWith(r + path.sep));
@@ -58,7 +65,7 @@ ipcMain.handle('res:scan', (event, dir) => {
 
     let worker;
     try {
-      worker = new Worker(path.join(__dirname, 'scan-worker.js'), { workerData: { dir } });
+      worker = new Worker(scanWorkerPath(), { workerData: { dir } });
     } catch (err) {
       const message = String((err && err.message) || err);
       send({ phase: 'error', text: '读取失败：' + message });

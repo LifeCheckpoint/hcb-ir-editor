@@ -18,6 +18,41 @@ GAME_DIR=/path/to/game node tools/dump-mapping-inputs.cjs  # 扫描归档，准�
 python tools/build-mapping.py # 重新生成 mappings/sakura.toml（需先有 Lua IR 与扫描数据）
 ```
 
+## 打包 Windows exe
+
+需要 Windows x64 环境，先安装依赖：
+
+```bash
+npm install
+npm run dist
+```
+
+产物在 `dist/`：
+
+- `hcb-ir-editor-0.1.0-setup.exe`：NSIS 安装包，可以选安装目录，创建桌面和开始菜单快捷方式。
+- `hcb-ir-editor-0.1.0-portable.exe`：单文件便携版，双击直接运行，适合直接发给别人。
+
+只想要一种：
+
+```bash
+npm run dist:installer
+npm run dist:portable
+npm run dist:dir       # 只生成 dist/win-unpacked，方便本地检查
+```
+
+配置文件是 [electron-builder.yml](electron-builder.yml)，应用 ID、产物名和目标平台都在里面。打包时：
+
+- 扫描 worker 会作为 `app.asar.unpacked` 保留，主进程按打包路径加载。
+- 游戏目录、映射表和项目文件都不打进安装包；用户第一次打开后自己选游戏目录、导入映射表或打开项目。
+- 默认用 Electron 图标。要换图标，在 `build/` 放 256×256 的 `icon.ico`，electron-builder 会优先使用。
+- 没有代码签名证书时 Windows SmartScreen 可能提示「未知发布者」；这不是程序损坏。对外分发建议购买代码签名证书，设置 `CSC_LINK` 和 `CSC_KEY_PASSWORD` 后重新打包。
+- 安装包是 x64 的；需要 arm64 时在 `electron-builder.yml` 的 arch 里加 `arm64`。
+
+```text
+用户数据：%APPDATA%\hcb-ir-editor
+项目文件：用户自己保存的 .hcbproj
+```
+
 ## 目录
 
 ```

@@ -1,0 +1,39 @@
+﻿appId: com.lifecheckpoint.hcb-ir-editor
+productName: hcb-ir-editor
+copyright: Copyright © 2026 LifeCheckpoint
+directories:
+  output: dist
+files:
+  - electron/**/*
+  - src/**/*
+  - package.json
+  - "!**/*.map"
+  - "!tests/**"
+  - "!tools/**"
+  - "!mappings/**"
+  - "!docs/**"
+  - "!README.md"
+  - "!package-lock.json"
+asar: true
+asarUnpack:
+  - electron/scan-worker.js
+  - electron/scan.js
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: hcb-ir-editor
+  artifactName: ${productName}-${version}-setup.${ext}
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
