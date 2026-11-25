@@ -114,7 +114,7 @@
       let g = chars.get(key);
       if (!g) {
         const who = map.character(row.cha);
-        g = { name: who ? who.name : '角色 ' + row.cha, cha: row.cha, poses: [], poseNos: [], cloths: [], clothNos: [], bodies: {}, sheets: {} };
+        g = { name: who ? who.name : '角色 ' + row.cha, cha: row.cha, poses: [], poseNos: [], cloths: [], clothNos: [], bodies: {}, sheets: {}, bodyVariants: {}, sheetVariants: {} };
         chars.set(key, g);
       }
       addPose(g, row.pose, row.poseName);
@@ -128,6 +128,23 @@
         if (row.faces != null) sh.cells = row.faces;
         g.sheets[k] = sh;
       }
+      g.bodyVariants[k] = { '-1': g.bodies[k] || null };
+      g.sheetVariants[k] = { '-1': g.sheets[k] || null };
+      [['0', 'L'], ['1', 'U'], ['2', 'S']].forEach(([lv, suffix]) => {
+        const vBody = row.body ? findEntry(row.body + suffix) : null;
+        if (vBody) g.bodyVariants[k][lv] = { entry: entryOf(vBody), w: vBody.w, h: vBody.h };
+        const sheetName = row.sheet
+          ? row.sheet.replace(/(_表情)$/, suffix + '$1') === row.sheet
+            ? row.sheet + suffix
+            : row.sheet.replace(/(_表情)$/, suffix + '$1')
+          : '';
+        const vSheet = sheetName ? findEntry(sheetName) : null;
+        if (vSheet) {
+          const sh = sheetOf(vSheet);
+          if (row.faces != null) sh.cells = row.faces;
+          g.sheetVariants[k][lv] = sh;
+        }
+      });
     });
 
     let out = [...chars.values()].filter((c) => Object.keys(c.bodies).length && c.poses.length && c.cloths.length);

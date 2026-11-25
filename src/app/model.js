@@ -97,7 +97,10 @@
     const pose = ch.poses[pi];
     const cloth = ch.cloths[ci];
     const key = poseNo + '|' + clothNo;
-    return { ch, pose, cloth, poseNo, clothNo, key, body: ch.bodies[key] || null, sheet: ch.sheets[key] || null, pi, ci };
+    const lv = d.l == null || d.l === '' ? '-1' : String(d.l);
+    const body = (ch.bodyVariants && ch.bodyVariants[key] && ch.bodyVariants[key][lv]) || ch.bodies[key] || null;
+    const sheet = (ch.sheetVariants && ch.sheetVariants[key] && ch.sheetVariants[key][lv]) || ch.sheets[key] || null;
+    return { ch, pose, cloth, poseNo, clothNo, key, lv, body, sheet, pi, ci };
   }
 
   /* 站在这一块时，画面里有什么：从本章开头按顺序把原语跑一遍
@@ -153,6 +156,13 @@
           sheet: pick && pick.sheet ? pick.sheet : null,
         };
         st.screen = null;
+      } else if (b.type === 'bs_move') {
+        const sp = st.sprites[d.cha];
+        if (sp) {
+          sp.x = (Number(sp.x) || 0) + (Number(d.dx) || 0);
+          sp.y = (Number(sp.y) || 0) + (Number(d.dy) || 0);
+          if (d.z !== '' && d.z != null) sp.z = d.z;
+        }
       } else if (b.type === 'bs_fade' || b.type === 'bsfade') {
         if (b.type === 'bsfade') st.sprites = {};
         else delete st.sprites[d.cha];
@@ -272,7 +282,14 @@
     const dark = fill === '#2C3E50';
     const bgEntry = st.bg != null && window.WIRING ? window.WIRING.bgEntry(st.bg, st.bgDiff) : null;
     const cgEntry = st.cg && window.WIRING ? window.WIRING.cgEntry(st.cg) : null;
-    const sprites = Object.keys(st.sprites).map((k) => st.sprites[k]);
+    const sprites = Object.keys(st.sprites)
+      .map((k) => st.sprites[k])
+      .sort((a, b) => {
+        const az = Number(a.z) || 0;
+        const bz = Number(b.z) || 0;
+        if (az !== bz) return az - bz;
+        return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
+      });
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
 
     const card = el('div', 'stage' + (dark ? ' is-dark' : ''));

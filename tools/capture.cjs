@@ -1328,6 +1328,26 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'spritevariant') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bs,2,1,0,1,1,m,1000,0,0,1]', { target: 'new', name: 'variant' });
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(700);
+        document.querySelector('.block[data-type="bs"]').click();
+        await wait(700);
+        const thumb = document.querySelector('.sprite-pick__thumb');
+        const text = document.querySelector('.sprite-pick__text')?.textContent.replace(/\s+/g, ' ').trim();
+        return { text, thumbW: thumb?.naturalWidth || 0, thumbH: thumb?.naturalHeight || 0 };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

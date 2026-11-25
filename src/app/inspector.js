@@ -714,9 +714,10 @@
     let faceTouched = false;
     let sideSeq = 0;
 
+    const lv = block.data.l == null || block.data.l === '' ? '-1' : String(block.data.l);
     const keyOf = () => (ch.poseNos[pi] == null ? 1 : ch.poseNos[pi]) + '|' + (ch.clothNos[ci] == null ? 0 : ch.clothNos[ci]);
-    const bodyOf = () => ch.bodies[keyOf()] || null;
-    const sheetOf = () => ch.sheets[keyOf()] || null;
+    const bodyOf = () => (ch.bodyVariants && ch.bodyVariants[keyOf()] && ch.bodyVariants[keyOf()][lv]) || ch.bodies[keyOf()] || null;
+    const sheetOf = () => (ch.sheetVariants && ch.sheetVariants[keyOf()] && ch.sheetVariants[keyOf()][lv]) || ch.sheets[keyOf()] || null;
 
     const overlay = el('div', 'modal');
     const scrim = el('div', 'modal__scrim');
