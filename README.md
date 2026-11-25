@@ -81,6 +81,7 @@ src/wiring.js          资源接线：映射表 → 文件
 src/mapping.js         映射表：TOML 归一化与查询
 docs/resource-wiring.md 接线模型、断线规则、背景编号
 docs/code-structure.md 代码拆分、加载顺序、下一步计划
+docs/sprite-position-research.md 立绘位置、HZC offset、RFVP 验证记录
 mappings/sample.toml   映射表最小示例（手工）
 mappings/sakura.toml   从 Sakura.hcb 生成的完整表（角色 / 立绘 / 背景 / CG / BGM / 音效）
 tools/build-mapping.py 从 hcb 的 Lua IR 生成立绘/角色/背景映射
