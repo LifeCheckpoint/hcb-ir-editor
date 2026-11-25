@@ -140,6 +140,9 @@
           cha: d.cha,
           pos: d.pos || 'm',
           l: d.l,
+          x: d.x,
+          y: d.y,
+          z: d.z,
           face: d.face,
           pose: d.pose,
           lyr: d.lyr,
@@ -225,7 +228,11 @@
     return '#EFEDE8';
   }
 
-  const STAGE_POS = { l: '4%', m: '34%', r: '64%' };
+  /* 基础坐标换算：先按原作 1280×720 的虚拟舞台处理，335 偏移后续再加 */
+  const STAGE_W = 1280;
+  const STAGE_H = 720;
+  const STAGE_POS = { l: 0.25, m: 0.5, r: 0.75 };
+  const STAGE_BOTTOM = 0.09;
 
   /* 台词里的 ~ 换行，每个 [注解|正文] 单独成一个 ruby 小字 */
   function stageTextHtml(text) {
@@ -275,7 +282,12 @@
     if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" alt="">');
 
     sprites.forEach((s) => {
-      const left = STAGE_POS[s.pos] || '34%';
+      const base = STAGE_POS[s.pos] == null ? 0.5 : STAGE_POS[s.pos];
+      const dx = Number(s.x);
+      const dy = Number(s.y);
+      const left = (base + (Number.isFinite(dx) ? dx / STAGE_W : 0)) * 100;
+      const bottom = (STAGE_BOTTOM + (Number.isFinite(dy) ? dy / STAGE_H : 0)) * 100;
+      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;transform:translateX(-50%)';
       if (s.entry) {
         const spec = {
           body: s.entry,
@@ -294,11 +306,11 @@
               }
             : null,
         };
-        parts.push('<canvas class="stage__sprite-img stage__sprite-canvas" data-sprite="' + esc(JSON.stringify(spec)) + '" style="left:' + left + '" aria-hidden="true"></canvas>');
+        parts.push('<canvas class="stage__sprite-img stage__sprite-canvas" data-sprite="' + esc(JSON.stringify(spec)) + '" style="' + posStyle + '" aria-hidden="true"></canvas>');
         return;
       }
       if (s.thumb) {
-        parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="left:' + left + '" alt="">');
+        parts.push('<img class="stage__sprite-img" src="' + esc(s.thumb) + '" style="' + posStyle + '" alt="">');
       }
     });
 
