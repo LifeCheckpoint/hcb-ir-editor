@@ -88,7 +88,18 @@
     const chars = new Map();
     const entryOf = (e) => ({ path: a.path, offset: e.off, size: e.size, name: e.name });
     const findEntry = (name) => a.entries.find((e) => e.name === name) || null;
-    const sheetOf = (e) => ({ entry: entryOf(e), cellW: e.w, cellH: e.h, cells: e.cells || 1, cols: 6, faceX: e.faceX || 0, faceY: e.faceY || 0 });
+    const offsetX = (e) => (e.offsetX == null ? e.faceX || 0 : e.offsetX);
+    const offsetY = (e) => (e.offsetY == null ? e.faceY || 0 : e.offsetY);
+    const bodyOf = (e) => ({
+      entry: entryOf(e), w: e.w, h: e.h,
+      offsetX: offsetX(e), offsetY: offsetY(e),
+      pivotX: e.pivotX || 0, pivotY: e.pivotY || 0,
+    });
+    const sheetOf = (e) => ({
+      entry: entryOf(e), cellW: e.w, cellH: e.h, cells: e.cells || 1, cols: 6,
+      faceX: offsetX(e), faceY: offsetY(e),
+      pivotX: e.pivotX || 0, pivotY: e.pivotY || 0,
+    });
     const addPose = (g, no, name) => {
       const i = g.poseNos.indexOf(no);
       if (i < 0) {
@@ -121,7 +132,7 @@
       addCloth(g, row.cloth, row.clothName);
       const k = row.pose + '|' + row.cloth;
       const body = row.body ? findEntry(row.body) : null;
-      if (body) g.bodies[k] = { entry: entryOf(body), w: body.w, h: body.h };
+      if (body) g.bodies[k] = bodyOf(body);
       const sheet = row.sheet ? findEntry(row.sheet) : null;
       if (sheet) {
         const sh = sheetOf(sheet);
@@ -132,7 +143,7 @@
       g.sheetVariants[k] = { '-1': g.sheets[k] || null };
       [['0', 'L'], ['1', 'U'], ['2', 'S']].forEach(([lv, suffix]) => {
         const vBody = row.body ? findEntry(row.body + suffix) : null;
-        if (vBody) g.bodyVariants[k][lv] = { entry: entryOf(vBody), w: vBody.w, h: vBody.h };
+        if (vBody) g.bodyVariants[k][lv] = bodyOf(vBody);
         const sheetName = row.sheet
           ? row.sheet.replace(/(_表情)$/, suffix + '$1') === row.sheet
             ? row.sheet + suffix

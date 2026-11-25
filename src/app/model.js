@@ -153,6 +153,10 @@
           entry: pick && pick.body ? pick.body.entry : null,
           w: pick && pick.body ? pick.body.w : null,
           h: pick && pick.body ? pick.body.h : null,
+          bodyOffsetX: pick && pick.body ? pick.body.offsetX : 0,
+          bodyOffsetY: pick && pick.body ? pick.body.offsetY : 0,
+          bodyPivotX: pick && pick.body ? pick.body.pivotX : 0,
+          bodyPivotY: pick && pick.body ? pick.body.pivotY : 0,
           sheet: pick && pick.sheet ? pick.sheet : null,
         };
         st.screen = null;
