@@ -242,7 +242,7 @@
   const STAGE_W = 1280;
   const STAGE_H = 720;
   const STAGE_POS = { l: 0.25, m: 0.5, r: 0.75 };
-  const STAGE_BOTTOM = 0.09;
+  const STAGE_BOTTOM = 0;
 
   /* 台词里的 ~ 换行，每个 [注解|正文] 单独成一个 ruby 小字 */
   function stageTextHtml(text) {
