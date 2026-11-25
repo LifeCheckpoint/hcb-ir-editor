@@ -303,7 +303,8 @@
       const dx = Number(s.x);
       const dy = Number(s.y);
       const left = (base + (Number.isFinite(dx) ? dx / STAGE_W : 0)) * 100;
-      const bottom = (STAGE_BOTTOM + (Number.isFinite(dy) ? dy / STAGE_H : 0)) * 100;
+      // 游戏坐标 y 向下为正；画布锚在底部，所以正值要减少 bottom
+      const bottom = (STAGE_BOTTOM - (Number.isFinite(dy) ? dy / STAGE_H : 0)) * 100;
       const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;transform:translateX(-50%)';
       if (s.entry) {
         const spec = {
