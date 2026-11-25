@@ -1349,6 +1349,41 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'projsettings') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        const click = (n) => { n.click(); };
+        document.querySelector('.menu-btn[data-menu="file"]').click();
+        await wait(150);
+        const item = [...document.querySelectorAll('.menubar__drop .menu-item')].find((n) => n.textContent.includes('项目设置'));
+        if (!item) return { error: 'no project settings item' };
+        click(item);
+        await wait(300);
+        const panel = document.querySelector('.project-settings');
+        const values = () => [...panel.querySelectorAll('input[data-setting]')].reduce((o, n) => (o[n.dataset.setting] = n.value, o), {});
+        const before = values();
+        const set = (key, value) => { const n = panel.querySelector('input[data-setting="' + key + '"]'); n.value = value; n.dispatchEvent(new Event('input', { bubbles: true })); };
+        set('stage.width', 1920); set('stage.height', 1080); set('stage.bottom', 10);
+        set('stage.l', 480); set('stage.m', 960); set('stage.r', 1440);
+        set('depth.sprite', 1200); set('depth.background', 1300); set('depth.cg', 1400);
+        set('sprite.height', 80); set('sprite.maxWidth', 40);
+        const apply = [...panel.querySelectorAll('button')].find((n) => n.textContent.trim() === '应用');
+        click(apply);
+        await wait(500);
+        const serialized = window.PROJECT.serialize();
+        window.PROJECT.apply(JSON.parse(JSON.stringify(serialized)));
+        const loaded = window.PROJECT.settings();
+        const old = JSON.parse(JSON.stringify(serialized));
+        old.version = 1;
+        delete old.settings;
+        window.PROJECT.apply(old);
+        const migrated = window.PROJECT.settings();
+        return { before, closed: !document.querySelector('.project-settings'), settings: serialized.settings, loaded, migrated, version: serialized.version, dirty: window.PROJECT.isDirty() };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'spritevariant') {
     const info = await run(`(async () => {
       try {

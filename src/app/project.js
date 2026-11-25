@@ -10,7 +10,7 @@
    * ------------------------------------------------------------------ */
 
   const PROJECT_FORMAT = 'hcb-ir/project';
-  const PROJECT_VERSION = 1;
+  const PROJECT_VERSION = 2;
   const LAST_KEY = 'hcb.lastProject';
 
   let projectPath = null;
@@ -74,6 +74,20 @@
     }
   }
 
+  function markProjectDirtyOnly() {
+    if (!dirty) {
+      dirty = true;
+      setSaveState();
+    }
+  }
+
+  function projectSettingsChanged() {
+    if (typeof invalidateStageCache === 'function') invalidateStageCache();
+    markProjectDirtyOnly();
+    if (typeof renderInspector === 'function') renderInspector();
+    if (typeof renderPreview === 'function') renderPreview({ bulk: false });
+  }
+
   function serializeProject() {
     const collapsed = {};
     Object.keys(state.collapsedScenes).forEach((id) => {
@@ -83,6 +97,7 @@
       format: PROJECT_FORMAT,
       version: PROJECT_VERSION,
       game: { root: window.RES ? window.RES.root() : '' },
+      settings: window.PROJECT_SETTINGS ? window.PROJECT_SETTINGS.serialize() : null,
       story: { chapters: CHAPTERS },
       bindings: window.BINDINGS ? window.BINDINGS.serialize() : [],
       mapping: window.MAPPING ? window.MAPPING.serialize() : null,
@@ -104,6 +119,7 @@
       ...c,
       scenes: Array.isArray(c.scenes) ? c.scenes : [],
     }));
+    if (window.PROJECT_SETTINGS) window.PROJECT_SETTINGS.load(data.settings);
     const want = data.ui && data.ui.chapterId;
     state.chapterId = CHAPTERS.some((c) => c.id === want) ? want : CHAPTERS[0] ? CHAPTERS[0].id : null;
     state.collapsedScenes = {};
@@ -252,6 +268,7 @@
 
   function newProject() {
     if (typeof invalidateStageCache === 'function') invalidateStageCache();
+    if (window.PROJECT_SETTINGS) window.PROJECT_SETTINGS.reset();
     CHAPTERS = [];
     state.chapterId = null;
     state.blockId = null;
@@ -287,6 +304,8 @@
     path: () => projectPath,
     isDirty: () => dirty,
     markDirty: touch,
+    settings: () => (window.PROJECT_SETTINGS ? window.PROJECT_SETTINGS.get() : null),
+    settingsChanged: projectSettingsChanged,
     mappingChanged: () => {
       if (typeof invalidateStageCache === 'function') invalidateStageCache();
       dropDecls();

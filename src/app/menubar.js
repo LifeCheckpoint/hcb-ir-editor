@@ -19,6 +19,8 @@
         { label: '保存', shortcut: 'Ctrl S', action: () => saveProject(false) },
         { label: '另存为…', shortcut: 'Ctrl Shift S', action: () => saveProject(true) },
         { sep: true },
+        { label: '项目设置…', shortcut: 'Ctrl Alt ,', action: () => window.PROJECT_SETTINGS && window.PROJECT_SETTINGS.open() },
+        { sep: true },
         { label: '导入 DSL…', shortcut: 'Ctrl I', action: () => openDslDialog() },
         { sep: true },
         { label: '导出 DSL…', shortcut: 'Ctrl E', action: () => exportDsl() },

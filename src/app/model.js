@@ -242,17 +242,6 @@
     return '#EFEDE8';
   }
 
-  /* 基础坐标换算：先按原作 1280×720 的虚拟舞台处理，335 偏移后续再加 */
-  const STAGE_W = 1280;
-  const STAGE_H = 720;
-  const STAGE_POS = { l: 0.25, m: 0.5, r: 0.75 };
-  const STAGE_BOTTOM = 0;
-  const STAGE_Z = 1000;
-  const stageZ = (value, fallback) => {
-    if (value === '' || value == null) return fallback;
-    const n = Number(value);
-    return Number.isFinite(n) ? Math.max(100, Math.min(10000, n)) : fallback;
-  };
 
   /* 台词里的 ~ 换行，每个 [注解|正文] 单独成一个 ruby 小字 */
   function stageTextHtml(text) {
@@ -292,45 +281,62 @@
     const dark = fill === '#2C3E50';
     const bgEntry = st.bg != null && window.WIRING ? window.WIRING.bgEntry(st.bg, st.bgDiff) : null;
     const cgEntry = st.cg && window.WIRING ? window.WIRING.cgEntry(st.cg) : null;
+    const conf = window.PROJECT_SETTINGS
+      ? window.PROJECT_SETTINGS.get()
+      : { stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 320, m: 640, r: 960 } }, depth: { sprite: 1000, background: 1000, cg: 1000 }, sprite: { height: 76, maxWidth: 36 } };
+    const SW = conf.stage.width;
+    const SH = conf.stage.height;
+    const posFrac = {
+      l: conf.stage.anchors.l / SW,
+      m: conf.stage.anchors.m / SW,
+      r: conf.stage.anchors.r / SW,
+    };
+    const bottomFrac = conf.stage.bottom / SH;
+    const clampZ = (value, fallback) => {
+      if (value === '' || value == null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.max(100, Math.min(10000, n)) : fallback;
+    };
     const sprites = Object.keys(st.sprites)
       .map((k) => st.sprites[k])
       .sort((a, b) => {
-        const az = stageZ(a.z, STAGE_Z);
-        const bz = stageZ(b.z, STAGE_Z);
+        const az = clampZ(a.z, conf.depth.sprite);
+        const bz = clampZ(b.z, conf.depth.sprite);
         if (az !== bz) return az - bz;
         return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
       });
     const cam = st.camera || { x: 0, y: 0, z: 0 };
     const camFor = (z) => {
-      const depth = (Number(z) || STAGE_Z) - (Number(cam.z) || 0);
+      const depth = z - (Number(cam.z) || 0);
       const scale = 1000 / (Math.abs(depth) < 1e-3 ? 1 : depth);
       return { scale, tx: -(Number(cam.x) || 0) * scale, ty: -(Number(cam.y) || 0) * scale };
     };
     const camStyle = (z) => {
       const c = camFor(z);
-      return 'transform:translate(' + (c.tx / STAGE_W * 100).toFixed(3) + '%,' + (c.ty / STAGE_H * 100).toFixed(3) + '%) scale(' + c.scale.toFixed(5) + ');transform-origin:50% 50%';
+      return 'transform:translate(' + (c.tx / SW * 100).toFixed(3) + '%,' + (c.ty / SH * 100).toFixed(3) + '%) scale(' + c.scale.toFixed(5) + ');transform-origin:50% 50%';
     };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
 
     const card = el('div', 'stage' + (dark ? ' is-dark' : ''));
+    card.style.aspectRatio = SW + ' / ' + SH;
     const parts = [];
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
-    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle(STAGE_Z) + '" alt="">');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle(clampZ(conf.depth.background, 1000)) + '" alt="">');
 
     sprites.forEach((s) => {
-      const base = STAGE_POS[s.pos] == null ? 0.5 : STAGE_POS[s.pos];
+      const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];
       const dx = Number(s.x);
       const dy = Number(s.y);
-      const baseX = (base + (Number.isFinite(dx) ? dx / STAGE_W : 0)) * STAGE_W;
-      const baseY = STAGE_H * (1 - (STAGE_BOTTOM - (Number.isFinite(dy) ? dy / STAGE_H : 0)));
-      const z = stageZ(s.z, STAGE_Z);
+      const baseX = (base + (Number.isFinite(dx) ? dx / SW : 0)) * SW;
+      const baseY = SH * (1 - (bottomFrac - (Number.isFinite(dy) ? dy / SH : 0)));
+      const z = clampZ(s.z, conf.depth.sprite);
       const c = camFor(z);
-      const screenX = STAGE_W / 2 + c.scale * (baseX - STAGE_W / 2 - (Number(cam.x) || 0));
-      const screenY = STAGE_H / 2 + c.scale * (baseY - STAGE_H / 2 - (Number(cam.y) || 0));
-      const left = screenX / STAGE_W * 100;
-      const bottom = (1 - screenY / STAGE_H) * 100;
-      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;height:' + (76 * c.scale).toFixed(3) + '%;max-width:' + (36 * c.scale).toFixed(3) + '%;transform:translateX(-50%)';
+      const screenX = SW / 2 + c.scale * (baseX - SW / 2 - (Number(cam.x) || 0));
+      const screenY = SH / 2 + c.scale * (baseY - SH / 2 - (Number(cam.y) || 0));
+      const left = screenX / SW * 100;
+      const bottom = (1 - screenY / SH) * 100;
+      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;height:' + (conf.sprite.height * c.scale).toFixed(3) + '%;max-width:' + (conf.sprite.maxWidth * c.scale).toFixed(3) + '%;transform:translateX(-50%)';
       if (s.entry) {
         const spec = {
           body: s.entry,
@@ -358,7 +364,7 @@
     });
 
     if (st.cg && cgEntry) {
-      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(STAGE_Z) + '" alt="">');
+      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(clampZ(conf.depth.cg, 1000)) + '" alt="">');
     }
 
     if (st.screen) {
