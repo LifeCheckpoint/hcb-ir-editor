@@ -292,13 +292,12 @@
           type: 'select',
           group: '底图',
           options: () => [
-            { value: '-1', label: '默认底图' },
-            { value: '0', label: 'L 底图' },
-            { value: '1', label: 'U 底图' },
-            { value: '2', label: 'S 底图' },
+            { value: '-1', label: '默认' },
+            { value: '0', label: 'L' },
+            { value: '1', label: 'U' },
+            { value: '2', label: 'S' },
             { value: '-10', label: '小头像' },
           ],
-          note: () => 'L / U / S 是底图分辨率，不是左右站位',
         },
         {
           key: 'pos',
