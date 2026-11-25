@@ -1297,6 +1297,37 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'selcache') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        await window.DSL.importFile(${JSON.stringify(FIXTURE)});
+        await wait(400);
+        const blocks = [...document.querySelectorAll('#main .block')];
+        blocks[1]?.click();
+        await wait(300);
+        const firstId = state.blockId;
+        const firstNode = document.querySelector('#main .block[data-block-id="' + firstId + '"]');
+        const sentinel = document.querySelector('#main .doc-title');
+        const nextId = blocks[2]?.dataset.blockId;
+        selectBlock(nextId);
+        await wait(300);
+        const nextNode = document.querySelector('#main .block[data-block-id="' + nextId + '"]');
+        const hit = listOfBlock(nextId);
+        const st1 = stageState(hit.scene, hit.list.find((b) => b.id === nextId));
+        const st2 = stageState(hit.scene, hit.list.find((b) => b.id === nextId));
+        return {
+          firstNodeConnected: !!firstNode?.isConnected,
+          sameMainTree: sentinel === document.querySelector('#main .doc-title'),
+          selected: document.querySelectorAll('#main .block.is-selected').length,
+          activeChapter: document.querySelector('.chapter.is-active')?.dataset.chapterId || '',
+          currentScene: document.querySelector('.scene-item.is-current')?.dataset.sceneId || '',
+          stageCacheHit: st1 === st2,
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

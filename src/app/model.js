@@ -102,7 +102,23 @@
 
   /* 站在这一块时，画面里有什么：从本章开头按顺序把原语跑一遍
      背景、立绘、BGM 都跨场景留着，和脚本里一样 */
-  function stageState(scene, block) {
+  const stageStateCache = new Map();
+
+  function invalidateStageCache() {
+    stageStateCache.clear();
+  }
+
+  function copyStageState(st) {
+    const sprites = {};
+    Object.keys(st.sprites || {}).forEach((key) => {
+      sprites[key] = Object.assign({}, st.sprites[key]);
+    });
+    return Object.assign({}, st, { sprites });
+  }
+
+  function stageState(scene, block, opts) {
+    if (stageStateCache.has(block.id)) return stageStateCache.get(block.id);
+    const bulk = !opts || opts.bulk !== false;
     const st = { bg: null, cg: null, msg: 'normal', sprites: {}, bgm: null, se: null, text: '', speaker: '', screen: null };
     let speakerRun = '';
     const run = (b) => {
@@ -159,17 +175,37 @@
     const hit = sceneOfBlock(block.id);
     const chapter = hit ? hit.chapter : null;
     if (!chapter) {
-      flatten(scene.blocks).forEach(run);
-      return st;
+      let target = null;
+      flatten(scene.blocks).forEach((b) => {
+        run(b);
+        if (bulk) stageStateCache.set(b.id, copyStageState(st));
+        else if (b.id === block.id) target = copyStageState(st);
+      });
+      if (!bulk) {
+        target = target || copyStageState(st);
+        stageStateCache.set(block.id, target);
+        return target;
+      }
+      return stageStateCache.get(block.id) || st;
     }
     for (const sc of chapter.scenes) {
       speakerRun = '';
       for (const b of flatten(sc.blocks)) {
         run(b);
-        if (b.id === block.id) return st;
+        if (bulk) {
+          const snapshot = copyStageState(st);
+          stageStateCache.set(b.id, snapshot);
+          if (b.id === block.id) return snapshot;
+        } else if (b.id === block.id) {
+          const snapshot = copyStageState(st);
+          stageStateCache.set(b.id, snapshot);
+          return snapshot;
+        }
       }
     }
-    return st;
+    const fallback = copyStageState(st);
+    stageStateCache.set(block.id, fallback);
+    return fallback;
   }
 
   /* 背景名里带的情境决定底色，夜深色配亮字 */
@@ -222,8 +258,8 @@
     return (raw[0] === '「' && raw[raw.length - 1] === '」') || (raw[0] === '『' && raw[raw.length - 1] === '』');
   }
 
-  function stageCard(scene, block) {
-    const st = stageState(scene, block);
+  function stageCard(scene, block, stage) {
+    const st = stage || stageState(scene, block);
     const bg = bgById(st.bg);
     const fill = bgTint(bg ? bg.name : '');
     const dark = fill === '#2C3E50';

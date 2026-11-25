@@ -91,6 +91,19 @@
     chapterRail.appendChild(foot);
   }
 
+  function syncChapterSelection() {
+    chapterRail.querySelectorAll('.chapter').forEach((row) => {
+      const active = row.dataset.chapterId === state.chapterId;
+      row.classList.toggle('is-active', active);
+      row.setAttribute('aria-current', active ? 'true' : 'false');
+    });
+    const hit = state.blockId ? sceneOfBlock(state.blockId) : null;
+    const activeScene = hit && hit.chapter.id === state.chapterId ? hit.scene.id : null;
+    chapterRail.querySelectorAll('.scene-item').forEach((item) => {
+      item.classList.toggle('is-current', item.dataset.sceneId === activeScene);
+    });
+  }
+
   function chapterRow(ch) {
     const active = ch.id === state.chapterId;
     const row = el('div', 'chapter' + (active ? ' is-active' : ''));
@@ -170,6 +183,7 @@
     const activeScene = hit && hit.chapter.id === ch.id ? hit.scene.id : null;
     (ch.scenes || []).forEach((sc) => {
       const item = el('div', 'scene-item' + (sc.id === activeScene ? ' is-current' : ''));
+      item.dataset.sceneId = sc.id;
       item.innerHTML =
         '<span class="scene-item__name">' + esc(sc.no + ' ' + sc.title) + '</span>' +
         '<span class="scene-item__count">' + flatten(sc.blocks).length + '</span>';

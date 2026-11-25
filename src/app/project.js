@@ -57,6 +57,7 @@
   }
 
   function touch(key) {
+    if (typeof invalidateStageCache === 'function') invalidateStageCache();
     dropDecls();
     if (!dirty) {
       dirty = true;
@@ -94,6 +95,7 @@
   }
 
   function applyProject(data) {
+    if (typeof invalidateStageCache === 'function') invalidateStageCache();
     if (!data || data.format !== PROJECT_FORMAT) throw new Error('不是 hcb-ir-editor 项目文件');
     if (Number(data.version) > PROJECT_VERSION) throw new Error('项目版本 ' + data.version + ' 比编辑器新');
     const chapters = data.story && data.story.chapters;
@@ -249,6 +251,7 @@
   }
 
   function newProject() {
+    if (typeof invalidateStageCache === 'function') invalidateStageCache();
     CHAPTERS = [];
     state.chapterId = null;
     state.blockId = null;
@@ -285,6 +288,7 @@
     isDirty: () => dirty,
     markDirty: touch,
     mappingChanged: () => {
+      if (typeof invalidateStageCache === 'function') invalidateStageCache();
       dropDecls();
       if (window.RES) window.RES.resetSprites();
       if (window.BINDINGS) window.BINDINGS.refresh();

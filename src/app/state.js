@@ -86,9 +86,18 @@
   }
 
   function commitSelection(scroll) {
-    renderMain();
+    const ch = currentChapter();
+    const rendered = mainEl.dataset.chapterId || '';
+    if ((ch && rendered !== ch.id) || (!ch && rendered)) {
+      renderMain();
+      renderChapters();
+    } else {
+      syncBlockSelection();
+      if (typeof syncChapterSelection === 'function') syncChapterSelection();
+      else renderChapters();
+      if (window.HISTORY) window.HISTORY.syncSelection();
+    }
     renderInspector();
-    renderChapters();
     if (scroll === false) return;
     const node = state.blockId && mainEl.querySelector('[data-block-id="' + state.blockId + '"]');
     if (node) node.scrollIntoView({ block: 'nearest' });

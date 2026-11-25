@@ -18,6 +18,7 @@
     mainEl.innerHTML = '';
 
     if (!ch) {
+      delete mainEl.dataset.chapterId;
       renderStart();
       return;
     }
@@ -45,6 +46,17 @@
     doc.appendChild(el('div', 'doc-divider'));
     (ch.scenes || []).forEach((sc) => doc.appendChild(renderScene(sc)));
     mainEl.appendChild(doc);
+    mainEl.dataset.chapterId = ch.id;
+  }
+
+  /* 选择变化只切 class，不重建整章 DOM */
+  function syncBlockSelection() {
+    mainEl.querySelectorAll('.block.is-selected').forEach((n) => n.classList.remove('is-selected'));
+    const ids = (state.selectedIds && state.selectedIds.length ? state.selectedIds : state.blockId ? [state.blockId] : []).slice();
+    ids.forEach((id) => {
+      const n = mainEl.querySelector('.block[data-block-id="' + id + '"]');
+      if (n) n.classList.add('is-selected');
+    });
   }
 
   /* 还没有章节时的起始页：入口只有文件与导入 */

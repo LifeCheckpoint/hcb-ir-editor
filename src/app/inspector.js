@@ -476,7 +476,7 @@
     if (!old || !hit) return;
     old.replaceWith(blockNode(block, hit.scene, hit.list));
     touch('patch:' + block.id);
-    if (typeof renderPreview === 'function') renderPreview();
+    if (typeof renderPreview === 'function') renderPreview({ bulk: false });
     // 多选时右栏是批量标题/字段，不能被单块的标题覆盖
     if (selectedBlocks().length > 1) return;
     const v = viewOf(block);
@@ -523,6 +523,86 @@
     return '<img' + cl + ' alt="">';
   }
 
+  const spriteImageCache = new Map();
+  const spriteCompositeCache = new Map();
+
+  function cacheSpriteValue(map, key, value, limit) {
+    map.set(key, value);
+    while (map.size > limit) map.delete(map.keys().next().value);
+  }
+
+  function loadSpriteImage(src) {
+    if (!src) return Promise.reject(new Error('no sprite image'));
+    if (spriteImageCache.has(src)) return spriteImageCache.get(src);
+    const p = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+    cacheSpriteValue(spriteImageCache, src, p, 8);
+    p.catch(() => {
+      if (spriteImageCache.get(src) === p) spriteImageCache.delete(src);
+    });
+    return p;
+  }
+
+  function spriteCompositeKey(spec) {
+    const body = spec.body || {};
+    const sheet = spec.sheet || {};
+    const entry = sheet.entry || {};
+    return [
+      body.path,
+      body.offset,
+      body.size,
+      body.name,
+      spec.w,
+      spec.h,
+      Number(spec.face) || 1,
+      entry.path,
+      entry.offset,
+      entry.size,
+      sheet.cellW,
+      sheet.cellH,
+      sheet.cells,
+      sheet.cols,
+      sheet.faceX,
+      sheet.faceY,
+    ].join('|');
+  }
+
+  function getSpriteComposite(spec, bodyImg, sheetImg) {
+    const key = spriteCompositeKey(spec);
+    if (spriteCompositeCache.has(key)) return spriteCompositeCache.get(key);
+    const bw = Math.max(1, Math.round(spec.w || bodyImg.naturalWidth));
+    const bh = Math.max(1, Math.round(spec.h || bodyImg.naturalHeight));
+    const composite = document.createElement('canvas');
+    composite.width = bw;
+    composite.height = bh;
+    const cctx = composite.getContext('2d');
+    cctx.drawImage(bodyImg, 0, 0, bw, bh);
+    if (sheetImg && spec.sheet) {
+      const cols = spec.sheet.cols || 6;
+      const cells = spec.sheet.cells || 1;
+      const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
+      const sx = (idx % cols) * spec.sheet.cellW;
+      const sy = Math.floor(idx / cols) * spec.sheet.cellH;
+      cctx.drawImage(
+        sheetImg,
+        sx,
+        sy,
+        spec.sheet.cellW,
+        spec.sheet.cellH,
+        spec.sheet.faceX || 0,
+        spec.sheet.faceY || 0,
+        spec.sheet.cellW,
+        spec.sheet.cellH
+      );
+    }
+    cacheSpriteValue(spriteCompositeCache, key, composite, 8);
+    return composite;
+  }
+
   function hydrateSpriteImages(root) {
     if (!window.RES || window.RES.mode() !== 'scan') return Promise.resolve();
     const jobs = [];
@@ -563,13 +643,6 @@
   function hydrateSpriteCanvases(root) {
     if (!window.RES || window.RES.mode() !== 'scan') return Promise.resolve();
     const jobs = [];
-    const load = (src) =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
     root.querySelectorAll('canvas[data-sprite]').forEach((canvas) => {
       jobs.push(
         (async () => {
@@ -577,14 +650,14 @@
           if (!spec.body || !spec.w || !spec.h) return;
           const bodyUrl = await window.RES.thumb(spec.body, spec.w);
           if (!bodyUrl || !canvas.isConnected) return;
-          const bodyImg = await load(bodyUrl);
+          const bodyImg = await loadSpriteImage(bodyUrl);
           let sheetImg = null;
           if (spec.sheet && spec.sheet.entry) {
             const sheetData = await window.RES.sheet(spec.sheet.entry, spec.sheet.cellW * (spec.sheet.cols || 6));
             if (sheetData) {
               if (sheetData.dataUrl) {
                 try {
-                  sheetImg = await load(sheetData.dataUrl);
+                  sheetImg = await loadSpriteImage(sheetData.dataUrl);
                 } catch (_) {
                   sheetImg = null;
                 }
@@ -593,30 +666,7 @@
             }
           }
           if (!canvas.isConnected) return;
-          // 先在全身原尺寸上拼脸，再整体缩放，避免脸和身体各自缩放时出现亚像素错位
-          const composite = document.createElement('canvas');
-          composite.width = Math.max(1, Math.round(spec.w));
-          composite.height = Math.max(1, Math.round(spec.h));
-          const cctx = composite.getContext('2d');
-          cctx.drawImage(bodyImg, 0, 0, composite.width, composite.height);
-          if (sheetImg && spec.sheet) {
-            const cols = spec.sheet.cols || 6;
-            const cells = spec.sheet.cells || 1;
-            const idx = Math.max(0, Math.min(cells - 1, (Number(spec.face) || 1) - 1));
-            const sx = (idx % cols) * spec.sheet.cellW;
-            const sy = Math.floor(idx / cols) * spec.sheet.cellH;
-            cctx.drawImage(
-              sheetImg,
-              sx,
-              sy,
-              spec.sheet.cellW,
-              spec.sheet.cellH,
-              spec.sheet.faceX || 0,
-              spec.sheet.faceY || 0,
-              spec.sheet.cellW,
-              spec.sheet.cellH
-            );
-          }
+          const composite = getSpriteComposite(spec, bodyImg, sheetImg);
           const scale = Math.min(1, 700 / spec.h);
           canvas.width = Math.max(1, Math.round(spec.w * scale));
           canvas.height = Math.max(1, Math.round(spec.h * scale));
@@ -758,14 +808,6 @@
       facesEl.innerHTML = '<div class="spk__label">表情表 <em>' + s.cells + ' 格</em>' + note + '</div>' + '<div class="spk__faces">' + cells.join('') + '</div>';
     };
 
-    const loadImage = (src) =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
-
     const paintSide = () => {
       const body = bodyOf();
       const sheet = sheetOf();
@@ -785,35 +827,13 @@
       Promise.all([bodyUrl, sheetUrl])
         .then(async ([bodyData, sheetData]) => {
           if (seq !== sideSeq || !canvas.isConnected || !bodyData) return;
-          const bodyImg = await loadImage(bodyData);
-          const sheetImg = sheetData ? await loadImage(sheetData.dataUrl) : null;
+          const bodyImg = await loadSpriteImage(bodyData);
+          const sheetImg = sheetData ? await loadSpriteImage(sheetData.dataUrl) : null;
           if (seq !== sideSeq || !canvas.isConnected) return;
           const bw = body.w || bodyImg.naturalWidth;
           const bh = body.h || bodyImg.naturalHeight;
-          // 原尺寸拼好再缩小，避免身体与表情层分别缩放产生 1px 级偏移
-          const composite = document.createElement('canvas');
-          composite.width = Math.max(1, Math.round(bw));
-          composite.height = Math.max(1, Math.round(bh));
-          const cctx = composite.getContext('2d');
-          cctx.drawImage(bodyImg, 0, 0, composite.width, composite.height);
-          if (sheetImg && sheetData) {
-            const cols = sheetData.cols || 6;
-            const cellCount = sheetData.cells || 1;
-            const idx = Math.max(0, Math.min(cellCount - 1, face - 1));
-            const sx = (idx % cols) * sheetData.cellW;
-            const sy = Math.floor(idx / cols) * sheetData.cellH;
-            cctx.drawImage(
-              sheetImg,
-              sx,
-              sy,
-              sheetData.cellW,
-              sheetData.cellH,
-              sheet.faceX || 0,
-              sheet.faceY || 0,
-              sheetData.cellW,
-              sheetData.cellH
-            );
-          }
+          const sheetSpec = sheet ? Object.assign({}, sheet, sheetData || {}) : null;
+          const composite = getSpriteComposite({ body: body.entry, w: bw, h: bh, face, sheet: sheetSpec }, bodyImg, sheetImg);
           const scale = Math.min(150 / bw, 210 / bh, 1);
           canvas.width = Math.max(1, Math.round(bw * scale));
           canvas.height = Math.max(1, Math.round(bh * scale));

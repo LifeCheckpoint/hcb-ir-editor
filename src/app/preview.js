@@ -378,8 +378,9 @@ function syncBgm(no) {
   });
 }
 
-function renderPreview() {
+function renderPreview(opts) {
   if (!previewEl) initPreview();
+  const bulk = !opts || opts.bulk !== false;
   const token = ++previewRenderToken;
   const hit = currentBlock();
   if (!hit) {
@@ -393,7 +394,8 @@ function renderPreview() {
   }
   previewBlockId = hit.block.id;
   previewEmpty.hidden = true;
-  const card = stageCard(hit.scene, hit.block);
+  const st = stageState(hit.scene, hit.block, { bulk });
+  const card = stageCard(hit.scene, hit.block, st);
   previewPending.innerHTML = '';
   previewPending.appendChild(card);
   const ready = [];
@@ -403,11 +405,14 @@ function renderPreview() {
     .then(() => {
       if (token !== previewRenderToken) return;
       previewStage.replaceChildren(card);
-      const st = stageState(hit.scene, hit.block);
       syncBgm(st.bgm);
     })
     .catch(() => {});
 }
 
 initPreview();
-if (window.RES && window.RES.on) window.RES.on(() => renderPreview());
+if (window.RES && window.RES.on)
+  window.RES.on(() => {
+    if (typeof invalidateStageCache === 'function') invalidateStageCache();
+    renderPreview();
+  });
