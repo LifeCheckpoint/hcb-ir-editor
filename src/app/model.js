@@ -43,13 +43,13 @@
     };
   }
 
-  /* 连续的 dia 算同一段对话；中间夹了其它原语就变成旁白 */
+  /* 只有紧挨着 dia 的上一块是 cha 时，这一句才算对话；再往后是旁白 */
   function speakerBefore(block) {
     const hit = listOfBlock(block.id);
     if (!hit) return '';
-    let i = hit.list.indexOf(block) - 1;
-    while (i >= 0 && hit.list[i].type === 'dia') i -= 1;
-    if (i >= 0 && hit.list[i].type === 'cha') return hit.list[i].data.show || hit.list[i].data.name || '';
+    const i = hit.list.indexOf(block) - 1;
+    const prev = i >= 0 ? hit.list[i] : null;
+    if (prev && prev.type === 'cha') return prev.data.show || prev.data.name || '';
     return '';
   }
 
@@ -173,6 +173,7 @@
       } else if (b.type === 'dia') {
         st.speaker = speakerRun;
         st.text = d.text || '';
+        speakerRun = '';
       } else if (b.type === 'bgm') {
         st.bgm = d.no;
       } else if (b.type === 'bgmstop') {
