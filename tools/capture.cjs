@@ -1328,6 +1328,27 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'v3dtest') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bs,2,1,0,1,1,m,1000,0,0,1]\\n[v3d,0,0,400]', { target: 'new', name: 'v3d' });
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(800);
+        const target = document.querySelector('.block[data-type="v3d"]');
+        if (!target) return { error: 'no v3d block' };
+        target.click();
+        await wait(900);
+        const canvas = document.querySelector('.stage__sprite-canvas');
+        return { canvasStyle: canvas ? canvas.getAttribute('style') : null, stage: !!document.querySelector('.stage') };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'spritevariant') {
     const info = await run(`(async () => {
       try {

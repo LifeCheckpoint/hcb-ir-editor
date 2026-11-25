@@ -116,13 +116,13 @@
     Object.keys(st.sprites || {}).forEach((key) => {
       sprites[key] = Object.assign({}, st.sprites[key]);
     });
-    return Object.assign({}, st, { sprites });
+    return Object.assign({}, st, { sprites, camera: Object.assign({}, st.camera) });
   }
 
   function stageState(scene, block, opts) {
     if (stageStateCache.has(block.id)) return stageStateCache.get(block.id);
     const bulk = !opts || opts.bulk !== false;
-    const st = { bg: null, cg: null, msg: 'normal', sprites: {}, bgm: null, se: null, text: '', speaker: '', screen: null };
+    const st = { bg: null, cg: null, msg: 'normal', sprites: {}, bgm: null, se: null, text: '', speaker: '', screen: null, camera: { x: 0, y: 0, z: 0 } };
     let speakerRun = '';
     const run = (b) => {
       const d = b.data || {};
@@ -179,6 +179,10 @@
         st.bgm = null;
       } else if (b.type === 'se') {
         st.se = d.mode === 'end' ? null : d.no;
+      } else if (b.type === 'v3d') {
+        ['x', 'y', 'z'].forEach((k) => {
+          if (d[k] !== '' && d[k] != null) st.camera[k] = Number(d[k]) || 0;
+        });
       } else if (b.type === 'white' || b.type === 'black' || b.type === 'eyecatch' || b.type === 'movie') {
         st.screen = b.type;
       }
@@ -243,6 +247,12 @@
   const STAGE_H = 720;
   const STAGE_POS = { l: 0.25, m: 0.5, r: 0.75 };
   const STAGE_BOTTOM = 0;
+  const STAGE_Z = 1000;
+  const stageZ = (value, fallback) => {
+    if (value === '' || value == null) return fallback;
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(100, Math.min(10000, n)) : fallback;
+  };
 
   /* 台词里的 ~ 换行，每个 [注解|正文] 单独成一个 ruby 小字 */
   function stageTextHtml(text) {
@@ -285,27 +295,42 @@
     const sprites = Object.keys(st.sprites)
       .map((k) => st.sprites[k])
       .sort((a, b) => {
-        const az = Number(a.z) || 0;
-        const bz = Number(b.z) || 0;
+        const az = stageZ(a.z, STAGE_Z);
+        const bz = stageZ(b.z, STAGE_Z);
         if (az !== bz) return az - bz;
         return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
       });
+    const cam = st.camera || { x: 0, y: 0, z: 0 };
+    const camFor = (z) => {
+      const depth = (Number(z) || STAGE_Z) - (Number(cam.z) || 0);
+      const scale = 1000 / (Math.abs(depth) < 1e-3 ? 1 : depth);
+      return { scale, tx: -(Number(cam.x) || 0) * scale, ty: -(Number(cam.y) || 0) * scale };
+    };
+    const camStyle = (z) => {
+      const c = camFor(z);
+      return 'transform:translate(' + (c.tx / STAGE_W * 100).toFixed(3) + '%,' + (c.ty / STAGE_H * 100).toFixed(3) + '%) scale(' + c.scale.toFixed(5) + ');transform-origin:50% 50%';
+    };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
 
     const card = el('div', 'stage' + (dark ? ' is-dark' : ''));
     const parts = [];
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
-    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" alt="">');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle(STAGE_Z) + '" alt="">');
 
     sprites.forEach((s) => {
       const base = STAGE_POS[s.pos] == null ? 0.5 : STAGE_POS[s.pos];
       const dx = Number(s.x);
       const dy = Number(s.y);
-      const left = (base + (Number.isFinite(dx) ? dx / STAGE_W : 0)) * 100;
-      // 游戏坐标 y 向下为正；画布锚在底部，所以正值要减少 bottom
-      const bottom = (STAGE_BOTTOM - (Number.isFinite(dy) ? dy / STAGE_H : 0)) * 100;
-      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;transform:translateX(-50%)';
+      const baseX = (base + (Number.isFinite(dx) ? dx / STAGE_W : 0)) * STAGE_W;
+      const baseY = STAGE_H * (1 - (STAGE_BOTTOM - (Number.isFinite(dy) ? dy / STAGE_H : 0)));
+      const z = stageZ(s.z, STAGE_Z);
+      const c = camFor(z);
+      const screenX = STAGE_W / 2 + c.scale * (baseX - STAGE_W / 2 - (Number(cam.x) || 0));
+      const screenY = STAGE_H / 2 + c.scale * (baseY - STAGE_H / 2 - (Number(cam.y) || 0));
+      const left = screenX / STAGE_W * 100;
+      const bottom = (1 - screenY / STAGE_H) * 100;
+      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;height:' + (76 * c.scale).toFixed(3) + '%;max-width:' + (36 * c.scale).toFixed(3) + '%;transform:translateX(-50%)';
       if (s.entry) {
         const spec = {
           body: s.entry,
@@ -333,7 +358,7 @@
     });
 
     if (st.cg && cgEntry) {
-      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" alt="">');
+      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(STAGE_Z) + '" alt="">');
     }
 
     if (st.screen) {
