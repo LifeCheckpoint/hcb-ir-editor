@@ -288,16 +288,17 @@
         { key: 'sprite', label: '立绘', type: 'sprite', full: true },
         {
           key: 'l',
-          label: '构图',
+          label: '底图分辨率',
           type: 'select',
-          group: '站位',
+          group: '底图',
           options: () => [
-            { value: '-1', label: '默认' },
-            { value: '0', label: 'L' },
-            { value: '1', label: 'U' },
-            { value: '2', label: 'S' },
+            { value: '-1', label: '默认底图' },
+            { value: '0', label: 'L 底图' },
+            { value: '1', label: 'U 底图' },
+            { value: '2', label: 'S 底图' },
             { value: '-10', label: '小头像' },
           ],
+          note: () => 'L / U / S 是底图分辨率，不是左右站位',
         },
         {
           key: 'pos',
@@ -305,6 +306,7 @@
           type: 'segmented',
           group: '站位',
           options: [
+            { value: '', label: '无' },
             { value: 'l', label: '左' },
             { value: 'm', label: '中' },
             { value: 'r', label: '右' },

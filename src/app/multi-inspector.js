@@ -134,13 +134,14 @@ function multiFieldNode(field, picked) {
   } else if (field.type === 'segmented') {
     const box = el('div', 'segmented');
     box.setAttribute('role', 'radiogroup');
+    const firstValue = same && first != null ? first : '';
     (field.options || []).forEach((raw) => {
       const opt = typeof raw === 'string' ? { value: raw, label: raw } : raw;
-      const b = el('button', 'segmented__item' + (same && opt.value === first ? ' is-on' : ''));
+      const b = el('button', 'segmented__item' + (same && opt.value === firstValue ? ' is-on' : ''));
       b.type = 'button';
       b.textContent = opt.label;
       b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', same && opt.value === first ? 'true' : 'false');
+      b.setAttribute('aria-checked', same && opt.value === firstValue ? 'true' : 'false');
       b.addEventListener('click', () => commit(opt.value));
       box.appendChild(b);
     });

@@ -167,7 +167,7 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 |---|---|
 | `bg` | `[bg,67,2]` 背景编号 + 可选差分（1=底图，2/3=变体） |
 | `cgload` / `cg` | `[cgload,KURO_e011a1]`、`[cg,KURO_e011a1,0,0,2000,900]`（2000 = 1×） |
-| `bs` | `[bs,3,1,1,17,-1,l,1000,-200,100,1]` 角色 姿势 服装 表情 构图 站位 z x y 图层 |
+| `bs` | `[bs,3,1,1,17,-1,l,1000,-200,100,1]` 角色 姿势 服装 表情 底图分辨率 站位 z x y 图层 |
 | `bs_fade` / `bs_move` / `bs_color` / `bs_ani` / `bsfade` | 退场、移动、着色、小动作、清除全部 |
 | `cha` / `dia` / `msg` | `[cha,真白/？？？,5000010]`、`[dia,…]`、`[msg,normal]` |
 | `sel` | `start` / 若干 `op` / `end` 三段落 |
@@ -175,6 +175,8 @@ tests/fixture.txt      覆盖全部原语的测试脚本
 | `wait` / `shake` / `motion` / `v3d` / `snow` / `fog` / `endback` | 演出类，参数原样对应 |
 | `global_set` / `global_eq` | 全局变量读写；`global_eq` 不等时跳标签 |
 | `start` / `end` / `::label` / `jump` / `ssel` / `achieve` / `chaload` | 结构类；`chaload` 先登记角色名才能用 `cha` |
+
+`bs` 的 L / U / S 是底图分辨率，不是左右站位；站位可以留空，界面用「无」表示。
 
 `dia` 不重复渲染 DSL 行（它的一句话就是正文），但右栏仍然给出完整调用。说话人只在连续的 `dia` 段紧跟 `cha` 时继承：`cha` 后面连续几句 `dia` 都算对话；中间夹了背景、等待或其它原语，或者场景一开始就是 `dia`，就当旁白，不显示说话人。
 
