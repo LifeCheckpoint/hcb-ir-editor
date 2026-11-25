@@ -719,15 +719,16 @@
   gap: 1px;
 }
 
-/* 有真图时按站位贴图，底边对齐 */
+/* 有真图时按实机几何贴图：图内锚点 + z 缩放，允许超出舞台 */
 .stage__sprite-img {
   position: absolute;
-  bottom: 9%;
+  top: auto;
+  bottom: auto;
   height: 76%;
   width: auto;
-  max-width: 36%;
+  max-width: none;
   object-fit: contain;
-  object-position: bottom;
+  object-position: top left;
   pointer-events: none;
   filter: drop-shadow(0 1px 2px rgba(15, 15, 15, 0.12));
 }

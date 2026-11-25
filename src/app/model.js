@@ -66,18 +66,20 @@
     return out;
   }
 
-  /* 立绘编号对应 cha_list 里的第几个角色（按表序推断，未验证） */
-  const spriteCha = (id) => {
-    if (!hasMapping()) return null;
-    const n = Number(id);
-    const mapped = window.MAPPING.character(n);
-    return mapped ? { name: mapped.name } : null;
-  };
-
   /* 立绘表由资源库统一构建，选择器直接用 */
   const spriteSource = () => (window.RES ? window.RES.spriteChars() : []);
 
   const spriteCharByCha = (cha) => (hasMapping() ? spriteSource().find((c) => Number(c.cha) === Number(cha)) : null);
+
+  /* 立绘编号对应 mapping 的 bs（旧表没有 bs 时等于 cha） */
+  const spriteCha = (id) => {
+    const ch = spriteCharByCha(id);
+    if (ch) return { name: ch.name };
+    if (!hasMapping()) return null;
+    const mapped = window.MAPPING.character(Number(id));
+    return mapped ? { name: mapped.name } : null;
+  };
+
   const mapCg = (name) => (window.MAPPING ? window.MAPPING.cg(name) : null);
   const mapAudio = (kind, no) => (window.MAPPING ? window.MAPPING.audio(kind, no) : null);
   const mapVoice = (no) => (window.MAPPING ? window.MAPPING.voice(no) : null);
@@ -98,8 +100,11 @@
     const cloth = ch.cloths[ci];
     const key = poseNo + '|' + clothNo;
     const lv = d.l == null || d.l === '' ? '-1' : String(d.l);
-    const body = (ch.bodyVariants && ch.bodyVariants[key] && ch.bodyVariants[key][lv]) || ch.bodies[key] || null;
-    const sheet = (ch.sheetVariants && ch.sheetVariants[key] && ch.sheetVariants[key][lv]) || ch.sheets[key] || null;
+    // 缺变体时回退到默认底图；实机缺 U 会直接报错，但预览不应整块消失。
+    const vbody = ch.bodyVariants && ch.bodyVariants[key] ? ch.bodyVariants[key][lv] : null;
+    const vsheet = ch.sheetVariants && ch.sheetVariants[key] ? ch.sheetVariants[key][lv] : null;
+    const body = vbody || ch.bodies[key] || null;
+    const sheet = vsheet || ch.sheets[key] || null;
     return { ch, pose, cloth, poseNo, clothNo, key, lv, body, sheet, pi, ci };
   }
 
@@ -138,27 +143,50 @@
           speakerRun = '';
           return;
         }
-        const pick = spritePick(b);
-        st.sprites[d.cha] = {
+        // 4 参 bs 只改姿势/表情；实机在没有立绘时不会凭空创建。
+        const layoutKeys = ['l', 'pos', 'z', 'x', 'y', 'lyr'];
+        const hasLayout = layoutKeys.some((k) => d[k] !== '' && d[k] != null);
+        const prev = st.sprites[d.cha] || null;
+        if (!hasLayout && !prev) {
+          st.screen = null;
+          return;
+        }
+        const pickBlock = prev && !hasLayout
+          ? { data: Object.assign({}, d, { l: prev.l, pos: prev.pos, z: prev.z, x: prev.x, y: prev.y, lyr: prev.lyr }) }
+          : b;
+        const pick = spritePick(pickBlock);
+        const layout = hasLayout
+          ? {
+              pos: d.pos || 'm',
+              l: d.l,
+              x: d.x,
+              y: d.y,
+              z: d.z,
+              lyr: d.lyr,
+            }
+          : {
+              pos: prev.pos,
+              l: prev.l,
+              x: prev.x,
+              y: prev.y,
+              z: prev.z,
+              lyr: prev.lyr,
+            };
+        st.sprites[d.cha] = Object.assign(layout, {
           cha: d.cha,
-          pos: d.pos || 'm',
-          l: d.l,
-          x: d.x,
-          y: d.y,
-          z: d.z,
           face: d.face,
           pose: d.pose,
-          lyr: d.lyr,
-          thumb: pick && pick.body ? pick.body.thumb : null,
-          entry: pick && pick.body ? pick.body.entry : null,
-          w: pick && pick.body ? pick.body.w : null,
-          h: pick && pick.body ? pick.body.h : null,
-          bodyOffsetX: pick && pick.body ? pick.body.offsetX : 0,
-          bodyOffsetY: pick && pick.body ? pick.body.offsetY : 0,
-          bodyPivotX: pick && pick.body ? pick.body.pivotX : 0,
-          bodyPivotY: pick && pick.body ? pick.body.pivotY : 0,
-          sheet: pick && pick.sheet ? pick.sheet : null,
-        };
+          cloth: d.cloth,
+          thumb: pick && pick.body ? pick.body.thumb : prev && prev.thumb,
+          entry: pick && pick.body ? pick.body.entry : prev && prev.entry,
+          w: pick && pick.body ? pick.body.w : prev && prev.w,
+          h: pick && pick.body ? pick.body.h : prev && prev.h,
+          bodyOffsetX: pick && pick.body ? pick.body.offsetX : prev ? prev.bodyOffsetX : 0,
+          bodyOffsetY: pick && pick.body ? pick.body.offsetY : prev ? prev.bodyOffsetY : 0,
+          bodyPivotX: pick && pick.body ? pick.body.pivotX : prev ? prev.bodyPivotX : 0,
+          bodyPivotY: pick && pick.body ? pick.body.pivotY : prev ? prev.bodyPivotY : 0,
+          sheet: pick && pick.sheet ? pick.sheet : prev ? prev.sheet : null,
+        });
         st.screen = null;
       } else if (b.type === 'bs_move') {
         const sp = st.sprites[d.cha];
@@ -288,7 +316,11 @@
     const cgEntry = st.cg && window.WIRING ? window.WIRING.cgEntry(st.cg) : null;
     const conf = window.PROJECT_SETTINGS
       ? window.PROJECT_SETTINGS.get()
-      : { stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 320, m: 640, r: 960 } }, depth: { sprite: 1000, background: 1000, cg: 1000 }, sprite: { height: 76, maxWidth: 36 } };
+      : {
+          stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 320, m: 640, r: 960 } },
+          depth: { sprite: 1000, background: 1000, cg: 1000 },
+          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 47.6, pivotX: 7, pivotY: 11.3 },
+        };
     const SW = conf.stage.width;
     const SH = conf.stage.height;
     const posFrac = {
@@ -311,13 +343,14 @@
         return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
       });
     const cam = st.camera || { x: 0, y: 0, z: 0 };
-    const camFor = (z) => {
-      const depth = z - (Number(cam.z) || 0);
-      const scale = 1000 / (Math.abs(depth) < 1e-3 ? 1 : depth);
+    const focal = Number(conf.sprite.focal) || 1000;
+    const camFor = (z, f) => {
+      const depth = Math.max(1, z - (Number(cam.z) || 0));
+      const scale = (Number(f) || 1000) / depth;
       return { scale, tx: -(Number(cam.x) || 0) * scale, ty: -(Number(cam.y) || 0) * scale };
     };
     const camStyle = (z) => {
-      const c = camFor(z);
+      const c = camFor(z, 1000);
       return 'transform:translate(' + (c.tx / SW * 100).toFixed(3) + '%,' + (c.ty / SH * 100).toFixed(3) + '%) scale(' + c.scale.toFixed(5) + ');transform-origin:50% 50%';
     };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
@@ -333,15 +366,31 @@
       const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];
       const dx = Number(s.x);
       const dy = Number(s.y);
-      const baseX = (base + (Number.isFinite(dx) ? dx / SW : 0)) * SW;
-      const baseY = SH * (1 - (bottomFrac - (Number.isFinite(dy) ? dy / SH : 0)));
+      const baseX = base * SW + (Number.isFinite(dx) ? dx : 0);
       const z = clampZ(s.z, conf.depth.sprite);
-      const c = camFor(z);
-      const screenX = SW / 2 + c.scale * (baseX - SW / 2 - (Number(cam.x) || 0));
-      const screenY = SH / 2 + c.scale * (baseY - SH / 2 - (Number(cam.y) || 0));
-      const left = screenX / SW * 100;
-      const bottom = (1 - screenY / SH) * 100;
-      const posStyle = 'left:' + left.toFixed(3) + '%;bottom:' + bottom.toFixed(3) + '%;height:' + (conf.sprite.height * c.scale).toFixed(3) + '%;max-width:' + (conf.sprite.maxWidth * c.scale).toFixed(3) + '%;transform:translateX(-50%)';
+      const c = camFor(z, focal);
+      const bw = Number(s.w);
+      const bh = Number(s.h);
+      let posStyle;
+      if (bw > 0 && bh > 0) {
+        // 实机是“图左上角 + 原始像素偏移”，用图内锚点把角色脸/身体放到舞台上。
+        // 贴图原始尺寸远大于 720p，按 z 缩放后允许超出舞台。
+        const dw = bw * c.scale;
+        const dh = bh * c.scale;
+        const left = baseX - dw * (Number(conf.sprite.pivotX) / 100) - (Number(cam.x) || 0) * c.scale;
+        const top = SH * (Number(conf.sprite.anchorY) / 100) + (Number.isFinite(dy) ? dy : 0) - dh * (Number(conf.sprite.pivotY) / 100) - (Number(cam.y) || 0) * c.scale;
+        posStyle =
+          'left:' + (left / SW * 100).toFixed(3) + '%;top:' + (top / SH * 100).toFixed(3) +
+          '%;height:' + (dh / SH * 100).toFixed(3) + '%;max-width:none;transform:none';
+      } else {
+        // 没有 HZC 尺寸时退回旧的比例模型，至少能显示缩略图。
+        const heightPct = conf.sprite.height * c.scale;
+        const left = baseX - (Number(cam.x) || 0) * c.scale;
+        const topPct = (1 - bottomFrac) * 100 - heightPct - (Number(cam.y) || 0) * c.scale / SH * 100;
+        posStyle =
+          'left:' + (left / SW * 100).toFixed(3) + '%;top:' + topPct.toFixed(3) +
+          '%;height:' + heightPct.toFixed(3) + '%;max-width:' + (conf.sprite.maxWidth * c.scale).toFixed(3) + '%;transform:translateX(-50%)';
+      }
       if (s.entry) {
         const spec = {
           body: s.entry,

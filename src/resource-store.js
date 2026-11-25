@@ -86,7 +86,7 @@
     const map = window.MAPPING;
     if (!map || !map.has()) return [];
     const chars = new Map();
-    const entryOf = (e) => ({ path: a.path, offset: e.off, size: e.size, name: e.name });
+    const entryOf = (e) => ({ path: e.path || a.path, offset: e.off, size: e.size, name: e.name });
     const findEntry = (name) => a.entries.find((e) => e.name === name) || null;
     const offsetX = (e) => (e.offsetX == null ? e.faceX || 0 : e.offsetX);
     const offsetY = (e) => (e.offsetY == null ? e.faceY || 0 : e.offsetY);
@@ -121,11 +121,24 @@
 
     // 立绘表只由映射表构建，不再从 graph_bs 的名字反推 cha/pose/cloth。
     map.sprites().forEach((row) => {
-      const key = Number(row.cha);
+      // cha 是角色编号，bs 是剧本 [bs] 的第一个参数；旧表没有 bs 时两者相同。
+      const key = Number(row.bs == null ? row.cha : row.bs);
       let g = chars.get(key);
       if (!g) {
         const who = map.character(row.cha);
-        g = { name: who ? who.name : '角色 ' + row.cha, cha: row.cha, poses: [], poseNos: [], cloths: [], clothNos: [], bodies: {}, sheets: {}, bodyVariants: {}, sheetVariants: {} };
+        g = {
+          name: who ? who.name : '角色 ' + row.cha,
+          cha: key,
+          characterNo: row.cha,
+          poses: [],
+          poseNos: [],
+          cloths: [],
+          clothNos: [],
+          bodies: {},
+          sheets: {},
+          bodyVariants: {},
+          sheetVariants: {},
+        };
         chars.set(key, g);
       }
       addPose(g, row.pose, row.poseName);
@@ -158,9 +171,19 @@
       });
     });
 
-    let out = [...chars.values()].filter((c) => Object.keys(c.bodies).length && c.poses.length && c.cloths.length);
+    let out = [...chars.values()].filter(
+      (c) =>
+        (Object.keys(c.bodies).length ||
+          Object.values(c.bodyVariants || {}).some((v) => Object.values(v).some(Boolean))) &&
+        c.poses.length &&
+        c.cloths.length
+    );
     out.forEach((c) => {
-      Object.values(c.sheets).forEach((s) => {
+      const allSheets = Object.values(c.sheets).concat(
+        ...Object.values(c.sheetVariants || {}).map((v) => Object.values(v))
+      );
+      allSheets.forEach((s) => {
+        if (!s || s.tw != null) return;
         const W = s.cellW * s.cols;
         const scale = Math.max(1, Math.round(W / 420));
         s.tw = s.cellW / scale;

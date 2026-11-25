@@ -16,6 +16,7 @@
     byName: new Map(),
     sprites: [],
     spriteByCha: new Map(),
+    spriteByBs: new Map(),
     bg: new Map(),
     cg: new Map(),
     bgm: new Map(),
@@ -38,6 +39,7 @@
       byName: new Map(),
       sprites: [],
       spriteByCha: new Map(),
+      spriteByBs: new Map(),
       bg: new Map(),
       cg: new Map(),
       bgm: new Map(),
@@ -64,14 +66,16 @@
     asList(data.sprite).forEach((row, i) => {
       const where = 'sprite[' + (i + 1) + ']';
       const cha = num(row.cha, where + '.cha');
+      const bs = row.bs == null ? cha : num(row.bs, where + '.bs');
       const pose = num(row.pose, where + '.pose');
       const cloth = num(row.cloth, where + '.cloth');
-      const key = cha + '|' + pose + '|' + cloth;
+      const key = bs + '|' + pose + '|' + cloth;
       if (out.sprites.some((s) => s.key === key)) throw new Error('立绘 ' + key + ' 重复');
       const faces = Array.isArray(row.faces) ? row.faces.length : row.faces == null ? null : num(row.faces, where + '.faces');
       const hit = {
         key,
         cha,
+        bs,
         pose,
         cloth,
         poseName: str(row.pose_name) || String(pose),
@@ -84,6 +88,8 @@
       out.sprites.push(hit);
       if (!out.spriteByCha.has(cha)) out.spriteByCha.set(cha, []);
       out.spriteByCha.get(cha).push(hit);
+      if (!out.spriteByBs.has(bs)) out.spriteByBs.set(bs, []);
+      out.spriteByBs.get(bs).push(hit);
     });
 
     asList(data.bg).forEach((row, i) => {
@@ -143,6 +149,7 @@
     state.byName = next.byName;
     state.sprites = next.sprites;
     state.spriteByCha = next.spriteByCha;
+    state.spriteByBs = next.spriteByBs;
     state.bg = next.bg;
     state.cg = next.cg;
     state.bgm = next.bgm;
@@ -159,6 +166,7 @@
     state.byName = new Map();
     state.sprites = [];
     state.spriteByCha = new Map();
+    state.spriteByBs = new Map();
     state.bg = new Map();
     state.cg = new Map();
     state.bgm = new Map();
@@ -182,7 +190,10 @@
 
   const character = (no) => state.characters.get(Number(no)) || null;
   const characterByName = (name) => state.byName.get(str(name)) || null;
-  const sprite = (cha, pose, cloth) => state.sprites.find((s) => s.cha === Number(cha) && s.pose === Number(pose) && s.cloth === Number(cloth)) || null;
+  const sprite = (bs, pose, cloth) =>
+    state.sprites.find((s) => s.bs === Number(bs) && s.pose === Number(pose) && s.cloth === Number(cloth)) || null;
+  const spriteByCha = (cha, pose, cloth) =>
+    state.sprites.find((s) => s.cha === Number(cha) && s.pose === Number(pose) && s.cloth === Number(cloth)) || null;
   const sprites = () => state.sprites.slice();
   const characters = () => [...state.characters.values()];
   const bgs = () => [...state.bg.values()];
@@ -234,6 +245,7 @@
     characterByName,
     characters,
     sprite,
+    spriteByCha,
     sprites,
     bgs,
     cgs,

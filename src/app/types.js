@@ -277,6 +277,9 @@
       group: 'sprite',
       icon: 'person-standing',
       text: (d, b) => {
+        const layoutKeys = ['l', 'pos', 'z', 'x', 'y', 'lyr'];
+        const updateOnly = layoutKeys.every((k) => d[k] === '' || d[k] == null);
+        if (updateOnly) return '更新姿势 / 表情 ' + d.face;
         const pick = hasMapping() && b ? spritePick(b) : null;
         if (pick) return pick.ch.name + ' ' + pick.cloth + (pick.body ? '' : '（缺图）') + ' 表情 ' + d.face;
         const who = spriteCha(d.cha);
@@ -292,10 +295,11 @@
           type: 'select',
           group: '底图',
           options: () => [
-            { value: '-1', label: '默认' },
-            { value: '0', label: 'L' },
-            { value: '1', label: 'U' },
-            { value: '2', label: 'S' },
+            { value: '', label: '默认' },
+            { value: '-1', label: '-1' },
+            { value: '0', label: '0' },
+            { value: '1', label: '1' },
+            { value: '2', label: '2' },
             { value: '-10', label: '小头像' },
           ],
         },

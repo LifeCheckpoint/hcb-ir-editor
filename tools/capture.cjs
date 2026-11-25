@@ -1404,6 +1404,61 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'spritegeom') {
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText('[bs,2,1,0,1]\\n[dia,四参]\\n[bs,2,1,0,1,1,m,1600,0,0,1]\\n[dia,全参]\\n[bs,2,1,0,2]\\n[dia,四参更新]', { target: 'new', name: 'geom' });
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(800);
+        const blocks = [...document.querySelectorAll('.block[data-type="bs"]')];
+        if (blocks.length < 2) return { error: 'need two bs blocks', count: blocks.length };
+        const debug = (n) => {
+          const id = n.dataset.blockId;
+          const hit = listOfBlock(id);
+          const b = hit && hit.list.find((x) => x.id === id);
+          const pick = b && spritePick(b);
+          return {
+            id,
+            data: b && b.data,
+            pick: pick ? { name: pick.ch.name, key: pick.key, lv: pick.lv, body: pick.body && pick.body.entry && pick.body.entry.name, sheet: pick.sheet && pick.sheet.entry && pick.sheet.entry.name } : null,
+          };
+        };
+        const snap = () => {
+          const stage = document.querySelector('#preview .stage');
+          const canvas = document.querySelector('#preview .stage__sprite-canvas');
+          let painted = 0;
+          if (canvas) {
+            const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+            for (let i = 3; i < d.length; i += 4) if (d[i]) painted += 1;
+          }
+          return {
+            canvas: canvas ? { style: canvas.getAttribute('style'), w: canvas.width, h: canvas.height, painted, spec: canvas.dataset.sprite ? JSON.parse(canvas.dataset.sprite) : null } : null,
+            stageSprites: document.querySelectorAll('#preview .stage__sprite-img').length,
+            stage: !!stage,
+          };
+        };
+        blocks[0].click();
+        await wait(700);
+        const four = snap();
+        blocks[1].click();
+        await wait(1000);
+        const full = snap();
+        let update = null;
+        if (blocks[2]) {
+          blocks[2].click();
+          await wait(700);
+          update = snap();
+        }
+        return { four, full, update, debugFour: debug(blocks[0]), debugFull: debug(blocks[1]) };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

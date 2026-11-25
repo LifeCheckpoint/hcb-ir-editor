@@ -62,6 +62,19 @@ check('cleared', M.stats().total, 0);
 check('cg fallback', M.cgFile('X'), 'X');
 check('bg fallback', M.bgFile(67), null);
 
+/* 立绘编号可以和角色编号分开：bs 是剧本里的第一个参数 */
+M.load({
+  data: {
+    character: [{ no: 5, name: '测试角色' }],
+    sprite: [{ cha: 5, bs: 99, pose: 1, cloth: 0, body: 'CHR_TEST', sheet: 'CHR_TEST_表情' }],
+  },
+});
+check('bs lookup', M.sprite(99, 1, 0).body, 'CHR_TEST');
+check('bs keeps cha', M.sprite(99, 1, 0).cha, 5);
+check('old cha lookup misses', M.sprite(5, 1, 0), null);
+check('spriteByCha still works', M.spriteByCha(5, 1, 0).body, 'CHR_TEST');
+M.clear();
+
 /* 生成出来的完整表也要能解析 */
 const sakuraPath = path.join(root, 'mappings', 'sakura.toml');
 if (fs.existsSync(sakuraPath)) {

@@ -20,6 +20,10 @@ const PROJECT_SETTINGS_DEFAULT = {
   sprite: {
     height: 76,
     maxWidth: 36,
+    focal: 1000,
+    anchorY: 47.6,
+    pivotX: 7,
+    pivotY: 11.3,
   },
 };
 
@@ -73,6 +77,10 @@ function normalizeProjectSettings(raw) {
     sprite: {
       height: settingsNum(spriteSrc.height, 10, 200, D.sprite.height),
       maxWidth: settingsNum(spriteSrc.maxWidth, 5, 100, D.sprite.maxWidth),
+      focal: settingsNum(spriteSrc.focal, 100, 10000, D.sprite.focal),
+      anchorY: settingsNum(spriteSrc.anchorY, 0, 100, D.sprite.anchorY),
+      pivotX: settingsNum(spriteSrc.pivotX, 0, 100, D.sprite.pivotX),
+      pivotY: settingsNum(spriteSrc.pivotY, 0, 100, D.sprite.pivotY),
     },
   };
 }
@@ -203,11 +211,22 @@ function openProjectSettingsDialog() {
 
   const spriteGroup = group('立绘显示');
   spriteGroup.appendChild(
-    row('高度', field('sprite.height', settings.sprite.height, { min: 10, max: 200, step: 0.1, unit: '%' }))
+    row('兜底高度', field('sprite.height', settings.sprite.height, { min: 10, max: 200, step: 0.1, unit: '%' }))
   );
   spriteGroup.appendChild(
-    row('最大宽度', field('sprite.maxWidth', settings.sprite.maxWidth, { min: 5, max: 100, step: 0.1, unit: '%' }))
+    row('兜底最大宽度', field('sprite.maxWidth', settings.sprite.maxWidth, { min: 5, max: 100, step: 0.1, unit: '%' }))
   );
+  spriteGroup.appendChild(
+    row('焦距', field('sprite.focal', settings.sprite.focal, { min: 100, max: 10000, unit: 'px' }))
+  );
+  spriteGroup.appendChild(
+    row('纵向锚点', field('sprite.anchorY', settings.sprite.anchorY, { min: 0, max: 100, step: 0.1, unit: '%' }))
+  );
+  const pivotRow = el('div', 'project-settings__pair');
+  pivotRow.appendChild(field('sprite.pivotX', settings.sprite.pivotX, { min: 0, max: 100, step: 0.1, unit: '%' }));
+  pivotRow.appendChild(el('span', 'project-settings__times', '/'));
+  pivotRow.appendChild(field('sprite.pivotY', settings.sprite.pivotY, { min: 0, max: 100, step: 0.1, unit: '%' }));
+  spriteGroup.appendChild(row('图内锚点', pivotRow));
 
   const error = el('div', 'project-settings__error');
   error.hidden = true;
@@ -262,6 +281,10 @@ function openProjectSettingsDialog() {
     inputs['depth.cg'].value = settingsValue.depth.cg;
     inputs['sprite.height'].value = settingsValue.sprite.height;
     inputs['sprite.maxWidth'].value = settingsValue.sprite.maxWidth;
+    inputs['sprite.focal'].value = settingsValue.sprite.focal;
+    inputs['sprite.anchorY'].value = settingsValue.sprite.anchorY;
+    inputs['sprite.pivotX'].value = settingsValue.sprite.pivotX;
+    inputs['sprite.pivotY'].value = settingsValue.sprite.pivotY;
   }
 
   function applySettings() {
@@ -278,6 +301,10 @@ function openProjectSettingsDialog() {
     const cgZ = readNumber('depth.cg', 'CG z', 100, 10000, true);
     const spriteHeight = readNumber('sprite.height', '立绘高度', 10, 200, false);
     const spriteMaxWidth = readNumber('sprite.maxWidth', '立绘最大宽度', 5, 100, false);
+    const spriteFocal = readNumber('sprite.focal', '焦距', 100, 10000, false);
+    const spriteAnchorY = readNumber('sprite.anchorY', '纵向锚点', 0, 100, false);
+    const spritePivotX = readNumber('sprite.pivotX', '图内锚点 X', 0, 100, false);
+    const spritePivotY = readNumber('sprite.pivotY', '图内锚点 Y', 0, 100, false);
     if (
       bottom == null ||
       left == null ||
@@ -287,14 +314,25 @@ function openProjectSettingsDialog() {
       backgroundZ == null ||
       cgZ == null ||
       spriteHeight == null ||
-      spriteMaxWidth == null
+      spriteMaxWidth == null ||
+      spriteFocal == null ||
+      spriteAnchorY == null ||
+      spritePivotX == null ||
+      spritePivotY == null
     ) {
       return;
     }
     const next = normalizeProjectSettings({
       stage: { width, height, bottom, anchors: { l: left, m: middle, r: right } },
       depth: { sprite: spriteZ, background: backgroundZ, cg: cgZ },
-      sprite: { height: spriteHeight, maxWidth: spriteMaxWidth },
+      sprite: {
+        height: spriteHeight,
+        maxWidth: spriteMaxWidth,
+        focal: spriteFocal,
+        anchorY: spriteAnchorY,
+        pivotX: spritePivotX,
+        pivotY: spritePivotY,
+      },
     });
     if (JSON.stringify(next) !== JSON.stringify(getProjectSettings())) setProjectSettings(next);
     closeProjectSettingsDialog();
