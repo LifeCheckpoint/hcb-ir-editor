@@ -4,7 +4,7 @@
 # bs 是剧本 [bs] 的第一个参数；本作和原版 Sakura 的 cha 编号不同，所以单独写 bs。
 # CG05 在 cgload 里但 graph_vis 没有对应文件，保留映射以便编辑器标缺失。
 #
-# 统计：角色 5，立绘 17，背景 18，CG 16，BGM 19，音效 18，语音 266
+# 统计：角色 5，立绘 15，背景 18，CG 16，BGM 19，音效 18，语音 266
 
 character = [
   { no = 2, name = "春", aliases = ["ハル"] },
@@ -27,9 +27,7 @@ sprite = [
   { cha = 4, bs = 4, pose = 1, cloth = 6, pose_name = "基", cloth_name = "着物", body = "CHR_雪々_基_着物", sheet = "CHR_雪々_基_着物_表情", faces = 40 },
   { cha = 4, bs = 4, pose = 2, cloth = 6, pose_name = "喜", cloth_name = "着物", body = "CHR_雪々_喜_着物", sheet = "CHR_雪々_喜_着物_表情", faces = 46 },
   { cha = 4, bs = 4, pose = 3, cloth = 6, pose_name = "悲", cloth_name = "着物", body = "CHR_雪々_悲_着物", sheet = "CHR_雪々_悲_着物_表情", faces = 22 },
-  { cha = 14, bs = 14, pose = 1, cloth = 0, pose_name = "基", cloth_name = "着物", body = "CHR_雪々_基_着物", sheet = "CHR_雪々_基_着物_表情", faces = 40 },
-  { cha = 14, bs = 14, pose = 2, cloth = 0, pose_name = "喜", cloth_name = "着物", body = "CHR_雪々_喜_着物", sheet = "CHR_雪々_喜_着物_表情", faces = 46 },
-  { cha = 14, bs = 14, pose = 3, cloth = 0, pose_name = "悲", cloth_name = "着物", body = "CHR_雪々_悲_着物", sheet = "CHR_雪々_悲_着物_表情", faces = 22 },
+  { cha = 14, bs = 14, pose = 1, cloth = 0, pose_name = "基", cloth_name = "制服", body = "CHR_葉月_基_制服", sheet = "CHR_葉月_基_制服_表情", faces = 36 },
   { cha = 9, bs = 9, pose = 1, cloth = 2, pose_name = "基", cloth_name = "車掌服", body = "CHR_ナナ_基_車掌服U", sheet = "CHR_ナナ_基_車掌服U_表情", faces = 44 },
   { cha = 9, bs = 9, pose = 3, cloth = 2, pose_name = "悲", cloth_name = "車掌服", body = "CHR_ナナ_悲_車掌服U", sheet = "CHR_ナナ_悲_車掌服U_表情", faces = 40 },
 ]
