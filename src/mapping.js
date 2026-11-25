@@ -184,7 +184,7 @@
       se: state.se.size,
       voice: state.voice.size,
     };
-    s.total = s.characters + s.sprites + s.bg + s.cg + s.bgm + s.se;
+    s.total = s.characters + s.sprites + s.bg + s.cg + s.bgm + s.se + s.voice;
     return s;
   }
 

@@ -74,6 +74,10 @@ check('bs keeps cha', M.sprite(99, 1, 0).cha, 5);
 check('old cha lookup misses', M.sprite(5, 1, 0), null);
 check('spriteByCha still works', M.spriteByCha(5, 1, 0).body, 'CHR_TEST');
 M.clear();
+M.load({ data: { voice: [{ no: 1, name: '测试语音', file: '00000001' }] } });
+check('voice counts in total', M.stats().total, 1);
+check('voice lookup', M.voiceFile(1), '00000001');
+M.clear();
 
 /* 生成出来的完整表也要能解析 */
 const sakuraPath = path.join(root, 'mappings', 'sakura.toml');

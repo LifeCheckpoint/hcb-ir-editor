@@ -17,6 +17,7 @@ const GAME_DIR = process.env.GAME_DIR || '';
 const FIXTURE = path.join(root, 'tests', 'fixture.txt');
 const SAMPLE_MAP = path.join(root, 'mappings', 'sample.toml');
 const SAKURA_MAP = path.join(root, 'mappings', 'sakura.toml');
+const MAP_FILE = process.env.MAP_FILE || SAKURA_MAP;
 
 // 和 electron/main.js 一样的通道，方便离屏测试扫描
 ipcMain.handle('res:scan', (_e, dir) => scanDirectory(dir));
@@ -482,7 +483,7 @@ app.whenReady().then(async () => {
       const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
       window.RES.setScan(scan);
       await wait(700);
-      const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+      const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
       window.MAPPING.load(mapRes);
       window.PROJECT.mappingChanged();
       await wait(600);
@@ -624,7 +625,7 @@ app.whenReady().then(async () => {
       await wait(200);
       out.mixedSegmented = !!document.querySelector('#inspector .segmented-wrap');
 
-      const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+      const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
       window.MAPPING.load(mapRes);
       window.PROJECT.mappingChanged();
       await wait(500);
@@ -1258,7 +1259,7 @@ app.whenReady().then(async () => {
         window.DSL.importText('[bs,2,1,0,1]', { target: 'new', name: 'spriteface' });
         const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
         window.RES.setScan(scan);
-        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
         window.MAPPING.load(mapRes);
         window.PROJECT.mappingChanged();
         await wait(700);
@@ -1335,7 +1336,7 @@ app.whenReady().then(async () => {
         window.DSL.importText('[bs,2,1,0,1,1,m,1000,0,0,1]\\n[v3d,0,0,400]', { target: 'new', name: 'v3d' });
         const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
         window.RES.setScan(scan);
-        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
         window.MAPPING.load(mapRes);
         window.PROJECT.mappingChanged();
         await wait(800);
@@ -1391,7 +1392,7 @@ app.whenReady().then(async () => {
         window.DSL.importText('[bs,2,1,0,1,1,m,1000,0,0,1]', { target: 'new', name: 'variant' });
         const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
         window.RES.setScan(scan);
-        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
         window.MAPPING.load(mapRes);
         window.PROJECT.mappingChanged();
         await wait(700);
@@ -1411,7 +1412,7 @@ app.whenReady().then(async () => {
         window.DSL.importText('[bs,2,1,0,1]\\n[dia,四参]\\n[bs,2,1,0,1,1,m,1600,0,0,1]\\n[dia,全参]\\n[bs,2,1,0,2]\\n[dia,四参更新]', { target: 'new', name: 'geom' });
         const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
         window.RES.setScan(scan);
-        const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+        const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
         window.MAPPING.load(mapRes);
         window.PROJECT.mappingChanged();
         await wait(800);
@@ -1466,7 +1467,7 @@ app.whenReady().then(async () => {
       const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
       window.RES.setScan(scan);
       await wait(700);
-      const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+      const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
       window.MAPPING.load(mapRes);
       window.PROJECT.mappingChanged();
       await wait(700);
@@ -1494,7 +1495,7 @@ app.whenReady().then(async () => {
       const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
       window.RES.setScan(scan);
       await wait(700);
-      const mapRes = await window.shell.readMapping(${JSON.stringify(path.join(root, 'mappings', 'sakura.toml'))});
+      const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
       window.MAPPING.load(mapRes);
       window.PROJECT.mappingChanged();
       await wait(700);
