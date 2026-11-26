@@ -181,11 +181,11 @@
 
 /* 浮动预览里的舞台文字随窗口宽度略微放大，仍然保持紧凑 */
 .preview__stage .stage__text {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .preview__stage .stage__speaker {
-  font-size: 10px;
+  font-size: 9px;
 }
 
 /* 预览里的对话框：无边框、不模糊底图，左右和贴边方向的三条边紧贴窗口 */
@@ -193,7 +193,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 7px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 22px;
   border: 0;
   border-radius: 0;
   background: rgba(24, 24, 22, 0.24);
