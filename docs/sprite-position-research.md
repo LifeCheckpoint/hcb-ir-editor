@@ -121,10 +121,10 @@ U      offset 358,215
 
 - `electron/scan.js` 读取 HZC `24/26` 和 `28/30`，保存为 `offsetX/offsetY/pivotX/pivotY`，同时保留 `faceX/faceY` 兼容字段。
 - `src/resource-store.js` 的 body/sheet 元数据带 offset/pivot。
-- `src/app/model.js` 的 `stageState` 保存 body offset；`stageCard` 用 `body.offsetX - 1100` 计算横向位置。
+- `src/app/model.js` 的 `stageState` 保存 body offset；`stageCard` 用 `body.offsetX - 1100` 和 `body.offsetY - pivotY` 计算位置。
 - 预览中：
   - sheet offset 用于表情合成。
-  - body `offsetX` 参与横向定位；`offsetY` 仍只作为元数据（纵向用舞台的 `anchorY`）。
+  - body `offsetX/offsetY` 都参与定位，`pivotY` 随 `l` 和角色变化。
 - mapping 不存 HZC offset，也不再有 `view_x` 手调偏移。
 - 2026-11-26 已实现：
   - `sprite` 行可选 `bs`，旧表省略时等于 `cha`；资源组按 `bs` 建，`cha` 指令仍按角色编号找图。
@@ -146,13 +146,13 @@ scale   = lFactor * focal / 1000 / max(1, z + lZ - camera.z)
 w = body.w * scale
 h = body.h * scale
 left = 舞台站位锚点 + bs.x + (body.offsetX - 1100) * scale - camera.x * scale
-top  = 舞台高度 * anchorY / 100 + bs.y - camera.y * scale
+top  = 舞台高度/2 + (bs.y + body.offsetY - pivotY) * scale - camera.y * scale
 ```
 
 - 这组关系来自反编译的 `function_00043f97`：`l=0` 走 `z-400 / factor 600`，`l=-1` 走 `z-500 / factor 500`，`l=1` 保持 `z / factor 1000`，`l=2` 走 `z+400 / factor 1400`。
 - `pos` 的 l/m/r 对应舞台横向 `−335 / 0 / +335`，在 1600×900 虚拟舞台上的默认锚点是 `465 / 800 / 1135`。
-- `PrimSetOP` 横向 pivot 是 `var_0e = 1100`；HZC `offsetX` 减去它再乘 `scale`，就是角色相对站位锚点的偏移。
-- 当前拟合值：`focal=1000`、`anchorY=21%`。`anchorY` 仍是近似值，不是引擎硬编码；换游戏/角色可以在项目设置里微调。
+- `PrimSetOP` 横向 pivot 是 `var_0e = 1100`；纵向 pivot 是 `var_0f`：`l=1` 为 800，`l=-1` 为 850，`l=0` 按角色取 850/777/850/825/775。
+- 纵向必须用 `body.offsetY`。叶月 `offsetY=993`，和落叶 451、春 215 差很多；如果所有角色都套同一个 `anchorY`，叶月的上半身会明显偏高/偏低。
 - 背景 1600×900 在 1600×900 虚拟舞台上按 1:1 铺满，不再做 1.25 裁切；CG 是 2560×1440，按 1:1 铺满。`v3d` 的 x/y 做平移。
 - 4 参 `bs` 只改 pose/face，不会重置 `pos/z/x/y`。
 

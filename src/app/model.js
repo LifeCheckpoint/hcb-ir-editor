@@ -385,12 +385,17 @@
       if (bw > 0 && bh > 0) {
         // 实机是“图左上角 + 原始像素偏移”，用图内锚点把角色脸/身体放到舞台上。
         // 贴图原始尺寸远大于 720p，按 z 缩放后允许超出舞台。
-        const dw = bw * c.scale;
         const dh = bh * c.scale;
         // base.chb 的 PrimSetOP: opx 在 var_0e（1100），opy 在 var_0f（l=1 时 800）。
         // RFVP: local = graph.offset - pivot，再按 z 缩放。
+        const lv = s.l == null || s.l === '' ? '1' : String(s.l);
+        const pivotY = lv === '-1'
+          ? 850
+          : lv === '0'
+            ? (({ 2: 850, 3: 777, 4: 850, 9: 825, 14: 775 })[Number(s.cha)] || 850)
+            : 800;
         const left = baseX + ((Number(s.bodyOffsetX) || 0) - 1100) * c.scale - (Number(cam.x) || 0) * c.scale;
-        const top = SH * (Number(conf.sprite.anchorY) / 100) + (Number.isFinite(dy) ? dy : 0) - dh * (Number(conf.sprite.pivotY) / 100) - (Number(cam.y) || 0) * c.scale;
+        const top = SH / 2 + c.scale * ((Number.isFinite(dy) ? dy : 0) + (Number(s.bodyOffsetY) || 0) - pivotY) - (Number(cam.y) || 0) * c.scale;
         posStyle =
           'left:' + (left / SW * 100).toFixed(3) + '%;top:' + (top / SH * 100).toFixed(3) +
           '%;height:' + (dh / SH * 100).toFixed(3) + '%;max-width:none;transform:none';
