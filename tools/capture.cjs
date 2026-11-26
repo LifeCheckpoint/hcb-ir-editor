@@ -468,6 +468,9 @@ app.whenReady().then(async () => {
       const banner = document.querySelector('.banner--error');
       out.invalidKeptNote = !![...document.querySelectorAll('.block[data-type="note"]')].find((n) => n.textContent.includes('这不是一条指令'));
       out.invalidBanner = banner ? banner.textContent.trim() : '';
+      out.invalidBannerClass = banner ? banner.className : '';
+      await wait(2800);
+      out.invalidBannerGone = !document.querySelector('.banner--error');
       return out;
     })()`);
     console.log(JSON.stringify(info, null, 2));

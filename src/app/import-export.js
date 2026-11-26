@@ -10,17 +10,27 @@
    * ------------------------------------------------------------------ */
 
   let banner = null;
+  let bannerAutoTimer = null;
+
+  function clearBannerAutoTimer() {
+    if (bannerAutoTimer) {
+      clearTimeout(bannerAutoTimer);
+      bannerAutoTimer = null;
+    }
+  }
 
   function hideBanner() {
-    if (banner) {
-      banner.remove();
-      banner = null;
-    }
+    clearBannerAutoTimer();
+    if (!banner) return;
+    const box = banner;
+    banner = null;
+    box.classList.add('banner--hiding');
+    setTimeout(() => box.remove(), 180);
   }
 
   function showBanner(message, actions, kind) {
     hideBanner();
-    const box = el('div', 'banner' + (kind === 'error' ? ' banner--error' : ''));
+    const box = el('div', 'banner banner--enter' + (kind === 'error' ? ' banner--error' : ''));
     box.appendChild(el('span', 'banner__text', esc(message)));
     (actions || []).forEach((a) => {
       const b = el('button', 'banner__btn', esc(a.label));
@@ -32,6 +42,12 @@
     });
     document.body.appendChild(box);
     banner = box;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => box.classList.remove('banner--enter'));
+    });
+    if (kind === 'error') {
+      bannerAutoTimer = setTimeout(hideBanner, 2600);
+    }
   }
 
   /* ------------------------------------------------------------------ *
