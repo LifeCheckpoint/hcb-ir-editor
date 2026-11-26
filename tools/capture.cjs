@@ -1513,9 +1513,10 @@ app.whenReady().then(async () => {
         window.MAPPING.load(mapRes);
         window.PROJECT.mappingChanged();
         await wait(800);
-        const bs = [...document.querySelectorAll('.block[data-type="bs"]')];
-        const target = bs[bs.length - 1];
-        if (!target) return { error: 'no bs block' };
+        const bs = [...document.querySelectorAll('.block')];
+        const wanted = ${JSON.stringify(process.env.PREVIEW_TARGET || 'bs')};
+        const target = bs.filter((n) => n.dataset.type === wanted).pop() || bs[bs.length - 1];
+        if (!target) return { error: 'no target block' };
         target.click();
         await wait(1200);
         const stage = document.querySelector('#preview .stage');

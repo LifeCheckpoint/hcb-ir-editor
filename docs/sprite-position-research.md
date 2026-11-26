@@ -160,6 +160,7 @@ top  = 舞台高度/2 + (bs.y + body.offsetY - pivotY) * scale - scale * camShif
 - 纵向必须用 `body.offsetY`。叶月 `offsetY=993`，和落叶 451、春 215 差很多；如果所有角色都套同一个 `anchorY`，叶月的上半身会明显偏高/偏低。
 - 背景 1600×900 在 1600×900 虚拟舞台上按 1:1 铺满；`v3d` 的 z 会改变背景/CG 的缩放：`scale = factor / (factor - cam.z)`（默认 factor=2000），x/y 平移是 `1000 * cam / (factor - cam.z)`。CG 是 2560×1440，按 1:1 铺满。
 - 4 参 `bs` 只改 pose/face，不会重置 `pos/z/x/y`。
+- FVP 默认的 `[black]` / `[white]` 转场会强制清空背景、CG、立绘等图像资源；预览同步清空 `bg/cg/sprites`，只保留颜色屏，后续 `[bg]` / `[bs]` 重新建立画面。
 
 ### 5.2 自定义 base 里的 PrimSetOP
 

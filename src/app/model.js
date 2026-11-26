@@ -216,7 +216,15 @@
         ['x', 'y', 'z'].forEach((k) => {
           if (d[k] !== '' && d[k] != null) st.camera[k] = Number(d[k]) || 0;
         });
-      } else if (b.type === 'white' || b.type === 'black' || b.type === 'eyecatch' || b.type === 'movie') {
+      } else if (b.type === 'white' || b.type === 'black') {
+        // FVP 的默认黑屏/白屏转场会强制清空图像资源（背景、CG、立绘）；
+        // 颜色屏本身仍然保留，后续的 bg/bs 会重新建立画面。
+        st.screen = b.type;
+        st.bg = null;
+        st.bgDiff = null;
+        st.cg = null;
+        st.sprites = {};
+      } else if (b.type === 'eyecatch' || b.type === 'movie') {
         st.screen = b.type;
       }
       if (b.type !== 'cha' && b.type !== 'dia') speakerRun = '';
