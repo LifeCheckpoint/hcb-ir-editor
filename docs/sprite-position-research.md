@@ -142,18 +142,23 @@ U      offset 358,215
 l = 0 / -1 / 1 / 2
 lFactor = 600 / 500 / 1000 / 1400
 lZ      = -400 / -500 / 0 / +400
-scale   = lFactor * focal / 1000 / max(1, z + lZ - camera.z)
+factor  = focal * lFactor / 1000
+depth   = max(1, z + lZ - camera.z)
+scale   = factor / depth
 w = body.w * scale
 h = body.h * scale
-left = 舞台站位锚点 + bs.x + (body.offsetX - 1100) * scale - camera.x * scale
-top  = 舞台高度/2 + (bs.y + body.offsetY - pivotY) * scale - camera.y * scale
+camShiftX = 1000 * camera.x / factor
+camShiftY = 1000 * camera.y / factor
+left = 舞台站位锚点 + bs.x + (body.offsetX - 1100) * scale - scale * camShiftX
+top  = 舞台高度/2 + (bs.y + body.offsetY - pivotY) * scale - scale * camShiftY
 ```
 
-- 这组关系来自反编译的 `function_00043f97`：`l=0` 走 `z-400 / factor 600`，`l=-1` 走 `z-500 / factor 500`，`l=1` 保持 `z / factor 1000`，`l=2` 走 `z+400 / factor 1400`。
+- 这组关系来自反编译的 `function_00043f97` 和 RFVP `build_draw_model`：`l=0` 走 `z-400 / factor 600`，`l=-1` 走 `z-500 / factor 500`，`l=1` 保持 `z / factor 1000`，`l=2` 走 `z+400 / factor 1400`。
 - `pos` 的 l/m/r 对应舞台横向 `−335 / 0 / +335`，在 1600×900 虚拟舞台上的默认锚点是 `465 / 800 / 1135`。
 - `PrimSetOP` 横向 pivot 是 `var_0e = 1100`；纵向 pivot 是 `var_0f`：`l=1` 为 800，`l=-1` 为 850，`l=0` 按角色取 850/777/850/825/775。
+- 相机 x/y 不能直接乘 `scale`；RFVP 先算 `cam_shift = 1000 * v3d / factor`，再乘 `scale`。`l != 1` 时这一步会和 `scale * v3d` 明显不同。
 - 纵向必须用 `body.offsetY`。叶月 `offsetY=993`，和落叶 451、春 215 差很多；如果所有角色都套同一个 `anchorY`，叶月的上半身会明显偏高/偏低。
-- 背景 1600×900 在 1600×900 虚拟舞台上按 1:1 铺满；`v3d` 的 z 会改变背景/CG 的缩放：`scale = 1000 / (depth - cam.z)`，x/y 平移量也要乘这个 scale。CG 是 2560×1440，按 1:1 铺满。
+- 背景 1600×900 在 1600×900 虚拟舞台上按 1:1 铺满；`v3d` 的 z 会改变背景/CG 的缩放：`scale = factor / (factor - cam.z)`（默认 factor=2000），x/y 平移是 `1000 * cam / (factor - cam.z)`。CG 是 2560×1440，按 1:1 铺满。
 - 4 参 `bs` 只改 pose/face，不会重置 `pos/z/x/y`。
 
 ### 5.2 自定义 base 里的 PrimSetOP
@@ -182,6 +187,22 @@ var_0e = 1100
 ### 5.1 为什么不是固定 76%
 
 HZC 身体图本身远大于 720p（例：`CHR_落葉_基_制服` 1131×2187）。实机在 `z=1600` 时画面只露出头部到裙摆，腿在画面外；固定 76% 会把立绘缩成小图，和游戏对不上。现在按原图尺寸乘 `lFactor/z`，允许超出舞台，由 `overflow:hidden` 裁掉，行为更接近实机。
+
+## 7. RFVP 对照结论
+
+最终按 RFVP `GpuPrim::build_draw_model` 逐项对过：
+
+- `sx = factor_x / (z - v3d_z)`，`sy = factor_y / (z - v3d_z)`；立绘的 `factor` 就是 `lFactor`，不是百分比。
+- `cam_shift = 1000 * v3d / factor`，屏幕偏移是 `scale * cam_shift`；不能直接写 `scale * v3d`。立绘在 `l != 1` 时 `factor` 不是 1000，这一步尤其明显。
+- 立绘的 `pos` 是 `parent_x + draw_x`；`draw_x` 来自 `bs` 的 `x` 和 `pos` 的 ±335，`draw_y` 来自 `y`。
+- 背景/CG 的 `factor` 和图层 z 同为 2000（RFVP 里全屏 tile 的 `factor≈2050, z≈2000`）；`v3d.z` 用 `factor / (factor - cam.z)`，平移用 `1000 * cam / (factor - cam.z)`。
+- 立绘层排序按 `z + lZ`，不是只按原始 `z`；否则 `l=0/-1/2` 的前后顺序会错。
+
+仍未覆盖的细节：
+
+- `bs_ani`/`motion` 的旋转、缩放关键帧没有进预览；`build_draw_model` 里的 `angle` 目前恒为 0。
+- `bs` 的 `l=-10` 小头像没有单独几何，当前会落到默认立绘；它需要引擎的小头像专用分支。
+- 背景/立绘的 alpha、blend、dissolve 只影响观感，不影响坐标。
 
 ## 6. RFVP 验证记录
 

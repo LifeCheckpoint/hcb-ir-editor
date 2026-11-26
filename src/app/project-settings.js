@@ -14,8 +14,8 @@ const PROJECT_SETTINGS_DEFAULT = {
   },
   depth: {
     sprite: 1000,
-    background: 1000,
-    cg: 1000,
+    background: 2000,
+    cg: 2000,
   },
   image: {
     zoom: 100,
@@ -59,6 +59,8 @@ function normalizeProjectSettings(raw) {
   const width = settingsInt(stageSrc.width, 320, 7680, D.stage.width);
   const height = settingsInt(stageSrc.height, 320, 7680, D.stage.height);
   const anchorsSrc = stageSrc.anchors && typeof stageSrc.anchors === 'object' ? stageSrc.anchors : {};
+  const depthSrc = src.depth && typeof src.depth === 'object' ? src.depth : {};
+  const spriteSrc = src.sprite && typeof src.sprite === 'object' ? src.sprite : {};
   // 上一版把游戏窗口尺寸 1280x720 误当成了虚拟舞台；实机 base 的虚拟画面是 1600x900。
   // 只迁移“旧默认值”项目，用户手改过其它尺寸/缩放时保持原样。
   const legacyPreview =
@@ -68,8 +70,8 @@ function normalizeProjectSettings(raw) {
       (spriteSrc.anchorY != null && Number(spriteSrc.anchorY) === 47.6));
   const stageWidth = legacyPreview ? D.stage.width : width;
   const stageHeight = legacyPreview ? D.stage.height : height;
-  const depthSrc = src.depth && typeof src.depth === 'object' ? src.depth : {};
-  const spriteSrc = src.sprite && typeof src.sprite === 'object' ? src.sprite : {};
+  const legacyDepth =
+    Number(depthSrc.background) === 1000 && Number(depthSrc.cg) === 1000;
   return {
     stage: {
       width: stageWidth,
@@ -85,8 +87,8 @@ function normalizeProjectSettings(raw) {
     },
     depth: {
       sprite: settingsInt(depthSrc.sprite, 100, 10000, D.depth.sprite),
-      background: settingsInt(depthSrc.background, 100, 10000, D.depth.background),
-      cg: settingsInt(depthSrc.cg, 100, 10000, D.depth.cg),
+      background: legacyDepth ? D.depth.background : settingsInt(depthSrc.background, 100, 10000, D.depth.background),
+      cg: legacyDepth ? D.depth.cg : settingsInt(depthSrc.cg, 100, 10000, D.depth.cg),
     },
     image: {
       zoom: legacyPreview ? D.image.zoom : settingsNum(src.image && src.image.zoom, 50, 200, D.image.zoom),

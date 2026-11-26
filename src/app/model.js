@@ -318,7 +318,7 @@
       ? window.PROJECT_SETTINGS.get()
       : {
           stage: { width: 1600, height: 900, bottom: 0, anchors: { l: 465, m: 800, r: 1135 } },
-          depth: { sprite: 1000, background: 1000, cg: 1000 },
+          depth: { sprite: 1000, background: 2000, cg: 2000 },
           image: { zoom: 100 },
           sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 21, pivotX: 0, pivotY: 0 },
         };
@@ -335,16 +335,6 @@
       const n = Number(value);
       return Number.isFinite(n) ? Math.max(100, Math.min(10000, n)) : fallback;
     };
-    const sprites = Object.keys(st.sprites)
-      .map((k) => st.sprites[k])
-      .sort((a, b) => {
-        const az = clampZ(a.z, conf.depth.sprite);
-        const bz = clampZ(b.z, conf.depth.sprite);
-        if (az !== bz) return az - bz;
-        return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
-      });
-    const cam = st.camera || { x: 0, y: 0, z: 0 };
-    const focal = Number(conf.sprite.focal) || 1000;
     // 实机 l 参数同时决定底图后缀和缩放/深度：
     // 0=L(0.6 倍, z-400)，-1=U(0.5 倍, z-500)，1=默认(1 倍)，2=S(1.4 倍, z+400)。
     const spriteFrames = {
@@ -354,13 +344,26 @@
       '2': { factor: 1400, z: 400 },
     };
     const frameOf = (s) => spriteFrames[s.l == null || s.l === '' ? '1' : String(s.l)] || spriteFrames['1'];
+    const sprites = Object.keys(st.sprites)
+      .map((k) => st.sprites[k])
+      .sort((a, b) => {
+        const az = clampZ(a.z, conf.depth.sprite) + frameOf(a).z;
+        const bz = clampZ(b.z, conf.depth.sprite) + frameOf(b).z;
+        if (az !== bz) return az - bz;
+        return (Number(a.lyr) || 0) - (Number(b.lyr) || 0);
+      });
+    const cam = st.camera || { x: 0, y: 0, z: 0 };
+    const focal = Number(conf.sprite.focal) || 1000;
     const camStyle = (zoomPct, baseZ) => {
-      // 背景/CG 也受 v3d 的 z 控制：depth = 图层 z - 相机 z，scale = 1000 / depth。
+      // 背景/CG 也受 v3d 的 z 控制：depth = 图层 z - 相机 z。
+      // 全屏图层的 factor 与图层 z 同量级（RFVP 里背景 tile 是 factor≈2050, z≈2000），
+      // 所以 scale = factor/depth；相机平移是 1000*v3d/depth，不是 scale*v3d。
       const zoom = (Number(zoomPct) || 100) / 100;
-      const depth = Math.max(1, (Number(baseZ) || 1000) - (Number(cam.z) || 0));
-      const scale = zoom * 1000 / depth;
-      const tx = -(Number(cam.x) || 0) * scale;
-      const ty = -(Number(cam.y) || 0) * scale;
+      const factor = Number(baseZ) || 2000;
+      const depth = Math.max(1, factor - (Number(cam.z) || 0));
+      const scale = zoom * factor / depth;
+      const tx = -(1000 * (Number(cam.x) || 0) / depth) * zoom;
+      const ty = -(1000 * (Number(cam.y) || 0) / depth) * zoom;
       return 'transform:translate(' + (tx / SW * 100).toFixed(3) + '%,' + (ty / SH * 100).toFixed(3) + '%) scale(' + scale.toFixed(5) + ');transform-origin:50% 50%';
     };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
@@ -380,7 +383,10 @@
       const baseZ = clampZ(s.z, conf.depth.sprite);
       const frame = frameOf(s);
       const depth = Math.max(1, baseZ + frame.z - (Number(cam.z) || 0));
-      const c = { scale: (focal * frame.factor) / 1000 / depth };
+      const factor = (focal * frame.factor) / 1000;
+      const c = { scale: factor / depth };
+      const camShiftX = (1000 * (Number(cam.x) || 0)) / factor;
+      const camShiftY = (1000 * (Number(cam.y) || 0)) / factor;
       const bw = Number(s.w);
       const bh = Number(s.h);
       let posStyle;
@@ -396,8 +402,8 @@
           : lv === '0'
             ? (({ 2: 850, 3: 777, 4: 850, 9: 825, 14: 775 })[Number(s.cha)] || 850)
             : 800;
-        const left = baseX + ((Number(s.bodyOffsetX) || 0) - 1100) * c.scale - (Number(cam.x) || 0) * c.scale;
-        const top = SH / 2 + c.scale * ((Number.isFinite(dy) ? dy : 0) + (Number(s.bodyOffsetY) || 0) - pivotY) - (Number(cam.y) || 0) * c.scale;
+        const left = baseX + ((Number(s.bodyOffsetX) || 0) - 1100) * c.scale - c.scale * camShiftX;
+        const top = SH / 2 + c.scale * ((Number.isFinite(dy) ? dy : 0) + (Number(s.bodyOffsetY) || 0) - pivotY) - c.scale * camShiftY;
         posStyle =
           'left:' + (left / SW * 100).toFixed(3) + '%;top:' + (top / SH * 100).toFixed(3) +
           '%;height:' + (dh / SH * 100).toFixed(3) + '%;max-width:none;transform:none';
