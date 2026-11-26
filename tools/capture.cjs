@@ -1193,6 +1193,43 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewui') {
+    await run("localStorage.removeItem('hcb-ir-editor.preview-ui.v1')");
+    await win.webContents.reload();
+    await wait(900);
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      window.DSL.importText('[msg,middle]\\n[dia,测试对话框]', { target: 'new', name: 'ui' });
+      await wait(500);
+      document.querySelector('.block[data-type="dia"]').click();
+      await wait(300);
+      const p = document.getElementById('preview');
+      const bar = p.querySelector('.preview__bar');
+      const box = p.querySelector('.stage__box');
+      const cs = box ? getComputedStyle(box) : null;
+      const before = { left: p.style.left, top: p.style.top, width: p.offsetWidth, min: p.classList.contains('is-min') };
+      bar.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+      await wait(350);
+      const after = {
+        min: p.classList.contains('is-min'),
+        saved: JSON.parse(localStorage.getItem('hcb-ir-editor.preview-ui.v1') || 'null'),
+      };
+      setPreviewMinimized(false);
+      await wait(300);
+      return {
+        before,
+        after,
+        box: cs ? { border: cs.borderTopWidth, backdrop: cs.backdropFilter, bg: cs.backgroundColor, left: cs.left, right: cs.right, top: cs.top, bottom: cs.bottom } : null,
+      };
+    })()`);
+    await win.webContents.reload();
+    await wait(900);
+    const reloaded = await run(`(() => {
+      const p = document.getElementById('preview');
+      return { min: p ? p.classList.contains('is-min') : null, left: p ? p.style.left : null, saved: JSON.parse(localStorage.getItem('hcb-ir-editor.preview-ui.v1') || 'null') };
+    })()`);
+    console.log(JSON.stringify({ info, reloaded }, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'richtext') {
     const info = await run(`(async () => {
       try {

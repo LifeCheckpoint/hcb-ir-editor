@@ -30,6 +30,56 @@ let previewResizing = null;
 let previewBubbleDrag = null;
 let previewBubbleMoved = false;
 
+const PREVIEW_UI_KEY = 'hcb-ir-editor.preview-ui.v1';
+
+function previewUiNumber(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function loadPreviewUi() {
+  try {
+    const raw = localStorage.getItem(PREVIEW_UI_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (!saved || typeof saved !== 'object') return null;
+    const restore = saved.restore && typeof saved.restore === 'object'
+      ? {
+          right: previewUiNumber(saved.restore.right, 0),
+          top: previewUiNumber(saved.restore.top, 0),
+          width: previewUiNumber(saved.restore.width, 0),
+        }
+      : null;
+    return {
+      left: previewUiNumber(saved.left, 0),
+      top: previewUiNumber(saved.top, 0),
+      width: previewUiNumber(saved.width, 0),
+      min: !!saved.min,
+      restore,
+    };
+  } catch (_) {
+    return null;
+  }
+}
+
+function savePreviewUi() {
+  if (!previewEl) return;
+  try {
+    localStorage.setItem(
+      PREVIEW_UI_KEY,
+      JSON.stringify({
+        left: previewLeft,
+        top: previewTop,
+        width: previewWidth,
+        min: previewMin,
+        restore: previewRestore,
+      })
+    );
+  } catch (_) {
+    /* localStorage 不可用时只影响记忆，不影响预览 */
+  }
+}
+
 let bgmAudio = null;
 let bgmKey = '';
 let bgmPaused = false;
@@ -86,6 +136,7 @@ function setPreviewMinimized(min) {
     }
     applyPreviewGeometry();
   }
+  savePreviewUi();
 }
 
 function nextPreviewBlock() {
@@ -166,10 +217,31 @@ function initPreview() {
   previewBubble.innerHTML = icon('eye', 'icon icon--16');
   previewEl.appendChild(previewBubble);
 
-  previewWidth = previewClamp(Math.round(window.innerWidth * 0.32), 360, 520);
-  previewLeft = Math.max(8, window.innerWidth - previewWidth - 24);
-  previewTop = 64;
-  applyPreviewGeometry();
+  const savedUi = loadPreviewUi();
+  const fallbackWidth = previewClamp(Math.round(window.innerWidth * 0.32), 360, 520);
+  previewWidth = previewClamp(savedUi && savedUi.width > 0 ? savedUi.width : fallbackWidth, 320, previewMaxWidth());
+  previewLeft = previewClamp(
+    savedUi ? savedUi.left : Math.max(8, window.innerWidth - previewWidth - 24),
+    8,
+    Math.max(8, window.innerWidth - previewWidth - 8)
+  );
+  previewTop = previewClamp(savedUi ? savedUi.top : 64, 8, Math.max(8, window.innerHeight - 60));
+  if (savedUi && savedUi.min) {
+    previewRestore =
+      savedUi.restore && savedUi.restore.width > 0 && savedUi.restore.right > 0
+        ? savedUi.restore
+        : { right: previewLeft + 48, top: previewTop, width: previewWidth };
+    previewMin = true;
+    previewEl.classList.add('is-min');
+    previewLeft = previewClamp(previewLeft, 8, Math.max(8, window.innerWidth - 56));
+    previewTop = previewClamp(previewTop, 8, Math.max(8, window.innerHeight - 56));
+    previewEl.style.left = previewLeft + 'px';
+    previewEl.style.top = previewTop + 'px';
+    previewEl.style.width = '48px';
+    previewEl.style.height = '48px';
+  } else {
+    applyPreviewGeometry();
+  }
   document.body.appendChild(previewEl);
 
   previewMinBtn.addEventListener('click', (e) => {
@@ -213,6 +285,7 @@ function initPreview() {
     } else {
       setPreviewMinimized(false);
     }
+    savePreviewUi();
   });
   previewBubble.addEventListener('click', () => {
     if (previewBubbleMoved) {
@@ -255,9 +328,15 @@ function initPreview() {
   const endDrag = () => {
     previewDrag = null;
     bar.classList.remove('is-dragging');
+    savePreviewUi();
   };
   bar.addEventListener('pointerup', endDrag);
   bar.addEventListener('pointercancel', endDrag);
+  bar.addEventListener('dblclick', (e) => {
+    if (e.target.closest('button') || previewMin) return;
+    e.preventDefault();
+    setPreviewMinimized(true);
+  });
 
   previewResize.addEventListener('pointerdown', (e) => {
     if (e.button !== 0 || previewMin) return;
@@ -276,6 +355,7 @@ function initPreview() {
   });
   const endResize = () => {
     previewResizing = null;
+    savePreviewUi();
   };
   previewResize.addEventListener('pointerup', endResize);
   previewResize.addEventListener('pointercancel', endResize);
@@ -286,6 +366,7 @@ function initPreview() {
     previewLeft = previewClamp(previewLeft, 8, Math.max(8, window.innerWidth - previewWidth - 8));
     previewTop = previewClamp(previewTop, 8, Math.max(8, window.innerHeight - 60));
     applyPreviewGeometry();
+    savePreviewUi();
   });
 
   updateAudioButton(false);
