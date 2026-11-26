@@ -318,10 +318,10 @@
     const conf = window.PROJECT_SETTINGS
       ? window.PROJECT_SETTINGS.get()
       : {
-          stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 305, m: 640, r: 975 } },
+          stage: { width: 1600, height: 900, bottom: 0, anchors: { l: 465, m: 800, r: 1135 } },
           depth: { sprite: 1000, background: 1000, cg: 1000 },
-          image: { zoom: 125 },
-          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 26.5, pivotX: 42, pivotY: 0 },
+          image: { zoom: 100 },
+          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 21, pivotX: 42, pivotY: 0 },
         };
     const SW = conf.stage.width;
     const SH = conf.stage.height;
@@ -369,7 +369,7 @@
     const parts = [];
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
-    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle((Number(conf.image && conf.image.zoom) || 125)) + '" alt="">');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle((Number(conf.image && conf.image.zoom) || 100)) + '" alt="">');
 
     sprites.forEach((s) => {
       const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];

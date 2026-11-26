@@ -7,10 +7,10 @@
 
 const PROJECT_SETTINGS_DEFAULT = {
   stage: {
-    width: 1280,
-    height: 720,
+    width: 1600,
+    height: 900,
     bottom: 0,
-    anchors: { l: 305, m: 640, r: 975 },
+    anchors: { l: 465, m: 800, r: 1135 },
   },
   depth: {
     sprite: 1000,
@@ -18,13 +18,13 @@ const PROJECT_SETTINGS_DEFAULT = {
     cg: 1000,
   },
   image: {
-    zoom: 125,
+    zoom: 100,
   },
   sprite: {
     height: 76,
     maxWidth: 36,
     focal: 1000,
-    anchorY: 26.5,
+    anchorY: 21,
     pivotX: 42,
     pivotY: 0,
   },
@@ -59,18 +59,29 @@ function normalizeProjectSettings(raw) {
   const width = settingsInt(stageSrc.width, 320, 7680, D.stage.width);
   const height = settingsInt(stageSrc.height, 320, 7680, D.stage.height);
   const anchorsSrc = stageSrc.anchors && typeof stageSrc.anchors === 'object' ? stageSrc.anchors : {};
+  // 上一版把游戏窗口尺寸 1280x720 误当成了虚拟舞台；实机 base 的虚拟画面是 1600x900。
+  // 只迁移“旧默认值”项目，用户手改过其它尺寸/缩放时保持原样。
+  const legacyPreview =
+    width === 1280 &&
+    height === 720 &&
+    ((src.image && Number(src.image.zoom) === 125) ||
+      (spriteSrc.anchorY != null && Number(spriteSrc.anchorY) === 47.6));
+  const stageWidth = legacyPreview ? D.stage.width : width;
+  const stageHeight = legacyPreview ? D.stage.height : height;
   const depthSrc = src.depth && typeof src.depth === 'object' ? src.depth : {};
   const spriteSrc = src.sprite && typeof src.sprite === 'object' ? src.sprite : {};
   return {
     stage: {
-      width,
-      height,
-      bottom: settingsInt(stageSrc.bottom, 0, height, D.stage.bottom),
-      anchors: {
-        l: settingsInt(anchorsSrc.l, 0, width, D.stage.anchors.l),
-        m: settingsInt(anchorsSrc.m, 0, width, D.stage.anchors.m),
-        r: settingsInt(anchorsSrc.r, 0, width, D.stage.anchors.r),
-      },
+      width: stageWidth,
+      height: stageHeight,
+      bottom: settingsInt(stageSrc.bottom, 0, stageHeight, D.stage.bottom),
+      anchors: legacyPreview
+        ? { ...D.stage.anchors }
+        : {
+            l: settingsInt(anchorsSrc.l, 0, stageWidth, D.stage.anchors.l),
+            m: settingsInt(anchorsSrc.m, 0, stageWidth, D.stage.anchors.m),
+            r: settingsInt(anchorsSrc.r, 0, stageWidth, D.stage.anchors.r),
+          },
     },
     depth: {
       sprite: settingsInt(depthSrc.sprite, 100, 10000, D.depth.sprite),
@@ -78,15 +89,15 @@ function normalizeProjectSettings(raw) {
       cg: settingsInt(depthSrc.cg, 100, 10000, D.depth.cg),
     },
     image: {
-      zoom: settingsNum(src.image && src.image.zoom, 50, 200, D.image.zoom),
+      zoom: legacyPreview ? D.image.zoom : settingsNum(src.image && src.image.zoom, 50, 200, D.image.zoom),
     },
     sprite: {
       height: settingsNum(spriteSrc.height, 10, 200, D.sprite.height),
       maxWidth: settingsNum(spriteSrc.maxWidth, 5, 100, D.sprite.maxWidth),
       focal: settingsNum(spriteSrc.focal, 100, 10000, D.sprite.focal),
-      anchorY: settingsNum(spriteSrc.anchorY, 0, 100, D.sprite.anchorY),
-      pivotX: settingsNum(spriteSrc.pivotX, 0, 100, D.sprite.pivotX),
-      pivotY: settingsNum(spriteSrc.pivotY, 0, 100, D.sprite.pivotY),
+      anchorY: legacyPreview ? D.sprite.anchorY : settingsNum(spriteSrc.anchorY, 0, 100, D.sprite.anchorY),
+      pivotX: legacyPreview ? D.sprite.pivotX : settingsNum(spriteSrc.pivotX, 0, 100, D.sprite.pivotX),
+      pivotY: legacyPreview ? D.sprite.pivotY : settingsNum(spriteSrc.pivotY, 0, 100, D.sprite.pivotY),
     },
   };
 }
