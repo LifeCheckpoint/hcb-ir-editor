@@ -158,6 +158,41 @@ top  = 舞台高度 * anchorY / 100 + bs.y - h * pivotY / 100 - camera.y * scale
 - `body offset` 仍然不直接参与这个公式。实机验证显示它不是“把整张图平移 offsetX/offsetY”这么简单。
 - 4 参 `bs` 只改 pose/face，不会重置 `pos/z/x/y`。
 
+### 5.2 自定义 base 里的 PrimSetOP
+
+仓库 `示例项目/base/base.chb` 就是这作改过的 base（用 `FVPDecompiler ... chs` 反编译可看到 `CHR_ハル / CHR_落葉 / CHR_雪々 / CHR_ナナ / CHR_葉月`）。`function_00043f97` 里 `PrimSetOP` 的实际参数：
+
+```text
+l = 0:
+  char 2    var_0f = 850
+  char 3    var_0f = 777（部分 pose 为 850）
+  char 4    var_0f = 850
+  char 9    var_0f = 825
+  char 14   var_0f = 775（默认分支）
+
+l = -1:
+  var_0f = 850
+
+l = 1:
+  var_0f = 800
+
+var_0e = 1100
+```
+
+这证明 `view_x` 不是 HZC 数据，也不是 base 里的 pivot。它只是上一轮用单张截图反推的临时校准值，最终应删除。
+
+真正的位置链应该是：
+
+```text
+local_x = graph.offsetX - PrimSetOP.opx
+local_y = graph.offsetY - PrimSetOP.opy
+screen  = center + scale * (draw + local)
+```
+
+但目前还缺 `draw_x/draw_y` 的父级偏移（`PrimSetXY` 的 `var_06/var_07` 之外，角色 prim 的 parent 位置）；只用 `HZC offset - PrimSetOP` 算出来的位置和实机仍有明显偏差，所以没有直接把这条链作为默认实现。
+
+下一步需要拿到实际的 `PrimSetXY`/parent 偏移；拿到后删除 mapping 里的 `view_x`，不再保留手调值。
+
 ### 5.1 为什么不是固定 76%
 
 HZC 身体图本身远大于 720p（例：`CHR_落葉_基_制服` 1131×2187）。实机在 `z=1600` 时画面只露出头部到裙摆，腿在画面外；固定 76% 会把立绘缩成小图，和游戏对不上。现在按原图尺寸乘 `lFactor/z`，允许超出舞台，由 `overflow:hidden` 裁掉，行为更接近实机。
