@@ -25,7 +25,7 @@ const PROJECT_SETTINGS_DEFAULT = {
     maxWidth: 36,
     focal: 1000,
     anchorY: 21,
-    pivotX: 42,
+    pivotX: 0,
     pivotY: 0,
   },
 };

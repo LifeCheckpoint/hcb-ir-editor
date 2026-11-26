@@ -54,7 +54,7 @@
       if (!name) throw new Error(where + ' 缺少 name');
       if (out.characters.has(no)) throw new Error('角色编号 ' + no + ' 重复');
       const aliases = asList(row.aliases).map(str).filter(Boolean);
-      const hit = { no, name, aliases, viewX: row.view_x == null ? 0 : num(row.view_x, where + '.view_x') };
+      const hit = { no, name, aliases };
       out.characters.set(no, hit);
       [name].concat(aliases).forEach((n) => {
         const prev = out.byName.get(n);

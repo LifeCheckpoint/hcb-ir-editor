@@ -130,7 +130,6 @@
           name: who ? who.name : '角色 ' + row.cha,
           cha: key,
           characterNo: row.cha,
-          viewX: who && who.viewX ? who.viewX : 0,
           poses: [],
           poseNos: [],
           cloths: [],

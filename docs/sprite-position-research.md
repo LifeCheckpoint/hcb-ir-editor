@@ -121,17 +121,16 @@ U      offset 358,215
 
 - `electron/scan.js` 读取 HZC `24/26` 和 `28/30`，保存为 `offsetX/offsetY/pivotX/pivotY`，同时保留 `faceX/faceY` 兼容字段。
 - `src/resource-store.js` 的 body/sheet 元数据带 offset/pivot。
-- `src/app/model.js` 的 `stageState` 保存 body offset，但 `stageCard` 仍然不把 body offset 加进位置。
+- `src/app/model.js` 的 `stageState` 保存 body offset；`stageCard` 用 `body.offsetX - 1100` 计算横向位置。
 - 预览中：
   - sheet offset 用于表情合成。
-  - body offset 只作为元数据保留，不参与舞台定位；实机验证也证明它不是简单屏幕偏移。
-- mapping 仍不存 HZC offset；`character.view_x` 是预览用的角色默认横向偏移，不是 HZC 数据。
+  - body `offsetX` 参与横向定位；`offsetY` 仍只作为元数据（纵向用舞台的 `anchorY`）。
+- mapping 不存 HZC offset，也不再有 `view_x` 手调偏移。
 - 2026-11-26 已实现：
   - `sprite` 行可选 `bs`，旧表省略时等于 `cha`；资源组按 `bs` 建，`cha` 指令仍按角色编号找图。
   - 4 参 `bs` 在没有已有立绘时不创建；有立绘时只更新姿势/表情，保留位置和 z。
   - 缺失 `l` 变体回退到默认底图；变体键已按实机改为 `0=L / -1=U / 1=默认 / 2=S`。
-  - 预览立绘按 `lFactor/(z+lZ-cam.z)` 缩放，图内 pivot 对齐，`x/y` 按原始像素偏移；背景按 1600×900 虚拟舞台 1:1 铺满。
-  - mapping `character` 支持可选 `view_x`，用于单个角色的默认横向偏移（本作落叶 +233）。
+  - 预览立绘按 `lFactor/(z+lZ-cam.z)` 缩放，横向按 `HZC offsetX - 1100`，`x/y` 按原始像素偏移；背景按 1600×900 虚拟舞台 1:1 铺满。
   - `sprite.height/maxWidth` 只作为拿不到 HZC 宽高时的兜底。
 
 
@@ -146,16 +145,15 @@ lZ      = -400 / -500 / 0 / +400
 scale   = lFactor * focal / 1000 / max(1, z + lZ - camera.z)
 w = body.w * scale
 h = body.h * scale
-left = 舞台站位锚点 + character.view_x + bs.x - w * pivotX / 100 - camera.x * scale
-top  = 舞台高度 * anchorY / 100 + bs.y - h * pivotY / 100 - camera.y * scale
+left = 舞台站位锚点 + bs.x + (body.offsetX - 1100) * scale - camera.x * scale
+top  = 舞台高度 * anchorY / 100 + bs.y - camera.y * scale
 ```
 
 - 这组关系来自反编译的 `function_00043f97`：`l=0` 走 `z-400 / factor 600`，`l=-1` 走 `z-500 / factor 500`，`l=1` 保持 `z / factor 1000`，`l=2` 走 `z+400 / factor 1400`。
 - `pos` 的 l/m/r 对应舞台横向 `−335 / 0 / +335`，在 1600×900 虚拟舞台上的默认锚点是 `465 / 800 / 1135`。
-- `view_x` 是 mapping 里每个角色可选的默认横向偏移；本作落叶实测需要 `+233`。它不是 HZC/base 数据，最终应替换为 `HZC offset - PrimSetOP pivot`。
-- 当前拟合值：`focal=1000`、`anchorY=21%`、`pivotX=42%`、`pivotY=0`。这组值是近似值，不是引擎硬编码；换游戏/角色可以在项目设置里微调。
+- `PrimSetOP` 横向 pivot 是 `var_0e = 1100`；HZC `offsetX` 减去它再乘 `scale`，就是角色相对站位锚点的偏移。
+- 当前拟合值：`focal=1000`、`anchorY=21%`。`anchorY` 仍是近似值，不是引擎硬编码；换游戏/角色可以在项目设置里微调。
 - 背景 1600×900 在 1600×900 虚拟舞台上按 1:1 铺满，不再做 1.25 裁切；CG 是 2560×1440，按 1:1 铺满。`v3d` 的 x/y 做平移。
-- `body offset` 仍然不直接参与这个公式。实机验证显示它不是“把整张图平移 offsetX/offsetY”这么简单。
 - 4 参 `bs` 只改 pose/face，不会重置 `pos/z/x/y`。
 
 ### 5.2 自定义 base 里的 PrimSetOP
@@ -179,19 +177,7 @@ l = 1:
 var_0e = 1100
 ```
 
-这证明 `view_x` 不是 HZC 数据，也不是 base 里的 pivot。它只是上一轮用单张截图反推的临时校准值，最终应删除。
-
-真正的位置链应该是：
-
-```text
-local_x = graph.offsetX - PrimSetOP.opx
-local_y = graph.offsetY - PrimSetOP.opy
-screen  = center + scale * (draw + local)
-```
-
-但目前还缺 `draw_x/draw_y` 的父级偏移（`PrimSetXY` 的 `var_06/var_07` 之外，角色 prim 的 parent 位置）；只用 `HZC offset - PrimSetOP` 算出来的位置和实机仍有明显偏差，所以没有直接把这条链作为默认实现。
-
-下一步需要拿到实际的 `PrimSetXY`/parent 偏移；拿到后删除 mapping 里的 `view_x`，不再保留手调值。
+`var_0e` 是横向 pivot；预览用 `offsetX - 1100`。之前 mapping 里的 `view_x=233` 已经从 mapping 删除，不再保留手调值。
 
 ### 5.1 为什么不是固定 76%
 

@@ -65,13 +65,12 @@ check('bg fallback', M.bgFile(67), null);
 /* 立绘编号可以和角色编号分开：bs 是剧本里的第一个参数 */
 M.load({
   data: {
-    character: [{ no: 5, name: '测试角色', view_x: 12 }],
+    character: [{ no: 5, name: '测试角色' }],
     sprite: [{ cha: 5, bs: 99, pose: 1, cloth: 0, body: 'CHR_TEST', sheet: 'CHR_TEST_表情' }],
   },
 });
 check('bs lookup', M.sprite(99, 1, 0).body, 'CHR_TEST');
 check('bs keeps cha', M.sprite(99, 1, 0).cha, 5);
-check('character view_x', M.character(5).viewX, 12);
 check('old cha lookup misses', M.sprite(5, 1, 0), null);
 check('spriteByCha still works', M.spriteByCha(5, 1, 0).body, 'CHR_TEST');
 M.clear();

@@ -177,7 +177,6 @@
           face: d.face,
           pose: d.pose,
           cloth: d.cloth,
-          viewX: pick && pick.ch ? pick.ch.viewX || 0 : prev ? prev.viewX : 0,
           thumb: pick && pick.body ? pick.body.thumb : prev && prev.thumb,
           entry: pick && pick.body ? pick.body.entry : prev && prev.entry,
           w: pick && pick.body ? pick.body.w : prev && prev.w,
@@ -321,7 +320,7 @@
           stage: { width: 1600, height: 900, bottom: 0, anchors: { l: 465, m: 800, r: 1135 } },
           depth: { sprite: 1000, background: 1000, cg: 1000 },
           image: { zoom: 100 },
-          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 21, pivotX: 42, pivotY: 0 },
+          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 21, pivotX: 0, pivotY: 0 },
         };
     const SW = conf.stage.width;
     const SH = conf.stage.height;
@@ -375,7 +374,7 @@
       const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];
       const dx = Number(s.x);
       const dy = Number(s.y);
-      const baseX = base * SW + (Number(s.viewX) || 0) + (Number.isFinite(dx) ? dx : 0);
+      const baseX = base * SW + (Number.isFinite(dx) ? dx : 0);
       const baseZ = clampZ(s.z, conf.depth.sprite);
       const frame = frameOf(s);
       const depth = Math.max(1, baseZ + frame.z - (Number(cam.z) || 0));
@@ -388,7 +387,9 @@
         // 贴图原始尺寸远大于 720p，按 z 缩放后允许超出舞台。
         const dw = bw * c.scale;
         const dh = bh * c.scale;
-        const left = baseX - dw * (Number(conf.sprite.pivotX) / 100) - (Number(cam.x) || 0) * c.scale;
+        // base.chb 的 PrimSetOP: opx 在 var_0e（1100），opy 在 var_0f（l=1 时 800）。
+        // RFVP: local = graph.offset - pivot，再按 z 缩放。
+        const left = baseX + ((Number(s.bodyOffsetX) || 0) - 1100) * c.scale - (Number(cam.x) || 0) * c.scale;
         const top = SH * (Number(conf.sprite.anchorY) / 100) + (Number.isFinite(dy) ? dy : 0) - dh * (Number(conf.sprite.pivotY) / 100) - (Number(cam.y) || 0) * c.scale;
         posStyle =
           'left:' + (left / SW * 100).toFixed(3) + '%;top:' + (top / SH * 100).toFixed(3) +
