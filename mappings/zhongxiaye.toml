@@ -2,13 +2,14 @@
 #
 # 来源：game.chb 脚本里的 bgload / cgload / cha / bs / bgm / se，以及 graph_bs / graph_bg / graph_vis 条目。
 # bs 是剧本 [bs] 的第一个参数；本作和原版 Sakura 的 cha 编号不同，所以单独写 bs。
+# character.view_x 是预览用的角色默认横向偏移；落叶实测 +233。
 # CG05 在 cgload 里但 graph_vis 没有对应文件，保留映射以便编辑器标缺失。
 #
 # 统计：角色 5，立绘 15，背景 18，CG 16，BGM 19，音效 18，语音 266
 
 character = [
   { no = 2, name = "春", aliases = ["ハル"] },
-  { no = 3, name = "落叶", aliases = ["落葉"] },
+  { no = 3, name = "落叶", aliases = ["落葉"], view_x = 233 },
   { no = 4, name = "雪雪", aliases = ["雪々"] },
   { no = 9, name = "七七", aliases = ["ナナ"] },
   { no = 14, name = "叶月", aliases = ["葉月"] },

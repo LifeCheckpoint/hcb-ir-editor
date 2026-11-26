@@ -99,7 +99,7 @@
     const pose = ch.poses[pi];
     const cloth = ch.cloths[ci];
     const key = poseNo + '|' + clothNo;
-    const lv = d.l == null || d.l === '' ? '-1' : String(d.l);
+    const lv = d.l == null || d.l === '' ? '1' : String(d.l);
     // 缺变体时回退到默认底图；实机缺 U 会直接报错，但预览不应整块消失。
     const vbody = ch.bodyVariants && ch.bodyVariants[key] ? ch.bodyVariants[key][lv] : null;
     const vsheet = ch.sheetVariants && ch.sheetVariants[key] ? ch.sheetVariants[key][lv] : null;
@@ -177,6 +177,7 @@
           face: d.face,
           pose: d.pose,
           cloth: d.cloth,
+          viewX: pick && pick.ch ? pick.ch.viewX || 0 : prev ? prev.viewX : 0,
           thumb: pick && pick.body ? pick.body.thumb : prev && prev.thumb,
           entry: pick && pick.body ? pick.body.entry : prev && prev.entry,
           w: pick && pick.body ? pick.body.w : prev && prev.w,
@@ -317,9 +318,10 @@
     const conf = window.PROJECT_SETTINGS
       ? window.PROJECT_SETTINGS.get()
       : {
-          stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 320, m: 640, r: 960 } },
+          stage: { width: 1280, height: 720, bottom: 0, anchors: { l: 305, m: 640, r: 975 } },
           depth: { sprite: 1000, background: 1000, cg: 1000 },
-          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 47.6, pivotX: 7, pivotY: 11.3 },
+          image: { zoom: 125 },
+          sprite: { height: 76, maxWidth: 36, focal: 1000, anchorY: 26.5, pivotX: 42, pivotY: 0 },
         };
     const SW = conf.stage.width;
     const SH = conf.stage.height;
@@ -344,14 +346,21 @@
       });
     const cam = st.camera || { x: 0, y: 0, z: 0 };
     const focal = Number(conf.sprite.focal) || 1000;
-    const camFor = (z, f) => {
-      const depth = Math.max(1, z - (Number(cam.z) || 0));
-      const scale = (Number(f) || 1000) / depth;
-      return { scale, tx: -(Number(cam.x) || 0) * scale, ty: -(Number(cam.y) || 0) * scale };
+    // 实机 l 参数同时决定底图后缀和缩放/深度：
+    // 0=L(0.6 倍, z-400)，-1=U(0.5 倍, z-500)，1=默认(1 倍)，2=S(1.4 倍, z+400)。
+    const spriteFrames = {
+      '0': { factor: 600, z: -400 },
+      '-1': { factor: 500, z: -500 },
+      '1': { factor: 1000, z: 0 },
+      '2': { factor: 1400, z: 400 },
     };
-    const camStyle = (z) => {
-      const c = camFor(z, 1000);
-      return 'transform:translate(' + (c.tx / SW * 100).toFixed(3) + '%,' + (c.ty / SH * 100).toFixed(3) + '%) scale(' + c.scale.toFixed(5) + ');transform-origin:50% 50%';
+    const frameOf = (s) => spriteFrames[s.l == null || s.l === '' ? '1' : String(s.l)] || spriteFrames['1'];
+    const camStyle = (zoomPct) => {
+      // 背景是 1600x900 铺到 1280x720，等效中心裁切 1.25 倍；CG 是 2560x1440，按 1:1 铺满。
+      const zoom = (Number(zoomPct) || 100) / 100;
+      const tx = -(Number(cam.x) || 0) * zoom;
+      const ty = -(Number(cam.y) || 0) * zoom;
+      return 'transform:translate(' + (tx / SW * 100).toFixed(3) + '%,' + (ty / SH * 100).toFixed(3) + '%) scale(' + zoom.toFixed(5) + ');transform-origin:50% 50%';
     };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
 
@@ -360,15 +369,17 @@
     const parts = [];
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
-    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle(clampZ(conf.depth.background, 1000)) + '" alt="">');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle((Number(conf.image && conf.image.zoom) || 125)) + '" alt="">');
 
     sprites.forEach((s) => {
       const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];
       const dx = Number(s.x);
       const dy = Number(s.y);
-      const baseX = base * SW + (Number.isFinite(dx) ? dx : 0);
-      const z = clampZ(s.z, conf.depth.sprite);
-      const c = camFor(z, focal);
+      const baseX = base * SW + (Number(s.viewX) || 0) + (Number.isFinite(dx) ? dx : 0);
+      const baseZ = clampZ(s.z, conf.depth.sprite);
+      const frame = frameOf(s);
+      const depth = Math.max(1, baseZ + frame.z - (Number(cam.z) || 0));
+      const c = { scale: (focal * frame.factor) / 1000 / depth };
       const bw = Number(s.w);
       const bh = Number(s.h);
       let posStyle;
@@ -418,7 +429,7 @@
     });
 
     if (st.cg && cgEntry) {
-      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(clampZ(conf.depth.cg, 1000)) + '" alt="">');
+      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(100) + '" alt="">');
     }
 
     if (st.screen) {

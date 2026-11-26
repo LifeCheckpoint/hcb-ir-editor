@@ -130,6 +130,7 @@
           name: who ? who.name : '角色 ' + row.cha,
           cha: key,
           characterNo: row.cha,
+          viewX: who && who.viewX ? who.viewX : 0,
           poses: [],
           poseNos: [],
           cloths: [],
@@ -152,16 +153,17 @@
         if (row.faces != null) sh.cells = row.faces;
         g.sheets[k] = sh;
       }
-      g.bodyVariants[k] = { '-1': g.bodies[k] || null };
-      g.sheetVariants[k] = { '-1': g.sheets[k] || null };
-      [['0', 'L'], ['1', 'U'], ['2', 'S']].forEach(([lv, suffix]) => {
-        const vBody = row.body ? findEntry(row.body + suffix) : null;
+      const bodyBase = g.bodies[k] || null;
+      const sheetBase = g.sheets[k] || null;
+      const bodyStem = row.body ? row.body.replace(/[LUS]$/, '') : '';
+      const sheetStem = row.sheet ? row.sheet.replace(/[LUS](_表情)$/, '$1') : '';
+      g.bodyVariants[k] = { '1': bodyBase, '-1': bodyBase, '0': bodyBase, '2': bodyBase };
+      g.sheetVariants[k] = { '1': sheetBase, '-1': sheetBase, '0': sheetBase, '2': sheetBase };
+      // 实机 l 值：0=L，-1=U，1=默认，2=S；缺变体回退默认。
+      [['0', 'L'], ['-1', 'U'], ['2', 'S']].forEach(([lv, suffix]) => {
+        const vBody = bodyStem ? findEntry(bodyStem + suffix) : null;
         if (vBody) g.bodyVariants[k][lv] = bodyOf(vBody);
-        const sheetName = row.sheet
-          ? row.sheet.replace(/(_表情)$/, suffix + '$1') === row.sheet
-            ? row.sheet + suffix
-            : row.sheet.replace(/(_表情)$/, suffix + '$1')
-          : '';
+        const sheetName = sheetStem ? sheetStem.replace(/(_表情)$/, suffix + '$1') : '';
         const vSheet = sheetName ? findEntry(sheetName) : null;
         if (vSheet) {
           const sh = sheetOf(vSheet);

@@ -1460,6 +1460,37 @@ app.whenReady().then(async () => {
     })()`);
     console.log(JSON.stringify(info, null, 2));
     console.log('console errors:', errors.length ? errors : 'none');
+  } else if (mode === 'previewscene') {
+    const script = process.env.PREVIEW_SCRIPT || '[bg,500]\\n[bs,3,1,0,12,1,m,1600,0,0,1]\\n[dia,preview]';
+    const info = await run(`(async () => {
+      try {
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        window.DSL.importText(${JSON.stringify(script)}, { target: 'new', name: 'preview' });
+        const scan = await window.shell.scanResources(${JSON.stringify(GAME_DIR)});
+        window.RES.setScan(scan);
+        const mapRes = await window.shell.readMapping(${JSON.stringify(MAP_FILE)});
+        window.MAPPING.load(mapRes);
+        window.PROJECT.mappingChanged();
+        await wait(800);
+        const bs = [...document.querySelectorAll('.block[data-type="bs"]')];
+        const target = bs[bs.length - 1];
+        if (!target) return { error: 'no bs block' };
+        target.click();
+        await wait(1200);
+        const stage = document.querySelector('#preview .stage');
+        const r = stage ? stage.getBoundingClientRect() : null;
+        const canvas = document.querySelector('#preview .stage__sprite-canvas');
+        const bg = document.querySelector('#preview .stage__bg-img');
+        return {
+          rect: r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null,
+          canvas: canvas ? { style: canvas.getAttribute('style'), w: canvas.width, h: canvas.height, spec: canvas.dataset.sprite ? JSON.parse(canvas.dataset.sprite) : null } : null,
+          bg: bg ? { style: bg.getAttribute('style'), src: !!bg.src } : null,
+          sprites: document.querySelectorAll('#preview .stage__sprite-img').length,
+        };
+      } catch (err) { return { error: String(err && err.message || err), stack: err && err.stack }; }
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
   } else if (mode === 'sakura-pick') {
     const info = await run(`(async () => {
       const wait = (ms) => new Promise((r) => setTimeout(r, ms));

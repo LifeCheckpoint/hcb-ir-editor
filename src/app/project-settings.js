@@ -10,20 +10,23 @@ const PROJECT_SETTINGS_DEFAULT = {
     width: 1280,
     height: 720,
     bottom: 0,
-    anchors: { l: 320, m: 640, r: 960 },
+    anchors: { l: 305, m: 640, r: 975 },
   },
   depth: {
     sprite: 1000,
     background: 1000,
     cg: 1000,
   },
+  image: {
+    zoom: 125,
+  },
   sprite: {
     height: 76,
     maxWidth: 36,
     focal: 1000,
-    anchorY: 47.6,
-    pivotX: 7,
-    pivotY: 11.3,
+    anchorY: 26.5,
+    pivotX: 42,
+    pivotY: 0,
   },
 };
 
@@ -64,15 +67,18 @@ function normalizeProjectSettings(raw) {
       height,
       bottom: settingsInt(stageSrc.bottom, 0, height, D.stage.bottom),
       anchors: {
-        l: settingsInt(anchorsSrc.l, 0, width, Math.round(width * 0.25)),
-        m: settingsInt(anchorsSrc.m, 0, width, Math.round(width * 0.5)),
-        r: settingsInt(anchorsSrc.r, 0, width, Math.round(width * 0.75)),
+        l: settingsInt(anchorsSrc.l, 0, width, D.stage.anchors.l),
+        m: settingsInt(anchorsSrc.m, 0, width, D.stage.anchors.m),
+        r: settingsInt(anchorsSrc.r, 0, width, D.stage.anchors.r),
       },
     },
     depth: {
       sprite: settingsInt(depthSrc.sprite, 100, 10000, D.depth.sprite),
       background: settingsInt(depthSrc.background, 100, 10000, D.depth.background),
       cg: settingsInt(depthSrc.cg, 100, 10000, D.depth.cg),
+    },
+    image: {
+      zoom: settingsNum(src.image && src.image.zoom, 50, 200, D.image.zoom),
     },
     sprite: {
       height: settingsNum(spriteSrc.height, 10, 200, D.sprite.height),
@@ -208,6 +214,7 @@ function openProjectSettingsDialog() {
   depthGroup.appendChild(row('立绘默认 z', field('depth.sprite', settings.depth.sprite, { min: 100, max: 10000 })));
   depthGroup.appendChild(row('背景 z', field('depth.background', settings.depth.background, { min: 100, max: 10000 })));
   depthGroup.appendChild(row('CG z', field('depth.cg', settings.depth.cg, { min: 100, max: 10000 })));
+  depthGroup.appendChild(row('背景缩放', field('image.zoom', settings.image.zoom, { min: 50, max: 200, step: 0.1, unit: '%' })));
 
   const spriteGroup = group('立绘显示');
   spriteGroup.appendChild(
@@ -279,6 +286,7 @@ function openProjectSettingsDialog() {
     inputs['depth.sprite'].value = settingsValue.depth.sprite;
     inputs['depth.background'].value = settingsValue.depth.background;
     inputs['depth.cg'].value = settingsValue.depth.cg;
+    inputs['image.zoom'].value = settingsValue.image.zoom;
     inputs['sprite.height'].value = settingsValue.sprite.height;
     inputs['sprite.maxWidth'].value = settingsValue.sprite.maxWidth;
     inputs['sprite.focal'].value = settingsValue.sprite.focal;
@@ -299,6 +307,7 @@ function openProjectSettingsDialog() {
     const spriteZ = readNumber('depth.sprite', '立绘 z', 100, 10000, true);
     const backgroundZ = readNumber('depth.background', '背景 z', 100, 10000, true);
     const cgZ = readNumber('depth.cg', 'CG z', 100, 10000, true);
+    const imageZoom = readNumber('image.zoom', '背景缩放', 50, 200, false);
     const spriteHeight = readNumber('sprite.height', '立绘高度', 10, 200, false);
     const spriteMaxWidth = readNumber('sprite.maxWidth', '立绘最大宽度', 5, 100, false);
     const spriteFocal = readNumber('sprite.focal', '焦距', 100, 10000, false);
@@ -313,6 +322,7 @@ function openProjectSettingsDialog() {
       spriteZ == null ||
       backgroundZ == null ||
       cgZ == null ||
+      imageZoom == null ||
       spriteHeight == null ||
       spriteMaxWidth == null ||
       spriteFocal == null ||
@@ -325,6 +335,7 @@ function openProjectSettingsDialog() {
     const next = normalizeProjectSettings({
       stage: { width, height, bottom, anchors: { l: left, m: middle, r: right } },
       depth: { sprite: spriteZ, background: backgroundZ, cg: cgZ },
+      image: { zoom: imageZoom },
       sprite: {
         height: spriteHeight,
         maxWidth: spriteMaxWidth,
