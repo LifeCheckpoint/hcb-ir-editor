@@ -354,12 +354,14 @@
       '2': { factor: 1400, z: 400 },
     };
     const frameOf = (s) => spriteFrames[s.l == null || s.l === '' ? '1' : String(s.l)] || spriteFrames['1'];
-    const camStyle = (zoomPct) => {
-      // 背景是 1600x900 铺到 1280x720，等效中心裁切 1.25 倍；CG 是 2560x1440，按 1:1 铺满。
+    const camStyle = (zoomPct, baseZ) => {
+      // 背景/CG 也受 v3d 的 z 控制：depth = 图层 z - 相机 z，scale = 1000 / depth。
       const zoom = (Number(zoomPct) || 100) / 100;
-      const tx = -(Number(cam.x) || 0) * zoom;
-      const ty = -(Number(cam.y) || 0) * zoom;
-      return 'transform:translate(' + (tx / SW * 100).toFixed(3) + '%,' + (ty / SH * 100).toFixed(3) + '%) scale(' + zoom.toFixed(5) + ');transform-origin:50% 50%';
+      const depth = Math.max(1, (Number(baseZ) || 1000) - (Number(cam.z) || 0));
+      const scale = zoom * 1000 / depth;
+      const tx = -(Number(cam.x) || 0) * scale;
+      const ty = -(Number(cam.y) || 0) * scale;
+      return 'transform:translate(' + (tx / SW * 100).toFixed(3) + '%,' + (ty / SH * 100).toFixed(3) + '%) scale(' + scale.toFixed(5) + ');transform-origin:50% 50%';
     };
     const hideBox = st.msg === 'boxout' || st.msg === 'effect_boxout';
 
@@ -368,7 +370,7 @@
     const parts = [];
     parts.push('<div class="stage__frame">');
     parts.push('<div class="stage__bg" style="background:' + fill + '"></div>');
-    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle((Number(conf.image && conf.image.zoom) || 100)) + '" alt="">');
+    if (bgEntry) parts.push('<img class="stage__bg-img" data-bg="' + esc(JSON.stringify(bgEntry)) + '" style="' + camStyle((Number(conf.image && conf.image.zoom) || 100), conf.depth.background) + '" alt="">');
 
     sprites.forEach((s) => {
       const base = posFrac[s.pos] == null ? 0.5 : posFrac[s.pos];
@@ -435,7 +437,7 @@
     });
 
     if (st.cg && cgEntry) {
-      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(100) + '" alt="">');
+      parts.push('<img class="stage__cg-img" data-cg="' + esc(JSON.stringify(cgEntry)) + '" style="' + camStyle(100, conf.depth.cg) + '" alt="">');
     }
 
     if (st.screen) {
