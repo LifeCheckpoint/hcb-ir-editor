@@ -18,9 +18,9 @@
     }
   }
 
-  function showBanner(message, actions) {
+  function showBanner(message, actions, kind) {
     hideBanner();
-    const box = el('div', 'banner');
+    const box = el('div', 'banner' + (kind === 'error' ? ' banner--error' : ''));
     box.appendChild(el('span', 'banner__text', esc(message)));
     (actions || []).forEach((a) => {
       const b = el('button', 'banner__btn', esc(a.label));

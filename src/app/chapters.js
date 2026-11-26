@@ -368,8 +368,15 @@
     }
     const count = targets.length;
     const at = list.indexOf(block);
+    const allNotes = targets.every((target) => target.block.type === 'note');
+    const anyNotes = targets.some((target) => target.block.type === 'note');
     showMenu(x, y, [
       { label: count > 1 ? '创建 ' + count + ' 个副本' : '创建副本', icon: 'copy', action: () => duplicateBlocks(targets) },
+      {
+        label: allNotes ? '取消注释（DSL）' : anyNotes ? '切换注释' : '注释为 DSL',
+        icon: 'sticky-note',
+        action: () => toggleBlockComments(targets),
+      },
       { label: '在上方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at) },
       { label: '在下方插入', icon: 'plus', action: () => openPaletteAt(x, y, sc, list, at + 1) },
       { sep: true },

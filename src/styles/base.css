@@ -192,6 +192,16 @@ body[data-platform='darwin'] .titlebar {
   white-space: nowrap;
 }
 
+.banner--error {
+  background: #fff1f0;
+  border-color: #e3b4ae;
+  color: #a12622;
+}
+
+.banner--error .banner__text {
+  white-space: normal;
+}
+
 .banner__btn {
   flex: 0 0 auto;
   height: 26px;

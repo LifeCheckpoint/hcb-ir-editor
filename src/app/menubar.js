@@ -267,6 +267,11 @@
         selectAllBlocks();
         return;
       }
+      if ((k === '/' || e.code === 'Slash') && !typing && !modalOpen) {
+        e.preventDefault();
+        toggleSelectedComments();
+        return;
+      }
     }
 
     if (e.key === 'Escape' && !typing && !modalOpen) {

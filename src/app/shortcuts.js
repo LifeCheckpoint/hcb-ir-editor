@@ -36,6 +36,7 @@ const SHORTCUT_GROUPS = [
       { keys: [['Ctrl', 'S']], desc: '保存项目' },
       { keys: [['Ctrl', 'O']], desc: '打开项目' },
       { keys: [['Ctrl', 'Alt', ',']], desc: '项目设置' },
+      { keys: [['Ctrl', '/']], desc: '注释 / 取消注释选中块' },
       { keys: [['Ctrl', 'B']], desc: '选中文字加/去着重（输入框内）' },
     ],
   },

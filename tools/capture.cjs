@@ -433,6 +433,47 @@ app.whenReady().then(async () => {
     await wait(400);
     await run("document.querySelector('.block[data-type=\"custom\"]').click()");
     await wait(350);
+  } else if (mode === 'comments') {
+    const info = await run(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      window.DSL.importText('[start]\\n[msg,boxin]\\n# [msg,boxout]\\n[bg,500]\\n', { target: 'new', name: 'comments', split: false });
+      await wait(350);
+      const out = {};
+      const clickType = (type) => {
+        const node = [...document.querySelectorAll('.block')].find((n) => n.dataset.type === type);
+        if (node) node.click();
+        return node;
+      };
+      clickType('msg');
+      await wait(80);
+      out.before = window.DSL.exportText();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', code: 'Slash', ctrlKey: true, bubbles: true }));
+      await wait(250);
+      out.afterComment = window.DSL.exportText();
+      out.noteData = [...document.querySelectorAll('.block[data-type="note"]')].map((n) => n.textContent.replace(/\\s+/g, ' ').trim());
+      clickType('note');
+      await wait(80);
+      out.sourceBeforeRestore = !!(selectedBlocks()[0] && selectedBlocks()[0].block.commentSource);
+      toggleSelectedComments();
+      await wait(250);
+      out.afterRestore = window.DSL.exportText();
+      out.restoredType = [...document.querySelectorAll('.block')].some((n) => n.dataset.type === 'msg' && n.textContent.includes('boxin'));
+      const hit = listOfBlock(state.blockId);
+      const bad = { id: nid(), type: 'note', data: { text: '这不是一条指令' } };
+      hit.list.push(bad);
+      selectBlock(bad.id);
+      await wait(120);
+      toggleSelectedComments();
+      await wait(150);
+      const banner = document.querySelector('.banner--error');
+      out.invalidKeptNote = !![...document.querySelectorAll('.block[data-type="note"]')].find((n) => n.textContent.includes('这不是一条指令'));
+      out.invalidBanner = banner ? banner.textContent.trim() : '';
+      return out;
+    })()`);
+    console.log(JSON.stringify(info, null, 2));
+    console.log('console errors:', errors.length ? errors : 'none');
+    app.quit();
+    return;
   } else if (mode === 'wire') {
     await run('window.DSL.importFile(' + JSON.stringify(FIXTURE) + ')');
     await wait(300);

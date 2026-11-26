@@ -554,7 +554,10 @@
       hideCode: true,
       text: (d) => d.text || '空注释',
       empty: (d) => !d.text,
-      code: (d) => ['# ' + String(d.text || '').replace(/\s*\r?\n\s*/g, ' ')],
+      code: (d) =>
+        String(d.text || '')
+          .split(/\r\n|\r|\n/)
+          .map((line) => '# ' + line),
       fields: [{ key: 'text', label: '内容', type: 'textarea', full: true, rows: 3 }],
     },
     /* 逃生通道：一整行 DSL 原样写入，不解释命令和参数 */
